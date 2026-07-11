@@ -23,6 +23,21 @@ const decodePassword = (encoded) => {
 
 const isProduction = typeof window !== 'undefined' && !window.location.hostname.match(/^(localhost|127\.0\.0\.1)$/);
 
+function buildSession(match, demoMode) {
+  const isSuperadmin = match.role === 'superadmin';
+  return {
+    email: match.email,
+    name: match.name,
+    role: match.role,
+    permissions: {
+      canApprove: match.canApprove || isSuperadmin,
+      canManageUsers: match.canManageUsers || isSuperadmin,
+      canImport: isSuperadmin || match.role === 'finance',
+    },
+    isDemo: demoMode,
+  };
+}
+
 export function getDemoCredentials() {
   try {
     const overridesRaw = localStorage.getItem(STORAGE_KEY_OVERRIDES);
@@ -105,13 +120,7 @@ export function AuthProvider({ children }) {
       }
       if (match) {
         const demoMode = !isProduction;
-        setSession({
-          email: match.email,
-          name: match.name,
-          role: match.role,
-          permissions: { canApprove: match.canApprove || match.role === 'superadmin', canManageUsers: match.canManageUsers || match.role === 'superadmin' },
-          isDemo: demoMode,
-        });
+        setSession(buildSession(match, demoMode));
         setDemo(demoMode);
       } else {
         setSession(null);
@@ -128,13 +137,7 @@ export function AuthProvider({ children }) {
       const demoMode = !isProduction;
       localStorage.setItem(STORAGE_KEY_EMAIL, email);
       localStorage.setItem(STORAGE_KEY_PASSWORD, encodePassword(password));
-      setSession({
-        email: match.email,
-        name: match.name,
-        role: match.role,
-        permissions: { canApprove: match.canApprove || match.role === 'superadmin', canManageUsers: match.canManageUsers || match.role === 'superadmin' },
-        isDemo: demoMode,
-      });
+      setSession(buildSession(match, demoMode));
       setDemo(demoMode);
       setLoginError('');
     } else {

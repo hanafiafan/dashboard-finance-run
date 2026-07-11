@@ -29,8 +29,8 @@ export function AppProvider({ children }) {
   }, []);
   const setState = useCallback((state) => update({ state }), [update]);
 
-  const loadDemo = useCallback(() => {
-    const ds = demoState();
+  const loadDemo = useCallback((session) => {
+    const ds = demoState({}, session);
     update({ state: ds, error: '' });
   }, [update]);
 

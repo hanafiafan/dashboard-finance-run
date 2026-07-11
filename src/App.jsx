@@ -78,7 +78,7 @@ function AppContent() {
     }
 
     if (demo || session.isDemo) {
-      loadDemo();
+      loadDemo(session);
       setStatus('ready');
       return;
     }
@@ -88,7 +88,7 @@ function AppContent() {
     getAppState(app.filters, session)
       .then(newState => { setState(newState); setStatus('ready'); })
       .catch(() => {
-        loadDemo();
+        loadDemo(session);
         setStatus('ready');
       });
   }, [session, loading, demo, loadDemo, setState]);

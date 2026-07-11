@@ -9,7 +9,8 @@ export default function UserManagement() {
   const [showAdd, setShowAdd] = useState(false);
   const [resetTarget, setResetTarget] = useState(null);
 
-  const isSuperadmin = session?.role === 'superadmin' || session?.role === 'finance';
+  const isSuperadmin = session?.role === 'superadmin';
+  const canManageUsers = session?.permissions?.canManageUsers;
 
   const refresh = () => setUsers(getStoredUsers());
 
@@ -46,7 +47,7 @@ export default function UserManagement() {
     <div className="user-mgmt">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
         <h3 style={{ margin: 0 }}>User Management</h3>
-        {isSuperadmin && (
+        {canManageUsers && (
           <button className="btn blue sm" onClick={() => setShowAdd(true)}>
             <UserPlus size={14} /> Add User
           </button>
@@ -75,10 +76,10 @@ export default function UserManagement() {
               <td style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>{u.createdAt ? new Date(u.createdAt).toLocaleDateString('id-ID') : '—'}</td>
               <td>
                 <div style={{ display: 'flex', gap: '0.3rem' }}>
-                  {isSuperadmin && (
+                  {canManageUsers && (
                     <button className="btn ghost sm" onClick={() => setResetTarget(u)} title="Reset password"><Key size={13} /></button>
                   )}
-                  {isSuperadmin && (
+                  {canManageUsers && (
                     <button className="btn ghost sm" onClick={() => handleDelete(u.email)} title="Delete" style={{ color: 'var(--rose)' }}><Trash2 size={13} /></button>
                   )}
                 </div>
@@ -107,6 +108,7 @@ export default function UserManagement() {
             <div className="field">
               <label>Role</label>
               <select name="role">
+                {isSuperadmin && <option value="superadmin">Super Admin</option>}
                 <option value="finance">Finance</option>
                 <option value="owner">Owner</option>
                 <option value="pic_brand">PIC Brand</option>

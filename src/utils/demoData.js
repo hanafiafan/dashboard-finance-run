@@ -1,7 +1,7 @@
-export function demoApi(action, args) {
-  const state = demoState(args[0] || {});
+export function demoApi(action, args, session) {
+  const state = demoState(args[0] || {}, session);
   if (action === 'getAppState') return state;
-  if (action === 'getRecords') return { rows: demoRows(args[0]), canEdit: true, canApprove: true };
+  if (action === 'getRecords') return { rows: demoRows(args[0]), canEdit: true, canApprove: args[0] === 'budget' };
   if (action === 'saveRecord') return { ok: true, record: args[1], created: !args[1].ID };
   if (action === 'deleteRecord') return { ok: true };
   if (action === 'approveBudget') return { ok: true };
@@ -9,7 +9,48 @@ export function demoApi(action, args) {
   return {};
 }
 
-export function demoState(filters = {}) {
+// Role permission matrix
+const ROLE_PERMISSIONS = {
+  superadmin: { canApprove: true, canManageUsers: true, canImport: true, canEditAll: true },
+  finance:    { canApprove: true, canManageUsers: true, canImport: true, canEditAll: true },
+  owner:      { canApprove: true, canManageUsers: false, canImport: false, canEditAll: false },
+  pic_brand:  { canApprove: false, canManageUsers: false, canImport: false, canEditAll: false },
+};
+
+const ALL_ENTITIES = ['budget', 'income', 'forecast', 'outcome', 'omzet', 'bank', 'service', 'payables', 'receivables'];
+const MASTER_ENTITIES = ['users', 'brands', 'sources', 'vendors', 'customers'];
+
+function buildEntities(role) {
+  const perms = ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.pic_brand;
+  const entities = {};
+
+  for (const e of ALL_ENTITIES) {
+    if (role === 'pic_brand') {
+      // PIC can only submit budget requests and view their own data
+      entities[e] = { canEdit: e === 'budget' };
+    } else if (role === 'owner') {
+      // Owner can view all, edit budget/income/forecast/outcome
+      entities[e] = { canEdit: ['budget', 'income', 'forecast', 'outcome'].includes(e) };
+    } else {
+      // superadmin & finance: full CRUD
+      entities[e] = { canEdit: true };
+    }
+  }
+
+  for (const e of MASTER_ENTITIES) {
+    if (role === 'superadmin') {
+      entities[e] = { canEdit: true };
+    } else if (role === 'finance') {
+      entities[e] = { canEdit: e !== 'users' };
+    } else {
+      entities[e] = { canEdit: false };
+    }
+  }
+
+  return entities;
+}
+
+export function demoState(filters = {}, session = null) {
   const allBrands = [
     { Company: 'CV HAN', Brand: 'HAN', 'Brand Key': 'HAN', Active: true, 'PIC Email': 'pic.han@example.com' },
     { Company: 'CV LBP', Brand: 'LBP', 'Brand Key': 'LBP', Active: true, 'PIC Email': 'pic.lbp@example.com' },
@@ -128,17 +169,21 @@ export function demoState(filters = {}) {
     Status: ['DP', 'Termin', 'Belum Dibayar'][Math.floor(Math.random() * 3)],
   })).slice(0, 6);
 
+  const role = session?.role || 'finance';
+  const perms = ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.pic_brand;
+
   return {
     authorized: true,
     generatedAt: new Date().toISOString(),
     appliedFilters: filters,
     app: { title: 'Dashboard Finance RUN', subtitle: 'Dashboard finance multi-company & multi-brand' },
     session: {
-      name: 'Demo Finance',
-      email: 'demo@finance.local',
-      role: 'finance',
-      permissions: { canApprove: true, canManageUsers: true },
+      name: session?.name || 'Demo Finance',
+      email: session?.email || 'demo@finance.local',
+      role,
+      permissions: { canApprove: perms.canApprove, canManageUsers: perms.canManageUsers, canImport: perms.canImport },
     },
+    entities: buildEntities(role),
     brands: visibleBrands,
     options: {
       companies: [...new Set(allBrands.map(b => b.Company))],

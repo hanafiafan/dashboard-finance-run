@@ -80,11 +80,6 @@ export function Master() {
     );
   }
 
-  // User management gets dedicated component
-  if (entity === 'users') {
-    return <UserManagement />;
-  }
-
   return (
     <>
       <div className="tabs">
@@ -99,59 +94,62 @@ export function Master() {
         ))}
       </div>
 
-      <div className="panel tight">
-        <div className="panel-head">
-          <div>
-            <h3>{ENTITY_LABELS[entity]}</h3>
-            <p>{number.format(filtered.length)} data</p>
+      {entity === 'users' ? (
+        <UserManagement />
+      ) : (
+        <>
+          <div className="panel tight">
+            <div className="panel-head">
+              <div>
+                <h3>{ENTITY_LABELS[entity]}</h3>
+                <p>{number.format(filtered.length)} data</p>
+              </div>
+              <div className="row-actions">
+                {canEdit && (
+                  <button className="btn blue" onClick={() => { setEditRow(null); setModalOpen(true); }}>
+                    <Plus size={16} /> Tambah
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="table-toolbar">
+              <div className="search-box">
+                <Search size={16} />
+                <input placeholder="Cari..." value={search} onChange={(e) => setSearch(e.target.value)} />
+              </div>
+            </div>
+            <DataTable
+              columns={TABLE_COLUMNS[entity]}
+              rows={filtered}
+              renderActions={canEdit ? (row) => (
+                <>
+                  <button className="icon-btn" onClick={() => { setEditRow(row); setModalOpen(true); }} title="Edit">
+                    <Pencil size={15} />
+                  </button>
+                  {row.ID && (
+                    <button className="icon-btn" onClick={() => handleDelete(row.ID)} title="Hapus">
+                      <Trash2 size={15} />
+                    </button>
+                  )}
+                </>
+              ) : null}
+            />
           </div>
-          <div className="row-actions">
-            {canEdit && (
-              <button className="btn blue" onClick={() => { setEditRow(null); setModalOpen(true); }}>
-                <Plus size={16} /> Tambah
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="table-toolbar">
-          <div className="search-box">
-            <Search size={16} />
-            <input placeholder="Cari..." value={search} onChange={(e) => setSearch(e.target.value)} />
-          </div>
-        </div>
-
-        <DataTable
-          columns={TABLE_COLUMNS[entity]}
-          rows={filtered}
-          renderActions={canEdit ? (row) => (
-            <>
-              <button className="icon-btn" onClick={() => { setEditRow(row); setModalOpen(true); }} title="Edit">
-                <Pencil size={15} />
-              </button>
-              {row.ID && (
-                <button className="icon-btn" onClick={() => handleDelete(row.ID)} title="Hapus">
-                  <Trash2 size={15} />
-                </button>
-              )}
-            </>
-          ) : null}
-        />
-      </div>
-
-      <Modal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title={`${editRow?.ID || editRow?.Email ? 'Edit' : 'Tambah'} ${ENTITY_LABELS[entity]}`}
-      >
-        <DynamicForm
-          fields={FORMS[entity] || []}
-          values={editRow || {}}
-          options={{ ...options, brands }}
-          onSubmit={handleSave}
-          onCancel={() => setModalOpen(false)}
-        />
-      </Modal>
+          <Modal
+            isOpen={modalOpen}
+            onClose={() => setModalOpen(false)}
+            title={`${editRow?.ID || editRow?.Email ? 'Edit' : 'Tambah'} ${ENTITY_LABELS[entity]}`}
+          >
+            <DynamicForm
+              fields={FORMS[entity] || []}
+              values={editRow || {}}
+              options={{ ...options, brands }}
+              onSubmit={handleSave}
+              onCancel={() => setModalOpen(false)}
+            />
+          </Modal>
+        </>
+      )}
     </>
   );
 }

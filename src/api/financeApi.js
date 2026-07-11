@@ -22,7 +22,7 @@ export async function getApiToken() {
 }
 
 export async function api(action, args = [], auth) {
-  if (auth?.isDemo) return demoApi(action, args);
+  if (auth?.isDemo) return demoApi(action, args, auth);
 
   const userEmail = auth?.email || localStorage.getItem('financeJoyboardEmail') || '';
   const loginCode = auth?.loginCode || localStorage.getItem('financeJoyboardLoginCode') || '';
@@ -65,7 +65,7 @@ export async function api(action, args = [], auth) {
 }
 
 export async function getAppState(filters = {}, auth) {
-  if (auth?.isDemo) return demoState(filters);
+  if (auth?.isDemo) return demoState(filters, auth);
   return api('getAppState', [filters], auth);
 }
 

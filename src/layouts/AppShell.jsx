@@ -102,7 +102,8 @@ export default function AppShell() {
     );
   }
 
-  const canApprove = state?.session?.permissions?.canApprove;
+  const canApprove = session?.permissions?.canApprove;
+  const canImport = session?.role === 'superadmin' || session?.role === 'finance';
 
   const renderView = () => {
     switch (app.view) {
@@ -156,7 +157,7 @@ export default function AppShell() {
               <span className={theme === 'light' ? 'active' : ''}><Sun size={14} /> Light</span>
               <span className={theme === 'dark' ? 'active' : ''}><Moon size={14} /> Dark</span>
             </div>
-            {canApprove && <button className="btn amber" onClick={handleImport}><DownloadCloud size={16} /> Import</button>}
+            {canImport && <button className="btn amber" onClick={handleImport}><DownloadCloud size={16} /> Import</button>}
             {app.entity && <button className="btn ghost" onClick={exportCurrentCsv}><Download size={16} /> CSV</button>}
             <button className="btn blue" onClick={handleRefresh} disabled={refreshing}>
               <RefreshCw size={16} className={refreshing ? 'spin' : ''} /> Refresh

@@ -17,7 +17,7 @@ export function Approval() {
   const rows = app.state?.dashboard?.tables?.pendingBudget || [];
   const charts = app.state?.dashboard?.charts;
 
-  const canApprove = app.state?.session?.permissions?.canApprove;
+  const canApprove = session?.permissions?.canApprove;
   const cols = ['Brand', 'Tgl Pengajuan', 'Tgl Dibutuhkan', 'Kategori', 'Keterangan', 'Nominal Pengajuan (Rp)', 'Prioritas', 'Status'];
 
   const handleApprove = async (id, status) => {
