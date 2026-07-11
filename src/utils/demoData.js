@@ -117,6 +117,12 @@ export function demoState(filters = {}, session = null) {
     { label: 'Rejected', value: 1 },
   ];
 
+  const priority = [
+    { label: 'High', value: 18 },
+    { label: 'Medium', value: 28 },
+    { label: 'Low', value: 12 },
+  ];
+
   const outcomeByCategory = [
     { label: 'Operasional', value: 45000000 },
     { label: 'Marketing', value: 38000000 },
@@ -215,6 +221,7 @@ export function demoState(filters = {}, session = null) {
         brandPerformance,
         bankBalance,
         budgetStatus,
+        priority,
         outcomeByCategory,
         omzetByMonth,
         payableAging,

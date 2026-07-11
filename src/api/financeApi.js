@@ -120,6 +120,14 @@ async function supabaseGetAppState(filters = {}, auth) {
   });
   const budgetStatus = Object.entries(statusCounts).map(([label, value]) => ({ label, value }));
 
+  // Budget by priority
+  const prioCounts = {};
+  budgetRows.forEach(r => {
+    const p = r.prioritas || 'Medium';
+    prioCounts[p] = (prioCounts[p] || 0) + 1;
+  });
+  const priority = Object.entries(prioCounts).map(([label, value]) => ({ label, value }));
+
   // Outcome by category
   const catCounts = {};
   outcomeRows.forEach(r => {
@@ -183,6 +191,7 @@ async function supabaseGetAppState(filters = {}, auth) {
         brandPerformance,
         bankBalance: bankBalanceChart,
         budgetStatus,
+        priority,
         outcomeByCategory,
         omzetByMonth,
         payableAging,

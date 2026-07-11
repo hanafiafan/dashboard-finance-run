@@ -418,7 +418,7 @@ p, span { color: inherit; }
    ============================================================ */
 .metric-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 1rem;
 }
 
@@ -464,13 +464,14 @@ p, span { color: inherit; }
 }
 
 .metric-card .value {
-  font-size: clamp(1.3rem, 2.5vw, 1.7rem);
+  font-size: clamp(0.95rem, 2vw, 1.55rem);
   font-weight: 900;
   letter-spacing: -0.03em;
   font-family: 'JetBrains Mono', monospace;
   word-break: keep-all;
   white-space: nowrap;
-  overflow: visible;
+  overflow: hidden;
+  text-overflow: ellipsis;
   line-height: 1.2;
   color: var(--text-primary);
 }
