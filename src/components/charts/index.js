@@ -1,19 +1,3 @@
-import {
-  Chart as ChartJS,
-  RadialLinearScale, PointElement, LineElement, Filler,
-  Tooltip, Legend, ArcElement, CategoryScale, LinearScale,
-  BarElement, Title,
-} from 'chart.js';
-
-// Register ALL chart components
-ChartJS.register(
-  RadialLinearScale,
-  PointElement, LineElement, Filler,
-  Tooltip, Legend, ArcElement,
-  CategoryScale, LinearScale,
-  BarElement, Title
-);
-
 export { default as Radar } from './RadarChart';
 export { default as Polar } from './PolarChart';
 export { default as StackedBar } from './StackedBar';

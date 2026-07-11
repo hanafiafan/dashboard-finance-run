@@ -10,20 +10,40 @@ const DEMO_CREDENTIALS = [
   { email: 'pic@runfinance.com', password: 'pic123', name: 'PIC Brand', role: 'pic_brand', canApprove: false, canManageUsers: false },
 ];
 
+const STORAGE_KEY_OVERRIDES = 'financeRunCredentialsOverrides';
+const STORAGE_KEY_USERS = 'financeRunUsers';
 const STORAGE_KEY_EMAIL = 'financeRunEmail';
 const STORAGE_KEY_PASSWORD = 'financeRunPassword';
-const STORAGE_KEY_USERS = 'financeRunUsers';
 
-function loadLegacySession() {
+// ponytail: base64 obfuscation, not encryption — prevents casual shoulder-surfing in devtools
+const encodePassword = (pw) => btoa(unescape(encodeURIComponent(pw)));
+const decodePassword = (encoded) => {
+  try { return decodeURIComponent(escape(atob(encoded))); } catch { return ''; }
+};
+
+const isProduction = typeof window !== 'undefined' && !window.location.hostname.match(/^(localhost|127\.0\.0\.1)$/);
+
+export function getDemoCredentials() {
   try {
-    const oldEmail = localStorage.getItem('financeJoyboardEmail');
-    const oldCode = localStorage.getItem('financeJoyboardLoginCode');
-    if (oldEmail && !localStorage.getItem(STORAGE_KEY_EMAIL)) {
-      localStorage.setItem(STORAGE_KEY_EMAIL, oldEmail);
-      localStorage.setItem(STORAGE_KEY_PASSWORD, oldCode || '');
-      localStorage.removeItem('financeJoyboardEmail');
-      localStorage.removeItem('financeJoyboardLoginCode');
-    }
+    const overridesRaw = localStorage.getItem(STORAGE_KEY_OVERRIDES);
+    const overrides = overridesRaw ? JSON.parse(overridesRaw) : {};
+    return DEMO_CREDENTIALS.map(c => {
+      if (overrides[c.email]) {
+        return { ...c, password: overrides[c.email], isHardcoded: true };
+      }
+      return { ...c, isHardcoded: true };
+    });
+  } catch {
+    return DEMO_CREDENTIALS.map(c => ({ ...c, isHardcoded: true }));
+  }
+}
+
+function saveDemoCredentialOverride(email, password) {
+  try {
+    const overridesRaw = localStorage.getItem(STORAGE_KEY_OVERRIDES);
+    const overrides = overridesRaw ? JSON.parse(overridesRaw) : {};
+    overrides[email] = password;
+    localStorage.setItem(STORAGE_KEY_OVERRIDES, JSON.stringify(overrides));
   } catch {}
 }
 
@@ -46,8 +66,10 @@ export function resetUserPassword(email, newPassword) {
     users[idx].password = newPassword;
     saveStoredUsers(users);
   }
-  const dc = DEMO_CREDENTIALS.find(c => c.email === email);
-  if (dc) dc.password = newPassword;
+  const isDemoUser = DEMO_CREDENTIALS.some(c => c.email === email);
+  if (isDemoUser) {
+    saveDemoCredentialOverride(email, newPassword);
+  }
 }
 
 export function addUser(user) {
@@ -68,22 +90,23 @@ export function AuthProvider({ children }) {
   const [loginError, setLoginError] = useState('');
 
   useEffect(() => {
-    loadLegacySession();
     const email = localStorage.getItem(STORAGE_KEY_EMAIL);
-    const password = localStorage.getItem(STORAGE_KEY_PASSWORD);
-    if (email && password) {
+    const encoded = localStorage.getItem(STORAGE_KEY_PASSWORD);
+    if (email && encoded) {
+      const password = decodePassword(encoded);
       const stored = getStoredUsers();
       const allUsers = [...DEMO_CREDENTIALS, ...stored];
       const match = allUsers.find(c => c.email === email && c.password === password);
       if (match) {
+        const demoMode = !isProduction;
         setSession({
           email: match.email,
           name: match.name,
           role: match.role,
           permissions: { canApprove: match.canApprove || match.role === 'superadmin', canManageUsers: match.canManageUsers || match.role === 'superadmin' },
-          isDemo: true, // ALL logins use demo mode — no live API
+          isDemo: demoMode,
         });
-        setDemo(true);
+        setDemo(demoMode);
       } else {
         setSession(null);
       }
@@ -96,16 +119,17 @@ export function AuthProvider({ children }) {
     const allUsers = [...DEMO_CREDENTIALS, ...stored];
     const match = allUsers.find(c => c.email === email && c.password === password);
     if (match) {
+      const demoMode = !isProduction;
       localStorage.setItem(STORAGE_KEY_EMAIL, email);
-      localStorage.setItem(STORAGE_KEY_PASSWORD, password);
+      localStorage.setItem(STORAGE_KEY_PASSWORD, encodePassword(password));
       setSession({
         email: match.email,
         name: match.name,
         role: match.role,
         permissions: { canApprove: match.canApprove || match.role === 'superadmin', canManageUsers: match.canManageUsers || match.role === 'superadmin' },
-        isDemo: true, // ALL logins use demo mode — no live API
+        isDemo: demoMode,
       });
-      setDemo(true);
+      setDemo(demoMode);
       setLoginError('');
     } else {
       setLoginError('Email atau password salah.');
@@ -113,6 +137,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const startDemo = useCallback(() => {
+    if (isProduction) return;
     setSession({
       email: 'demo@finance.local',
       name: 'Demo Finance',
@@ -133,7 +158,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ session, loading, demo, loginError, login, startDemo, logout }}>
+    <AuthContext.Provider value={{ session, loading, demo, loginError, login, startDemo, logout, isProduction }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { LogIn, Sparkles, Eye, EyeOff, Shield, Key, User, Building2 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 export function Login({ onLogin, onDemo }) {
+  const { isProduction } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -59,22 +61,26 @@ export function Login({ onLogin, onDemo }) {
           <button className="btn blue" onClick={handleLogin}>
             <LogIn size={18} /> Masuk
           </button>
-          <button className="btn ghost" onClick={onDemo}>
-            <Sparkles size={18} /> Preview Demo
-          </button>
+          {!isProduction && (
+            <button className="btn ghost" onClick={onDemo}>
+              <Sparkles size={18} /> Preview Demo
+            </button>
+          )}
         </div>
 
-        <div className="login-hints">
-          <div className="hint-card">
-            <Shield size={13} /><span><strong>Finance</strong> — finance@domain.com / admin123</span>
+        {!isProduction && (
+          <div className="login-hints">
+            <div className="hint-card">
+              <Shield size={13} /><span><strong>Finance</strong> — finance@domain.com / admin123</span>
+            </div>
+            <div className="hint-card">
+              <Building2 size={13} /><span><strong>Owner</strong> — owner@domain.com / owner123</span>
+            </div>
+            <div className="hint-card">
+              <User size={13} /><span><strong>PIC</strong> — pic@domain.com / pic123</span>
+            </div>
           </div>
-          <div className="hint-card">
-            <Building2 size={13} /><span><strong>Owner</strong> — owner@domain.com / owner123</span>
-          </div>
-          <div className="hint-card">
-            <User size={13} /><span><strong>PIC</strong> — pic@domain.com / pic123</span>
-          </div>
-        </div>
+        )}
       </section>
     </div>
   );

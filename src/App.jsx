@@ -72,21 +72,16 @@ function AppContent() {
   useEffect(() => {
     if (loading) return;
 
-    // No session → show login
     if (!session) {
       setStatus('login');
       return;
     }
 
-    // Demo mode or login with demo credentials → load demo data
     if (demo || session.isDemo) {
       loadDemo();
-      setStatus('ready');
-      return;
     }
 
-    // Fallback: no session → login
-    setStatus('login');
+    setStatus('ready');
   }, [session, loading, demo, loadDemo]);
 
   // Sync: if app.state exists and we're still init → mark ready
