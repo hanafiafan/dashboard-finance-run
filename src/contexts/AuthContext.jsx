@@ -2,12 +2,12 @@ import { useState, createContext, useContext, useCallback, useEffect } from 'rea
 
 const AuthContext = createContext(null);
 
-// Demo hardcoded credentials
+// Demo hardcoded credentials — all logins use demo mode since no live API
 const DEMO_CREDENTIALS = [
-  { email: 'finance@domain.com', password: 'admin123', name: 'Admin Finance', role: 'finance', canApprove: true, canManageUsers: true },
-  { email: 'owner@domain.com', password: 'owner123', name: 'Company Owner', role: 'owner', canApprove: true, canManageUsers: false },
-  { email: 'pic@domain.com', password: 'pic123', name: 'PIC Brand', role: 'pic_brand', canApprove: false, canManageUsers: false },
   { email: 'admin@runfinance.com', password: 'superadmin123', name: 'Super Admin', role: 'superadmin', canApprove: true, canManageUsers: true },
+  { email: 'finance@runfinance.com', password: 'finance123', name: 'Admin Finance', role: 'finance', canApprove: true, canManageUsers: true },
+  { email: 'owner@runfinance.com', password: 'owner123', name: 'Company Owner', role: 'owner', canApprove: true, canManageUsers: false },
+  { email: 'pic@runfinance.com', password: 'pic123', name: 'PIC Brand', role: 'pic_brand', canApprove: false, canManageUsers: false },
 ];
 
 const STORAGE_KEY_EMAIL = 'financeRunEmail';
@@ -16,7 +16,6 @@ const STORAGE_KEY_USERS = 'financeRunUsers';
 
 function loadLegacySession() {
   try {
-    // Migrate from old keys if they exist
     const oldEmail = localStorage.getItem('financeJoyboardEmail');
     const oldCode = localStorage.getItem('financeJoyboardLoginCode');
     if (oldEmail && !localStorage.getItem(STORAGE_KEY_EMAIL)) {
@@ -41,14 +40,12 @@ export function saveStoredUsers(users) {
 }
 
 export function resetUserPassword(email, newPassword) {
-  // Update in stored users
   const users = getStoredUsers();
   const idx = users.findIndex(u => u.email === email);
   if (idx >= 0) {
     users[idx].password = newPassword;
     saveStoredUsers(users);
   }
-  // Update in demo credentials (in-memory)
   const dc = DEMO_CREDENTIALS.find(c => c.email === email);
   if (dc) dc.password = newPassword;
 }
@@ -75,7 +72,6 @@ export function AuthProvider({ children }) {
     const email = localStorage.getItem(STORAGE_KEY_EMAIL);
     const password = localStorage.getItem(STORAGE_KEY_PASSWORD);
     if (email && password) {
-      // Check against hardcoded + stored users
       const stored = getStoredUsers();
       const allUsers = [...DEMO_CREDENTIALS, ...stored];
       const match = allUsers.find(c => c.email === email && c.password === password);
@@ -85,10 +81,10 @@ export function AuthProvider({ children }) {
           name: match.name,
           role: match.role,
           permissions: { canApprove: match.canApprove || match.role === 'superadmin', canManageUsers: match.canManageUsers || match.role === 'superadmin' },
-          isDemo: false,
+          isDemo: true, // ALL logins use demo mode — no live API
         });
+        setDemo(true);
       } else {
-        // Stored but password mismatch — clear
         setSession(null);
       }
     }
@@ -107,9 +103,9 @@ export function AuthProvider({ children }) {
         name: match.name,
         role: match.role,
         permissions: { canApprove: match.canApprove || match.role === 'superadmin', canManageUsers: match.canManageUsers || match.role === 'superadmin' },
-        isDemo: false,
+        isDemo: true, // ALL logins use demo mode — no live API
       });
-      setDemo(false);
+      setDemo(true);
       setLoginError('');
     } else {
       setLoginError('Email atau password salah.');
@@ -148,3 +144,4 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 }
+

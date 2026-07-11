@@ -3,58 +3,101 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AppProvider, useApp } from './contexts/AppContext';
 import { Login } from './pages/Login';
 import AppShell from './layouts/AppShell';
-import { getAppState } from './api/financeApi';
 import { RefreshCw } from 'lucide-react';
 import ErrorBoundary from './components/ui/ErrorBoundary';
 
-// Chart.js — MUST register before any chart component renders
+// Chart.js — MUST register ALL controllers + elements before any chart renders
 import {
   Chart as ChartJS,
-  RadialLinearScale, PointElement, LineElement, Filler,
-  Tooltip, Legend, ArcElement, CategoryScale, LinearScale,
-  BarElement, Title,
+  // Controllers (REQUIRED for tree-shaking in production)
+  LineController,
+  BarController,
+  DoughnutController,
+  PieController,
+  PolarAreaController,
+  RadarController,
+  ScatterController,
+  BubbleController,
+  // Elements
+  ArcElement,
+  BarElement,
+  LineElement,
+  PointElement,
+  // Scales
+  CategoryScale,
+  LinearScale,
+  RadialLinearScale,
+  LogarithmicScale,
+  TimeScale,
+  // Plugins
+  Filler,
+  Legend,
+  Title,
+  Tooltip,
 } from 'chart.js';
 ChartJS.register(
-  RadialLinearScale, PointElement, LineElement, Filler,
-  Tooltip, Legend, ArcElement, CategoryScale, LinearScale,
-  BarElement, Title
+  // Controllers
+  LineController,
+  BarController,
+  DoughnutController,
+  PieController,
+  PolarAreaController,
+  RadarController,
+  ScatterController,
+  BubbleController,
+  // Elements
+  ArcElement,
+  BarElement,
+  LineElement,
+  PointElement,
+  // Scales
+  CategoryScale,
+  LinearScale,
+  RadialLinearScale,
+  LogarithmicScale,
+  TimeScale,
+  // Plugins
+  Filler,
+  Legend,
+  Title,
+  Tooltip,
 );
 
 function AppContent() {
-  const { session, loading, login, startDemo, demo } = useAuth();
-  const { app, setState, loadDemo } = useApp();
-  const [status, setStatus] = useState('init'); // init|loading|login|ready
-  const [trigger, setTrigger] = useState(0);
+  const { session, loading, demo, login, startDemo } = useAuth();
+  const { app, loadDemo } = useApp();
+  const [status, setStatus] = useState('init'); // init → login → ready
 
-  // STEP 1: Wait for auth to load
+  // Wait for auth to load, then decide
   useEffect(() => {
     if (loading) return;
-    if (!session) return setStatus('login');
 
-    // If we have a session but no state yet
+    // No session → show login
+    if (!session) {
+      setStatus('login');
+      return;
+    }
+
+    // Demo mode or login with demo credentials → load demo data
     if (demo || session.isDemo) {
       loadDemo();
-      // Don't set status yet — wait for useEffect on app.state
-    } else {
-      setStatus('loading');
-      getAppState(app.filters, session)
-        .then(state => {
-          setState(state);
-          setStatus('ready');
-        })
-        .catch(() => setStatus('login'));
+      setStatus('ready');
+      return;
     }
-  }, [session, loading, demo]);
 
-  // STEP 2: When app.state updates, check if we should transition to ready
+    // Fallback: no session → login
+    setStatus('login');
+  }, [session, loading, demo, loadDemo]);
+
+  // Sync: if app.state exists and we're still init → mark ready
   useEffect(() => {
-    if (app.state?.authorized && (status === 'init' || status === 'login')) {
+    if (app.state && status === 'init') {
       setStatus('ready');
     }
   }, [app.state, status]);
 
   // Loading spinner
-  if (loading || status === 'init' || status === 'loading') {
+  if (loading || status === 'init') {
     return (
       <div className="boot">
         <div className="boot-panel">
@@ -93,3 +136,4 @@ export default function App() {
     </AuthProvider>
   );
 }
+
