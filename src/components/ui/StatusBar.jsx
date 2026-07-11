@@ -12,7 +12,7 @@ export default function StatusBar({ app, demo, lastSyncAt }) {
     {
       icon: demo ? WifiOff : Wifi,
       label: 'Connection',
-      value: demo ? 'Demo Mode' : 'Google Sheets',
+      value: demo ? 'Demo Mode' : 'Supabase',
       ok: !demo,
       color: demo ? 'var(--amber)' : 'var(--green)',
     },
@@ -33,7 +33,7 @@ export default function StatusBar({ app, demo, lastSyncAt }) {
     {
       icon: demo ? CloudOff : Cloud,
       label: 'API',
-      value: demo ? 'Local Demo' : 'Apps Script',
+      value: demo ? 'Local Demo' : 'PostgreSQL',
       ok: true,
       color: demo ? 'var(--text-tertiary)' : 'var(--blue)',
     },
