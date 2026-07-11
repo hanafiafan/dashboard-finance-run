@@ -176,13 +176,7 @@ export function AuthProvider({ children }) {
 
   const startDemo = useCallback(() => {
     if (isProduction) return;
-    setSession({
-      email: 'demo@finance.local',
-      name: 'Demo Finance',
-      role: 'finance',
-      permissions: { canApprove: true, canManageUsers: true },
-      isDemo: true,
-    });
+    setSession(buildSession({ email: 'demo@finance.local', name: 'Demo Finance', role: 'finance', canApprove: true, canManageUsers: true }, true));
     setDemo(true);
     setLoginError('');
   }, []);

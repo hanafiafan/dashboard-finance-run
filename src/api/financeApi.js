@@ -1,4 +1,4 @@
-import { demoState, demoRows, demoApi } from '../utils/demoData';
+import { demoState, demoRows, demoApi, buildEntities } from '../utils/demoData';
 import { supabase, TABLE_MAP, dbToUi, uiToDb } from './supabaseClient';
 
 // ── Supabase live queries ──────────────────────────────────
@@ -11,7 +11,7 @@ async function supabaseGetAppState(filters = {}, auth) {
     return query;
   };
 
-  const [brands, budget, income, outcome, omzet, bank, payables, receivables] = await Promise.all([
+  const [brands, budget, income, outcome, omzet, bank, payables, receivables, forecast, service] = await Promise.all([
     supabase.from('fin_brands').select('*').eq('active', true),
     apply(supabase.from('fin_budget').select('*')),
     apply(supabase.from('fin_income').select('*')),
@@ -20,55 +20,145 @@ async function supabaseGetAppState(filters = {}, auth) {
     apply(supabase.from('fin_bank').select('*')),
     apply(supabase.from('fin_payables').select('*')),
     apply(supabase.from('fin_receivables').select('*')),
+    apply(supabase.from('fin_forecast_cashin').select('*')),
+    apply(supabase.from('fin_service').select('*')),
   ]);
 
   const brandRows = (brands.data || []).map(b => ({
     Company: b.company, Brand: b.brand, 'Brand Key': b.brand_key, 'PIC Email': b.pic_email,
   }));
+  const companies = [...new Set(brandRows.map(b => b.Company))];
 
-  const pendingBudget = (budget.data || [])
+  const budgetRows = budget.data || [];
+  const incomeRows = income.data || [];
+  const outcomeRows = outcome.data || [];
+  const omzetRows = omzet.data || [];
+  const bankRows = bank.data || [];
+  const payableRows = payables.data || [];
+  const receivableRows = receivables.data || [];
+
+  const pendingBudget = budgetRows
     .filter(r => r.status === 'Pending')
     .map(r => dbToUi('budget', r));
 
-  const totalIncome = (income.data || []).reduce((s, r) => s + Number(r.nominal || 0), 0);
-  const totalOutcome = (outcome.data || []).reduce((s, r) => s + Number(r.jumlah || 0) + Number(r.biaya || 0), 0);
-  const totalPayables = (payables.data || []).reduce((s, r) => s + Number(r.total_hutang || 0) - Number(r.total_dibayar || 0), 0);
-  const totalReceivables = (receivables.data || []).reduce((s, r) => s + Number(r.total_piutang || 0) - Number(r.total_diterima || 0), 0);
+  const dueSoon = budgetRows
+    .filter(r => r.tgl_dibutuhkan && r.status !== 'Paid')
+    .sort((a, b) => (a.tgl_dibutuhkan || '').localeCompare(b.tgl_dibutuhkan || ''))
+    .slice(0, 6)
+    .map(r => dbToUi('budget', r));
 
-  const omzetData = omzet.data || [];
-  const totalTarget = omzetData.reduce((s, r) => s + Number(r.target_omzet || 0), 0);
-  const totalRealisasi = omzetData.reduce((s, r) => s + Number(r.realisasi_omzet || 0), 0);
+  // Summary — matching demo shape (dashboard.summary.*)
+  const cashIn = incomeRows.reduce((s, r) => s + Number(r.nominal || 0), 0);
+  const cashOut = outcomeRows.reduce((s, r) => s + Number(r.jumlah || 0) + Number(r.biaya || 0), 0);
+  const netCash = cashIn - cashOut;
+  const bankBalance = bankRows.reduce((s, r) => s + Number(r.saldo_awal || 0) + Number(r.pemasukan || 0) - Number(r.pengeluaran || 0), 0);
+  const budgetRequested = budgetRows.reduce((s, r) => s + Number(r.nominal_pengajuan || 0), 0);
+  const pendingApproval = pendingBudget.length;
+  const payableOutstanding = payableRows.reduce((s, r) => s + Number(r.total_hutang || 0) - Number(r.total_dibayar || 0), 0);
+  const totalTarget = omzetRows.reduce((s, r) => s + Number(r.target_omzet || 0), 0);
+  const totalRealisasi = omzetRows.reduce((s, r) => s + Number(r.realisasi_omzet || 0), 0);
+  const omzetAchievement = totalTarget > 0 ? totalRealisasi / totalTarget : 0;
+  const approvedCount = budgetRows.filter(r => r.status === 'Approved' || r.status === 'Paid').length;
+  const approvalRate = budgetRows.length > 0 ? approvedCount / budgetRows.length : 0;
 
-  const bankData = bank.data || [];
-  const totalSaldo = bankData.reduce((s, r) => s + Number(r.saldo_awal || 0) + Number(r.pemasukan || 0) - Number(r.pengeluaran || 0), 0);
+  // Charts — build from real data
+  // Monthly cashflow: group income/outcome by month
+  const monthMap = {};
+  incomeRows.forEach(r => {
+    const m = (r.tanggal || '').slice(0, 7);
+    if (!m) return;
+    if (!monthMap[m]) monthMap[m] = { label: m, cashIn: 0, cashOut: 0, forecastIn: 0, netCash: 0 };
+    monthMap[m].cashIn += Number(r.nominal || 0);
+  });
+  outcomeRows.forEach(r => {
+    const m = (r.tanggal || '').slice(0, 7);
+    if (!m) return;
+    if (!monthMap[m]) monthMap[m] = { label: m, cashIn: 0, cashOut: 0, forecastIn: 0, netCash: 0 };
+    monthMap[m].cashOut += Number(r.jumlah || 0) + Number(r.biaya || 0);
+  });
+  (forecast.data || []).forEach(r => {
+    const m = (r.estimasi_cair || '').slice(0, 7);
+    if (!m) return;
+    if (!monthMap[m]) monthMap[m] = { label: m, cashIn: 0, cashOut: 0, forecastIn: 0, netCash: 0 };
+    monthMap[m].forecastIn += Number(r.nominal_estimasi || 0);
+  });
+  const monthlyCashFlow = Object.values(monthMap).sort((a, b) => a.label.localeCompare(b.label));
+  monthlyCashFlow.forEach(m => { m.netCash = m.cashIn - m.cashOut; });
 
-  const priorityCounts = { High: 0, Medium: 0, Low: 0 };
-  (budget.data || []).filter(r => r.status === 'Pending').forEach(r => {
-    const p = r.prioritas || 'Medium';
-    priorityCounts[p] = (priorityCounts[p] || 0) + 1;
+  // Brand performance
+  const brandPerfMap = {};
+  brandRows.forEach(b => {
+    brandPerfMap[b['Brand Key']] = { label: b['Brand Key'], company: b.Company, cashIn: 0, cashOut: 0, budget: 0, netCash: 0, omzetAchievement: 0 };
+  });
+  incomeRows.forEach(r => { if (brandPerfMap[r.brand_key]) brandPerfMap[r.brand_key].cashIn += Number(r.nominal || 0); });
+  outcomeRows.forEach(r => { if (brandPerfMap[r.brand_key]) brandPerfMap[r.brand_key].cashOut += Number(r.jumlah || 0) + Number(r.biaya || 0); });
+  budgetRows.forEach(r => { if (brandPerfMap[r.brand_key]) brandPerfMap[r.brand_key].budget += Number(r.nominal_pengajuan || 0); });
+  const brandOmzetMap = {};
+  omzetRows.forEach(r => {
+    if (!brandOmzetMap[r.brand_key]) brandOmzetMap[r.brand_key] = { target: 0, real: 0 };
+    brandOmzetMap[r.brand_key].target += Number(r.target_omzet || 0);
+    brandOmzetMap[r.brand_key].real += Number(r.realisasi_omzet || 0);
+  });
+  const brandPerformance = Object.values(brandPerfMap).map(b => {
+    b.netCash = b.cashIn - b.cashOut;
+    const om = brandOmzetMap[b.label];
+    b.omzetAchievement = om && om.target > 0 ? om.real / om.target : 0;
+    return b;
+  });
+
+  // Bank balance chart
+  const bankBalanceChart = bankRows.map(r => ({
+    label: `${r.bank} (${r.brand_key})`,
+    value: Number(r.saldo_awal || 0) + Number(r.pemasukan || 0) - Number(r.pengeluaran || 0),
+  }));
+
+  // Budget status chart
+  const statusCounts = {};
+  budgetRows.forEach(r => {
+    const s = r.status || 'Pending';
+    statusCounts[s] = (statusCounts[s] || 0) + 1;
+  });
+  const budgetStatus = Object.entries(statusCounts).map(([label, value]) => ({ label, value }));
+
+  // Outcome by category
+  const catCounts = {};
+  outcomeRows.forEach(r => {
+    const c = r.kategori || 'Lain-lain';
+    catCounts[c] = (catCounts[c] || 0) + Number(r.jumlah || 0) + Number(r.biaya || 0);
+  });
+  const outcomeByCategory = Object.entries(catCounts).map(([label, value]) => ({ label, value }));
+
+  // Omzet by month
+  const omzetMonthMap = {};
+  omzetRows.forEach(r => {
+    const key = r.bulan || '';
+    if (!omzetMonthMap[key]) omzetMonthMap[key] = { label: key, target: 0, real: 0 };
+    omzetMonthMap[key].target += Number(r.target_omzet || 0);
+    omzetMonthMap[key].real += Number(r.realisasi_omzet || 0);
+  });
+  const omzetByMonth = Object.values(omzetMonthMap);
+
+  // Payable aging
+  const payableAging = [
+    { label: '0-30 hari', value: 0 },
+    { label: '31-60 hari', value: 0 },
+    { label: '61-90 hari', value: 0 },
+    { label: '90+ hari', value: 0 },
+  ];
+  payableRows.forEach(r => {
+    const sisa = Number(r.total_hutang || 0) - Number(r.total_dibayar || 0);
+    if (sisa <= 0) return;
+    payableAging[0].value += sisa;
   });
 
   return {
     generatedAt: new Date().toISOString(),
     brands: brandRows,
-    dashboard: {
-      generatedAt: new Date().toISOString(),
-      kpis: {
-        totalIncome, totalOutcome, netCashflow: totalIncome - totalOutcome,
-        totalPayables, totalReceivables, totalSaldo,
-        omzetTarget: totalTarget, omzetRealisasi: totalRealisasi,
-        pendingBudget: pendingBudget.length,
-      },
-      tables: { pendingBudget },
-      charts: {
-        priority: Object.entries(priorityCounts).map(([label, value]) => ({ label, value })),
-        cashflow: [],
-      },
-    },
-    entities: buildEntitiesFromRole(auth?.role),
+    entities: buildEntities(auth?.role),
     options: {
-      categories: ['Marketing', 'Operasional', 'Produksi', 'Gaji', 'Lain-lain'],
-      banks: ['BCA', 'BNI', 'BRI', 'Mandiri', 'CIMB', 'Danamon'],
+      companies,
+      categories: ['Marketing', 'Operasional', 'Produksi', 'Gaji dan Upah', 'Sewa', 'Aset', 'Hutang', 'Lain-lain'],
+      banks: ['BCA', 'BNI', 'BRI', 'Mandiri', 'BSI', 'Kas Kecil', 'E-wallet'],
       priorities: ['High', 'Medium', 'Low'],
       budgetStatuses: ['Pending', 'Approved', 'Need Revision', 'Rejected', 'Paid'],
       paymentTypes: ['Transfer', 'Cash', 'Giro', 'Kartu Kredit'],
@@ -76,19 +166,31 @@ async function supabaseGetAppState(filters = {}, auth) {
       months: ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],
       roles: ['superadmin', 'finance', 'owner', 'pic_brand'],
     },
+    dashboard: {
+      generatedAt: new Date().toISOString(),
+      summary: {
+        cashIn, cashOut, netCash, bankBalance,
+        budgetRequested, pendingApproval,
+        budgetOutstanding: payableOutstanding,
+        payableOutstanding,
+        omzetAchievement,
+        omzetReal: totalRealisasi,
+        omzetTarget: totalTarget,
+        approvalRate,
+      },
+      charts: {
+        monthlyCashFlow,
+        brandPerformance,
+        bankBalance: bankBalanceChart,
+        budgetStatus,
+        outcomeByCategory,
+        omzetByMonth,
+        payableAging,
+        budgetByCategory: outcomeByCategory,
+      },
+      tables: { pendingBudget, dueSoon },
+    },
   };
-}
-
-function buildEntitiesFromRole(role) {
-  const all = role === 'superadmin' || role === 'finance';
-  const entities = {};
-  for (const key of Object.keys(TABLE_MAP)) {
-    entities[key] = { canEdit: all || false };
-  }
-  if (role === 'owner') {
-    entities.budget.canEdit = true;
-  }
-  return entities;
 }
 
 async function supabaseGetRecords(entity, filters = {}, auth) {
@@ -172,5 +274,3 @@ export async function importFromSources(auth) {
   if (auth?.isDemo) return { ok: true, results: [{ brand: 'Demo', imported: 24 }] };
   return { ok: true, results: [{ brand: 'Supabase', imported: 0 }] };
 }
-
-// ponytail: removed Apps Script proxy, Supabase is the live backend now

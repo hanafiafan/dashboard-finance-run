@@ -20,7 +20,7 @@ const ROLE_PERMISSIONS = {
 const ALL_ENTITIES = ['budget', 'income', 'forecast', 'outcome', 'omzet', 'bank', 'service', 'payables', 'receivables'];
 const MASTER_ENTITIES = ['users', 'brands', 'sources', 'vendors', 'customers'];
 
-function buildEntities(role) {
+export function buildEntities(role) {
   const perms = ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.pic_brand;
   const entities = {};
 

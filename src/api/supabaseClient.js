@@ -103,10 +103,36 @@ export function dbToUi(entity, row) {
   return out;
 }
 
+// ponytail: FORMS keys differ from TABLE_COLUMNS display names in some entities
+// This maps form keys that don't match COL_MAP UI names → db columns
+const FORM_KEY_ALIASES = {
+  budget: {
+    'Nominal Pengajuan': 'nominal_pengajuan',
+    'Nominal Dibayar': 'nominal_dibayar',
+    'Feedback Finance': 'feedback_finance',
+    'Dokumen URL': 'dokumen_url',
+    'Vendor': 'vendor_name',
+  },
+  outcome: {
+    'Jumlah': 'jumlah',
+    'Biaya': 'biaya',
+  },
+  income: {
+    'Catatan': 'catatan',
+  },
+  forecast: {
+    'Catatan': 'catatan',
+  },
+  service: {
+    'Catatan': 'catatan',
+  },
+};
+
 // Convert UI form data → DB row (display labels → snake_case)
 export function uiToDb(entity, formData) {
   const map = COL_MAP[entity];
   if (!map) return formData;
+  const aliases = FORM_KEY_ALIASES[entity] || {};
   const reverse = {};
   for (const [dbCol, uiCol] of Object.entries(map)) {
     reverse[uiCol] = dbCol;
@@ -115,7 +141,7 @@ export function uiToDb(entity, formData) {
   const out = {};
   for (const [key, val] of Object.entries(formData)) {
     if (key === 'ID' || key === 'id') continue;
-    const dbCol = reverse[key] || key;
+    const dbCol = aliases[key] || reverse[key] || key;
     out[dbCol] = val;
   }
   return out;

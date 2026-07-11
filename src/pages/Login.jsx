@@ -3,18 +3,23 @@ import { LogIn, Sparkles, Eye, EyeOff, Shield, Key, User, Building2 } from 'luci
 import { useAuth } from '../contexts/AuthContext';
 
 export function Login({ onLogin, onDemo }) {
-  const { isProduction } = useAuth();
+  const { isProduction, loginError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPw, setShowPw] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email.trim()) return setError('Masukkan email.');
     if (!password.trim()) return setError('Masukkan password.');
     setError('');
-    onLogin(email.trim().toLowerCase(), password.trim());
+    setLoading(true);
+    await onLogin(email.trim().toLowerCase(), password.trim());
+    setLoading(false);
   };
+
+  const displayError = error || loginError;
 
   return (
     <div className="login-screen">
@@ -39,6 +44,7 @@ export function Login({ onLogin, onDemo }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+              disabled={loading}
             />
           </div>
           <div className="login-field">
@@ -49,20 +55,21 @@ export function Login({ onLogin, onDemo }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+              disabled={loading}
             />
             <button className="pw-toggle" onClick={() => setShowPw(!showPw)} tabIndex={-1}>
               {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
-          {error && <p className="login-error">{error}</p>}
+          {displayError && <p className="login-error">{displayError}</p>}
         </div>
 
         <div className="login-actions">
-          <button className="btn blue" onClick={handleLogin}>
-            <LogIn size={18} /> Masuk
+          <button className="btn blue" onClick={handleLogin} disabled={loading}>
+            <LogIn size={18} /> {loading ? 'Memproses...' : 'Masuk'}
           </button>
           {!isProduction && (
-            <button className="btn ghost" onClick={onDemo}>
+            <button className="btn ghost" onClick={onDemo} disabled={loading}>
               <Sparkles size={18} /> Preview Demo
             </button>
           )}
@@ -71,13 +78,16 @@ export function Login({ onLogin, onDemo }) {
         {!isProduction && (
           <div className="login-hints">
             <div className="hint-card">
-              <Shield size={13} /><span><strong>Finance</strong> — finance@domain.com / admin123</span>
+              <Shield size={13} /><span><strong>Admin</strong> — admin@runfinance.com / superadmin123</span>
             </div>
             <div className="hint-card">
-              <Building2 size={13} /><span><strong>Owner</strong> — owner@domain.com / owner123</span>
+              <Shield size={13} /><span><strong>Finance</strong> — finance@runfinance.com / finance123</span>
             </div>
             <div className="hint-card">
-              <User size={13} /><span><strong>PIC</strong> — pic@domain.com / pic123</span>
+              <Building2 size={13} /><span><strong>Owner</strong> — owner@runfinance.com / owner123</span>
+            </div>
+            <div className="hint-card">
+              <User size={13} /><span><strong>PIC</strong> — pic@runfinance.com / pic123</span>
             </div>
           </div>
         )}
