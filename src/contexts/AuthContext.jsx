@@ -1,8 +1,9 @@
 import { useState, createContext, useContext, useCallback, useEffect } from 'react';
+import { supabase } from '../api/supabaseClient';
 
 const AuthContext = createContext(null);
 
-// Demo hardcoded credentials — all logins use demo mode since no live API
+// Demo hardcoded credentials — used in local dev only
 const DEMO_CREDENTIALS = [
   { email: 'admin@runfinance.com', password: 'superadmin123', name: 'Super Admin', role: 'superadmin', canApprove: true, canManageUsers: true },
   { email: 'finance@runfinance.com', password: 'finance123', name: 'Admin Finance', role: 'finance', canApprove: true, canManageUsers: true },
@@ -107,38 +108,66 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const email = localStorage.getItem(STORAGE_KEY_EMAIL);
     const raw = localStorage.getItem(STORAGE_KEY_PASSWORD);
-    if (email && raw) {
-      // Try base64 decode first, fall back to plaintext (migration from old format)
-      const decoded = decodePassword(raw);
-      const password = decoded || raw;
-      const stored = getStoredUsers();
-      const allUsers = [...DEMO_CREDENTIALS, ...stored];
-      const match = allUsers.find(c => c.email === email && c.password === password);
-      // Migrate old plaintext to encoded format
-      if (match && !decoded) {
-        localStorage.setItem(STORAGE_KEY_PASSWORD, encodePassword(password));
-      }
-      if (match) {
-        const demoMode = !isProduction;
-        setSession(buildSession(match, demoMode));
-        setDemo(demoMode);
-      } else {
-        setSession(null);
-      }
-    }
-    setLoading(false);
-  }, []);
+    if (!email || !raw) { setLoading(false); return; }
 
-  const login = useCallback((email, password) => {
+    const decoded = decodePassword(raw);
+    const password = decoded || raw;
+    if (!decoded) localStorage.setItem(STORAGE_KEY_PASSWORD, encodePassword(password));
+
+    if (isProduction) {
+      // Live: verify against Supabase
+      supabase.from('fin_users').select('*').eq('email', email).eq('password_hash', password).eq('active', true).single()
+        .then(({ data }) => {
+          if (data) {
+            setSession(buildSession({ email: data.email, name: data.name, role: data.role, canApprove: data.role !== 'pic_brand', canManageUsers: data.role === 'superadmin' || data.role === 'finance' }, false));
+            setDemo(false);
+          }
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+      return;
+    }
+    // Local dev: check hardcoded + localStorage users
     const stored = getStoredUsers();
     const allUsers = [...DEMO_CREDENTIALS, ...stored];
     const match = allUsers.find(c => c.email === email && c.password === password);
     if (match) {
-      const demoMode = !isProduction;
+      setSession(buildSession(match, true));
+      setDemo(true);
+    }
+    setLoading(false);
+  }, []);
+
+  const login = useCallback(async (email, password) => {
+    if (isProduction) {
+      // Live: authenticate against Supabase fin_users
+      const { data, error } = await supabase
+        .from('fin_users')
+        .select('*')
+        .eq('email', email)
+        .eq('password_hash', password)
+        .eq('active', true)
+        .single();
+      if (error || !data) {
+        setLoginError('Email atau password salah.');
+        return;
+      }
       localStorage.setItem(STORAGE_KEY_EMAIL, email);
       localStorage.setItem(STORAGE_KEY_PASSWORD, encodePassword(password));
-      setSession(buildSession(match, demoMode));
-      setDemo(demoMode);
+      setSession(buildSession({ email: data.email, name: data.name, role: data.role, canApprove: data.role !== 'pic_brand', canManageUsers: data.role === 'superadmin' || data.role === 'finance' }, false));
+      setDemo(false);
+      setLoginError('');
+      return;
+    }
+    // Local dev: check hardcoded + localStorage users
+    const stored = getStoredUsers();
+    const allUsers = [...DEMO_CREDENTIALS, ...stored];
+    const match = allUsers.find(c => c.email === email && c.password === password);
+    if (match) {
+      localStorage.setItem(STORAGE_KEY_EMAIL, email);
+      localStorage.setItem(STORAGE_KEY_PASSWORD, encodePassword(password));
+      setSession(buildSession(match, true));
+      setDemo(true);
       setLoginError('');
     } else {
       setLoginError('Email atau password salah.');
