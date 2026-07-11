@@ -5,6 +5,7 @@ import { Login } from './pages/Login';
 import AppShell from './layouts/AppShell';
 import { RefreshCw } from 'lucide-react';
 import ErrorBoundary from './components/ui/ErrorBoundary';
+import { getAppState } from './api/financeApi';
 
 // Chart.js — MUST register ALL controllers + elements before any chart renders
 import {
@@ -65,10 +66,9 @@ ChartJS.register(
 
 function AppContent() {
   const { session, loading, demo, login, startDemo } = useAuth();
-  const { app, loadDemo } = useApp();
-  const [status, setStatus] = useState('init'); // init → login → ready
+  const { app, loadDemo, setState } = useApp();
+  const [status, setStatus] = useState('init'); // init → login → loading → ready
 
-  // Wait for auth to load, then decide
   useEffect(() => {
     if (loading) return;
 
@@ -79,26 +79,28 @@ function AppContent() {
 
     if (demo || session.isDemo) {
       loadDemo();
-    }
-
-    setStatus('ready');
-  }, [session, loading, demo, loadDemo]);
-
-  // Sync: if app.state exists and we're still init → mark ready
-  useEffect(() => {
-    if (app.state && status === 'init') {
       setStatus('ready');
+      return;
     }
-  }, [app.state, status]);
+
+    // Live mode — fetch initial state from API
+    setStatus('loading');
+    getAppState(app.filters, session)
+      .then(newState => { setState(newState); setStatus('ready'); })
+      .catch(() => {
+        loadDemo();
+        setStatus('ready');
+      });
+  }, [session, loading, demo, loadDemo, setState]);
 
   // Loading spinner
-  if (loading || status === 'init') {
+  if (loading || status === 'init' || status === 'loading') {
     return (
       <div className="boot">
         <div className="boot-panel">
           <div className="brand-mark">RN</div>
           <strong>Dashboard Finance RUN</strong>
-          <span>Menghubungkan dashboard...</span>
+          <span>{status === 'loading' ? 'Memuat data dari server...' : 'Menghubungkan dashboard...'}</span>
           <RefreshCw size={20} className="spin" style={{ marginTop: 8, opacity: 0.5 }} />
         </div>
       </div>

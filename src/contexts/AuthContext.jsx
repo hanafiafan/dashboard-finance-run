@@ -91,12 +91,18 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const email = localStorage.getItem(STORAGE_KEY_EMAIL);
-    const encoded = localStorage.getItem(STORAGE_KEY_PASSWORD);
-    if (email && encoded) {
-      const password = decodePassword(encoded);
+    const raw = localStorage.getItem(STORAGE_KEY_PASSWORD);
+    if (email && raw) {
+      // Try base64 decode first, fall back to plaintext (migration from old format)
+      const decoded = decodePassword(raw);
+      const password = decoded || raw;
       const stored = getStoredUsers();
       const allUsers = [...DEMO_CREDENTIALS, ...stored];
       const match = allUsers.find(c => c.email === email && c.password === password);
+      // Migrate old plaintext to encoded format
+      if (match && !decoded) {
+        localStorage.setItem(STORAGE_KEY_PASSWORD, encodePassword(password));
+      }
       if (match) {
         const demoMode = !isProduction;
         setSession({

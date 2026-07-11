@@ -89,7 +89,18 @@ export default function AppShell() {
     a.click(); URL.revokeObjectURL(url);
   }, [app.view, app.master, app.entity, app.rows]);
 
-  if (!state) return null;
+  if (!state) {
+    return (
+      <div className="boot">
+        <div className="boot-panel">
+          <div className="brand-mark">RN</div>
+          <strong>Dashboard Finance RUN</strong>
+          <span>Memuat data dashboard...</span>
+          <RefreshCw size={16} className="spin" style={{ marginTop: 8, opacity: 0.5 }} />
+        </div>
+      </div>
+    );
+  }
 
   const canApprove = state?.session?.permissions?.canApprove;
 
