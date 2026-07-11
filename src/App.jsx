@@ -5,6 +5,7 @@ import { Login } from './pages/Login';
 import AppShell from './layouts/AppShell';
 import { getAppState } from './api/financeApi';
 import { RefreshCw } from 'lucide-react';
+import ErrorBoundary from './components/ui/ErrorBoundary';
 
 // Chart.js — MUST register before any chart component renders
 import {
@@ -75,11 +76,19 @@ function AppContent() {
   return <AppShell />;
 }
 
+function AppRoot() {
+  return (
+    <ErrorBoundary>
+      <AppContent />
+    </ErrorBoundary>
+  );
+}
+
 export default function App() {
   return (
     <AuthProvider>
       <AppProvider>
-        <AppContent />
+        <AppRoot />
       </AppProvider>
     </AuthProvider>
   );
