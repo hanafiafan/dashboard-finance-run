@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Plus, Key, Trash2, X, UserPlus } from 'lucide-react';
+import { Key, Trash2, X, UserPlus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { getStoredUsers, saveStoredUsers, addUser, removeUser, resetUserPassword } from '../contexts/AuthContext';
+import { getStoredUsers, addUser, removeUser, resetUserPassword } from '../contexts/AuthContext';
 
 export default function UserManagement() {
   const { session } = useAuth();

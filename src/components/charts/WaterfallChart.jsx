@@ -28,7 +28,7 @@ export default function WaterfallChart({ data, title, note }) {
     const tooltip = d3.select(tooltipRef.current);
 
     // Bars
-    data.forEach((d, i) => {
+    data.forEach((d) => {
       const isIncome = d.cashIn >= 0;
       const value = d.cashIn || d.netCash || 0;
       const barHeight = innerH - y(value);

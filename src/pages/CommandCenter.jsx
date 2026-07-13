@@ -1,6 +1,5 @@
 import { Bar, Doughnut } from 'react-chartjs-2';
 import MetricCard from '../components/ui/MetricCard';
-import { Panel } from '../components/ui/MetricCard';
 import ExpandablePanel from '../components/ui/ExpandablePanel';
 import { money, number, pct, shortMoney } from '../utils/formatters';
 import { useApp } from '../contexts/AppContext';
@@ -21,31 +20,15 @@ import { useMemo, useState, useEffect } from 'react';
 
 export default function CommandCenter() {
   const { app, setFilters } = useApp();
-  const { session } = useAuth();
+  useAuth();
   useFilters();
 
-  const d = app.state?.dashboard;
-  if (!d) return <div className="empty animate-fade-in">Loading dashboard...</div>;
-
-  const s = d.summary;
-  const charts = d.charts;
-  const brandPerf = charts.brandPerformance || [];
-  const activeBrand = app.filters.brandKey;
+  // ponytail: all hooks MUST run before any early return (Rules of Hooks)
   const [chartReady, setChartReady] = useState(false);
   useEffect(() => { const t = setTimeout(() => setChartReady(true), 150); return () => clearTimeout(t); }, []);
 
-  const ct = getChartTheme();
-
-  const metrics = [
-    { label: 'Cash In', value: money.format(s.cashIn), color: 'green', note: `${(charts.monthlyCashFlow || []).length} bulan` },
-    { label: 'Cash Out', value: money.format(s.cashOut), color: 'coral', note: 'Total pengeluaran' },
-    { label: 'Net Cash', value: money.format(s.netCash), color: s.netCash >= 0 ? 'teal' : 'rose', note: `${pct.format(s.netCash / (s.cashIn || 1))} margin` },
-    { label: 'Saldo Rekening', value: money.format(s.bankBalance), color: 'blue', note: `${(charts.bankBalance || []).length} akun` },
-    { label: 'Budget Request', value: money.format(s.budgetRequested), color: 'violet', note: `${s.pendingApproval} pending` },
-    { label: 'Pending', value: number.format(s.pendingApproval), color: 'amber', note: 'Perlu review' },
-    { label: 'Hutang', value: money.format(s.payableOutstanding || s.budgetOutstanding), color: 'rose', note: `${(charts.payableAging || []).length} bucket` },
-    { label: 'Capaian Omzet', value: pct.format(s.omzetAchievement || 0), color: 'cyan', note: `${money.format(s.omzetReal)} / ${money.format(s.omzetTarget)}` },
-  ];
+  const d = app.state?.dashboard;
+  const charts = d?.charts || {};
 
   const waterfallData = useMemo(() => (charts.monthlyCashFlow || []).map(x => ({ label: x.label, cashIn: x.cashIn, netCash: x.netCash, cashOut: x.cashOut })), [charts.monthlyCashFlow]);
 
@@ -76,6 +59,25 @@ export default function CommandCenter() {
       { label: 'Realisasi', data: (charts.omzetByMonth || []).map(x => x.real), backgroundColor: '#2563eb', borderRadius: 4 },
     ],
   }), [charts.omzetByMonth]);
+
+  if (!d) return <div className="empty animate-fade-in">Loading dashboard...</div>;
+
+  const s = d.summary;
+  const brandPerf = charts.brandPerformance || [];
+  const activeBrand = app.filters.brandKey;
+
+  const ct = getChartTheme();
+
+  const metrics = [
+    { label: 'Cash In', value: money.format(s.cashIn), color: 'green', note: `${(charts.monthlyCashFlow || []).length} bulan` },
+    { label: 'Cash Out', value: money.format(s.cashOut), color: 'coral', note: 'Total pengeluaran' },
+    { label: 'Net Cash', value: money.format(s.netCash), color: s.netCash >= 0 ? 'teal' : 'rose', note: `${pct.format(s.netCash / (s.cashIn || 1))} margin` },
+    { label: 'Saldo Rekening', value: money.format(s.bankBalance), color: 'blue', note: `${(charts.bankBalance || []).length} akun` },
+    { label: 'Budget Request', value: money.format(s.budgetRequested), color: 'violet', note: `${s.pendingApproval} pending` },
+    { label: 'Pending', value: number.format(s.pendingApproval), color: 'amber', note: 'Perlu review' },
+    { label: 'Hutang', value: money.format(s.payableOutstanding || s.budgetOutstanding), color: 'rose', note: `${(charts.payableAging || []).length} bucket` },
+    { label: 'Capaian Omzet', value: pct.format(s.omzetAchievement || 0), color: 'cyan', note: `${money.format(s.omzetReal)} / ${money.format(s.omzetTarget)}` },
+  ];
 
   const approvalRate = s.approvalRate || 0;
   const collectionRate = s.cashIn > 0 ? Math.min(1, (s.cashIn - s.cashOut) / s.cashIn) : 0;

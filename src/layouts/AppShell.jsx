@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import {
   LayoutDashboard, ChartNoAxesCombined, Table2, BadgeCheck,
   Settings2, RefreshCw, LogOut, DownloadCloud, Download, Sun, Moon
@@ -25,7 +25,7 @@ const NAV_ITEMS = [
 ];
 
 export default function AppShell() {
-  const { app, setView, setState, setFilters } = useApp();
+  const { app, setView, setState } = useApp();
   const { session, demo, logout } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
@@ -41,7 +41,6 @@ export default function AppShell() {
 
   const state = app.state;
   const filters = app.filters;
-  const stateBrands = state?.brands || [];
 
   // Re-fetch on filter change
   useEffect(() => {
@@ -102,7 +101,6 @@ export default function AppShell() {
     );
   }
 
-  const canApprove = session?.permissions?.canApprove;
   const canImport = session?.role === 'superadmin' || session?.role === 'finance';
 
   const renderView = () => {
@@ -158,7 +156,7 @@ export default function AppShell() {
               <span className={theme === 'dark' ? 'active' : ''}><Moon size={14} /> Dark</span>
             </div>
             {canImport && <button className="btn amber" onClick={handleImport}><DownloadCloud size={16} /> Import</button>}
-            {app.entity && <button className="btn ghost" onClick={exportCurrentCsv}><Download size={16} /> CSV</button>}
+            {(app.view === 'operations' || app.view === 'master') && <button className="btn ghost" onClick={exportCurrentCsv}><Download size={16} /> CSV</button>}
             <button className="btn blue" onClick={handleRefresh} disabled={refreshing}>
               <RefreshCw size={16} className={refreshing ? 'spin' : ''} /> Refresh
             </button>

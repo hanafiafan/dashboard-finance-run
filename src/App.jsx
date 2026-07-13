@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AppProvider, useApp } from './contexts/AppContext';
 import { Login } from './pages/Login';
@@ -65,9 +65,21 @@ ChartJS.register(
 );
 
 function AppContent() {
-  const { session, loading, demo, login, startDemo } = useAuth();
+  const { session, loading, demo, login, startDemo, logout } = useAuth();
   const { app, loadDemo, setState } = useApp();
-  const [status, setStatus] = useState('init'); // init → login → loading → ready
+  const [status, setStatus] = useState('init'); // init → login → loading → ready → error
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const loadLive = useCallback(() => {
+    setStatus('loading');
+    getAppState(app.filters, session)
+      .then(newState => { setState(newState); setStatus('ready'); })
+      .catch(err => {
+        console.error('getAppState failed:', err);
+        setErrorMsg(err?.message || 'Gagal memuat data dari server.');
+        setStatus('error');
+      });
+  }, [app.filters, session, setState]);
 
   useEffect(() => {
     if (loading) return;
@@ -83,15 +95,9 @@ function AppContent() {
       return;
     }
 
-    // Live mode — fetch initial state from API
-    setStatus('loading');
-    getAppState(app.filters, session)
-      .then(newState => { setState(newState); setStatus('ready'); })
-      .catch(() => {
-        loadDemo(session);
-        setStatus('ready');
-      });
-  }, [session, loading, demo, loadDemo, setState]);
+    // Live mode — fetch initial state from API (no demo fallback)
+    loadLive();
+  }, [session, loading, demo, loadDemo, loadLive]);
 
   // Loading spinner
   if (loading || status === 'init' || status === 'loading') {
@@ -102,6 +108,25 @@ function AppContent() {
           <strong>Dashboard Finance RUN</strong>
           <span>{status === 'loading' ? 'Memuat data dari server...' : 'Menghubungkan dashboard...'}</span>
           <RefreshCw size={20} className="spin" style={{ marginTop: 8, opacity: 0.5 }} />
+        </div>
+      </div>
+    );
+  }
+
+  // Error state — live data load failed (do NOT show fake demo data)
+  if (status === 'error') {
+    return (
+      <div className="boot">
+        <div className="boot-panel">
+          <div className="brand-mark">RN</div>
+          <strong>Gagal memuat data</strong>
+          <span style={{ maxWidth: 380, textAlign: 'center', opacity: 0.7 }}>{errorMsg}</span>
+          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            <button className="btn blue" onClick={loadLive}>
+              <RefreshCw size={16} /> Coba lagi
+            </button>
+            <button className="btn ghost" onClick={logout}>Keluar</button>
+          </div>
         </div>
       </div>
     );

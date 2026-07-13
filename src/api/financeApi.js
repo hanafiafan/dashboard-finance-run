@@ -1,4 +1,4 @@
-import { demoState, demoRows, demoApi, buildEntities } from '../utils/demoData';
+import { demoState, demoRows, buildEntities } from '../utils/demoData';
 import { supabase, TABLE_MAP, dbToUi, uiToDb } from './supabaseClient';
 
 // ── Supabase live queries ──────────────────────────────────
@@ -11,7 +11,7 @@ async function supabaseGetAppState(filters = {}, auth) {
     return query;
   };
 
-  const [brands, budget, income, outcome, omzet, bank, payables, receivables, forecast, service] = await Promise.all([
+  const results = await Promise.all([
     supabase.from('fin_brands').select('*').eq('active', true),
     apply(supabase.from('fin_budget').select('*')),
     apply(supabase.from('fin_income').select('*')),
@@ -24,6 +24,15 @@ async function supabaseGetAppState(filters = {}, auth) {
     apply(supabase.from('fin_service').select('*')),
   ]);
 
+  // ponytail: a failed query returns {data:null, error} — treating it as [] would
+  // silently render zeros (worse than an error). Fail loud so the caller surfaces it.
+  const errored = results.filter(r => r.error);
+  if (errored.length) {
+    throw new Error(`Supabase query gagal: ${errored.map(r => r.error.message).join('; ')}`);
+  }
+
+  const [brands, budget, income, outcome, omzet, bank, payables, receivables, forecast] = results;
+
   const brandRows = (brands.data || []).map(b => ({
     Company: b.company, Brand: b.brand, 'Brand Key': b.brand_key, 'PIC Email': b.pic_email,
   }));
@@ -35,7 +44,7 @@ async function supabaseGetAppState(filters = {}, auth) {
   const omzetRows = omzet.data || [];
   const bankRows = bank.data || [];
   const payableRows = payables.data || [];
-  const receivableRows = receivables.data || [];
+  const _receivableRows = receivables.data || [];
 
   const pendingBudget = budgetRows
     .filter(r => r.status === 'Pending')
@@ -202,7 +211,7 @@ async function supabaseGetAppState(filters = {}, auth) {
   };
 }
 
-async function supabaseGetRecords(entity, filters = {}, auth) {
+async function supabaseGetRecords(entity, filters = {}) {
   const table = TABLE_MAP[entity];
   if (!table) return { rows: [] };
 
@@ -250,13 +259,10 @@ async function supabaseApproveBudget(id, status, paid, feedback) {
 // ── Public API (demo ↔ supabase switch) ────────────────────
 
 export async function getAppState(filters = {}, auth) {
+  // Demo mode is explicit only. In live mode we NEVER fall back to demo data —
+  // showing fake numbers as if real is more dangerous than surfacing the error.
   if (auth?.isDemo) return demoState(filters, auth);
-  try {
-    return await supabaseGetAppState(filters, auth);
-  } catch (err) {
-    console.error('Supabase getAppState failed, falling back to demo:', err);
-    return demoState(filters, auth);
-  }
+  return supabaseGetAppState(filters, auth);
 }
 
 export async function getRecords(entity, filters = {}, auth) {

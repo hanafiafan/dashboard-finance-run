@@ -115,11 +115,12 @@ export function AuthProvider({ children }) {
     if (!decoded) localStorage.setItem(STORAGE_KEY_PASSWORD, encodePassword(password));
 
     if (isProduction) {
-      // Live: verify against Supabase
-      supabase.from('fin_users').select('*').eq('email', email).eq('password_hash', password).eq('active', true).single()
+      // Live: verify via SECURITY DEFINER RPC (anon tidak bisa baca fin_users langsung)
+      supabase.rpc('fin_verify_login', { p_email: email, p_password: password })
         .then(({ data }) => {
-          if (data) {
-            setSession(buildSession({ email: data.email, name: data.name, role: data.role, canApprove: data.role !== 'pic_brand', canManageUsers: data.role === 'superadmin' || data.role === 'finance' }, false));
+          const u = data?.[0];
+          if (u) {
+            setSession(buildSession({ email: u.email, name: u.name, role: u.role, canApprove: u.role !== 'pic_brand', canManageUsers: u.role === 'superadmin' || u.role === 'finance' }, false));
             setDemo(false);
           }
           setLoading(false);
@@ -140,21 +141,17 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (email, password) => {
     if (isProduction) {
-      // Live: authenticate against Supabase fin_users
+      // Live: authenticate via SECURITY DEFINER RPC (tidak baca fin_users langsung)
       const { data, error } = await supabase
-        .from('fin_users')
-        .select('*')
-        .eq('email', email)
-        .eq('password_hash', password)
-        .eq('active', true)
-        .single();
-      if (error || !data) {
+        .rpc('fin_verify_login', { p_email: email, p_password: password });
+      const user = data?.[0];
+      if (error || !user) {
         setLoginError('Email atau password salah.');
         return;
       }
       localStorage.setItem(STORAGE_KEY_EMAIL, email);
       localStorage.setItem(STORAGE_KEY_PASSWORD, encodePassword(password));
-      setSession(buildSession({ email: data.email, name: data.name, role: data.role, canApprove: data.role !== 'pic_brand', canManageUsers: data.role === 'superadmin' || data.role === 'finance' }, false));
+      setSession(buildSession({ email: user.email, name: user.name, role: user.role, canApprove: user.role !== 'pic_brand', canManageUsers: user.role === 'superadmin' || user.role === 'finance' }, false));
       setDemo(false);
       setLoginError('');
       return;

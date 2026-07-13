@@ -1,7 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = 'https://yksfwxqpxcsmhqgrrrfa.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlrc2Z3eHFweGNzbWhxZ3JycmZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3MzgwMDMsImV4cCI6MjA5OTMxNDAwM30.eXhUsOiztVIhiXAPYzz-gLpkbDGb-cQawyy4wsFyNRI';
+// Prefer env vars (set VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY in Vercel).
+// ponytail: hardcoded anon key kept as fallback so prod doesn't break before env
+// is configured — the anon key is public by design (RLS is what protects data).
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://yksfwxqpxcsmhqgrrrfa.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlrc2Z3eHFweGNzbWhxZ3JycmZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3MzgwMDMsImV4cCI6MjA5OTMxNDAwM30.eXhUsOiztVIhiXAPYzz-gLpkbDGb-cQawyy4wsFyNRI';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 

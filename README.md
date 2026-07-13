@@ -1,16 +1,65 @@
-# React + Vite
+# Dashboard Finance RUN
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Multi-company & multi-brand finance operating system. React SPA yang menampilkan
+cashflow, budget/approval, omzet, hutang-piutang, dan saldo bank lintas brand,
+dengan data dari Supabase PostgreSQL.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Frontend:** React 19 + Vite 8 (SPA, tanpa router lib — navigasi via state)
+- **Charts:** Chart.js + react-chartjs-2, dan D3 untuk waterfall/treemap
+- **Backend/data:** Supabase (PostgreSQL, 14 tabel `fin_*`) via `@supabase/supabase-js`
+- **Deploy:** Vercel (`dashboard-finance-run.vercel.app`)
 
-## React Compiler
+## Struktur
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```
+src/
+  api/            financeApi.js (query & transform), supabaseClient.js (client + mapping tabel/kolom)
+  contexts/       AuthContext (login/session), AppContext (state global)
+  hooks/          useFilters
+  layouts/        AppShell (sidebar, topbar, routing view)
+  pages/          CommandCenter, Analytics, Operations, Approval, Master, UserManagement, Login
+  components/     charts/*, ui/*, filters/*
+  utils/          formatters, constants, chartTheme, demoData (mode demo lokal)
+```
 
-## Expanding the Oxlint configuration
+## Menjalankan lokal
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+```bash
+npm install
+npm run dev      # http://localhost:5173 — mode demo (data dummy, tanpa Supabase)
+```
+
+Di localhost aplikasi berjalan **mode demo**: login pakai kredensial demo yang
+ada di layar Login, data berasal dari `src/utils/demoData.js`. Tidak menyentuh
+Supabase.
+
+## Environment variables
+
+Set di Vercel (Project → Settings → Environment Variables), lihat `.env.example`:
+
+| Var | Keterangan |
+|-----|-----------|
+| `VITE_SUPABASE_URL` | URL project Supabase |
+| `VITE_SUPABASE_ANON_KEY` | Anon key (publik — data dilindungi RLS, bukan oleh kerahasiaan key) |
+
+Kalau kedua var kosong, kode fallback ke nilai hardcoded di `supabaseClient.js`.
+
+## Perintah
+
+```bash
+npm run dev       # dev server
+npm run build     # build produksi ke dist/
+npm run preview   # preview hasil build
+npm run lint      # oxlint
+```
+
+## Keamanan — WAJIB DIBACA
+
+- **RLS harus aktif** di semua tabel `fin_*`. Anon key bersifat publik; tanpa
+  Row Level Security, siapa pun bisa membaca/menulis tabel langsung. Lihat
+  `supabase/rls-policies.sql`.
+- **Auth saat ini belum pakai Supabase Auth** (masih membandingkan password ke
+  kolom `password_hash` via query). Rencana migrasi ke Supabase Auth ada di
+  `supabase/AUTH-MIGRATION.md`.

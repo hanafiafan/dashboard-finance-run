@@ -1,12 +1,9 @@
-import { pct } from '../../utils/formatters';
-
 /**
  * ProgressRing — animated ring chart showing percentage
  * Used for: approval rate, collection margin, omzet attainment, solvency
  */
 export default function ProgressRing({ value = 0, label, color = '#10b981', icon }) {
   const pctValue = Math.max(0, Math.min(1, value));
-  const angle = pctValue * 360;
   const radius = 36;
   const circumference = 2 * Math.PI * radius;
   const dashoffset = circumference - (pctValue * circumference);

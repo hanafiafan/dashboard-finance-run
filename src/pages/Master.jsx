@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Download, Search, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal, DynamicForm } from '../components/ui/Modal';
 import { useApp } from '../contexts/AppContext';

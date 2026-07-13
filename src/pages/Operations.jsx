@@ -14,7 +14,7 @@ export function Operations() {
   const { app, setEntity, setRows } = useApp();
   const { session } = useAuth();
   const [records, setRecords] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editRow, setEditRow] = useState(null);

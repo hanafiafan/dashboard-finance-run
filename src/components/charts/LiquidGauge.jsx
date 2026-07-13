@@ -1,9 +1,9 @@
-import { money, number } from '../../utils/formatters';
+import { money } from '../../utils/formatters';
 
 export default function LiquidityGauge({ summary }) {
   if (!summary) return null;
 
-  const { cashIn, cashOut, netCash, bankBalance, payableOutstanding, receivableOutstanding } = summary;
+  const { cashIn, cashOut, bankBalance, payableOutstanding, receivableOutstanding } = summary;
   const liquidityRatio = cashOut > 0 ? cashIn / cashOut : 0;
   const solvencyRatio = payableOutstanding > 0 ? bankBalance / payableOutstanding : 0;
 

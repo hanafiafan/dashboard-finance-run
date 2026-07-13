@@ -1,5 +1,4 @@
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { money } from '../../utils/formatters';
 
 export default function MetricCard({ label, value, color = 'teal', note, trend, sparklineData }) {
   const trendIcon = trend > 0 ? <TrendingUp size={14} /> : trend < 0 ? <TrendingDown size={14} /> : <Minus size={14} />;
