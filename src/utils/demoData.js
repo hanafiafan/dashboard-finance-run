@@ -31,8 +31,8 @@ export function buildEntities(role) {
       // PIC can only submit budget requests and view their own data
       entities[e] = { canEdit: e === 'budget' };
     } else if (role === 'owner') {
-      // Owner can view all, edit budget/income/forecast/outcome
-      entities[e] = { canEdit: ['budget', 'income', 'forecast', 'outcome'].includes(e) };
+      // Owner can view all, edit budget/income/forecast (in & out)/outcome
+      entities[e] = { canEdit: ['budget', 'income', 'forecast', 'forecastOut', 'outcome'].includes(e) };
     } else {
       // superadmin & finance: full CRUD
       entities[e] = { canEdit: true };
