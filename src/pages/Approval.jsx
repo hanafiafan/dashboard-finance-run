@@ -8,17 +8,29 @@ import { useAuth } from '../contexts/AuthContext';
 import { approveBudget } from '../api/financeApi';
 import { number } from '../utils/formatters';
 import { CHART_COLORS } from '../utils/constants';
+import { forecastCashPosition, projectedCashRecommendation } from '../utils/ews';
 
 export function Approval() {
   const { app } = useApp();
   const { session } = useAuth();
   const [loading, setLoading] = useState({});
 
-  const rows = app.state?.dashboard?.tables?.pendingBudget || [];
+  const summary = app.state?.dashboard?.summary || {};
+  const forecast = app.state?.dashboard?.forecast || { in: [], out: [] };
+  const rawRows = app.state?.dashboard?.tables?.pendingBudget || [];
+  // Indicator #8 — Projected Cash Position: forecast the cash position up to each
+  // request's tgl dibutuhkan, then check if it can still absorb the budget amount.
+  const rows = rawRows.map(row => {
+    const targetDate = row['Tgl Dibutuhkan'];
+    if (!targetDate) return row;
+    const fcp = forecastCashPosition(summary.bankBalance || 0, forecast.in, forecast.out, targetDate);
+    const rec = projectedCashRecommendation(fcp, Number(row['Nominal Pengajuan (Rp)'] || 0));
+    return { ...row, 'Rekomendasi Kas': rec.label };
+  });
   const charts = app.state?.dashboard?.charts;
 
   const canApprove = session?.permissions?.canApprove;
-  const cols = ['Brand', 'Tgl Pengajuan', 'Tgl Dibutuhkan', 'Kategori', 'Keterangan', 'Nominal Pengajuan (Rp)', 'Prioritas', 'Status'];
+  const cols = ['Brand', 'Tgl Pengajuan', 'Tgl Dibutuhkan', 'Kategori', 'Keterangan', 'Nominal Pengajuan (Rp)', 'Prioritas', 'Status', 'Rekomendasi Kas'];
 
   const handleApprove = async (id, status) => {
     const paid = status === 'Approved' ? prompt('Nominal dibayar, kosongkan jika belum:') || '' : '';

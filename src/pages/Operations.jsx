@@ -8,7 +8,7 @@ import { getRecords, saveRecord, deleteRecord } from '../api/financeApi';
 import { ENTITY_LABELS, TABLE_COLUMNS, FORMS } from '../utils/constants';
 import { number } from '../utils/formatters';
 
-const ENTITIES = ['budget', 'income', 'forecast', 'outcome', 'omzet', 'bank', 'service', 'payables', 'receivables'];
+const ENTITIES = ['budget', 'income', 'forecast', 'forecastOut', 'outcome', 'omzet', 'bank', 'service', 'payables', 'receivables'];
 
 export function Operations() {
   const { app, setEntity, setRows } = useApp();

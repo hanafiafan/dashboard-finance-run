@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 .vercel
+
+.claude/settings.local.json
+supabase/.temp

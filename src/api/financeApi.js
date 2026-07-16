@@ -1,5 +1,6 @@
 import { demoState, demoRows, demoApi, buildEntities } from '../utils/demoData';
 import { supabase, TABLE_MAP, dbToUi, uiToDb } from './supabaseClient';
+import { isToday, isCurrentMonth, isCurrentOmzetMonth, forecastCashPosition, addDays } from '../utils/ews';
 
 // ── Supabase live queries ──────────────────────────────────
 
@@ -11,7 +12,7 @@ async function supabaseGetAppState(filters = {}, auth) {
     return query;
   };
 
-  const [brands, budget, income, outcome, omzet, bank, payables, receivables, forecast, service] = await Promise.all([
+  const [brands, budget, income, outcome, omzet, bank, payables, receivables, forecast, forecastOut, service] = await Promise.all([
     supabase.from('fin_brands').select('*').eq('active', true),
     apply(supabase.from('fin_budget').select('*')),
     apply(supabase.from('fin_income').select('*')),
@@ -21,6 +22,7 @@ async function supabaseGetAppState(filters = {}, auth) {
     apply(supabase.from('fin_payables').select('*')),
     apply(supabase.from('fin_receivables').select('*')),
     apply(supabase.from('fin_forecast_cashin').select('*')),
+    apply(supabase.from('fin_forecast_cashout').select('*')),
     apply(supabase.from('fin_service').select('*')),
   ]);
 
@@ -60,6 +62,22 @@ async function supabaseGetAppState(filters = {}, auth) {
   const omzetAchievement = totalTarget > 0 ? totalRealisasi / totalTarget : 0;
   const approvedCount = budgetRows.filter(r => r.status === 'Approved' || r.status === 'Paid').length;
   const approvalRate = budgetRows.length > 0 ? approvedCount / budgetRows.length : 0;
+
+  // Early Warning System indicators (RAW DATA DASHBOARD FINANCE/Early Warning System.docx)
+  const receivableOutstanding = receivableRows.reduce((s, r) => s + Number(r.total_piutang || 0) - Number(r.total_diterima || 0), 0);
+  const cashInToday = incomeRows.filter(r => isToday(r.tanggal)).reduce((s, r) => s + Number(r.nominal || 0), 0);
+  const cashOutToday = outcomeRows.filter(r => isToday(r.tanggal)).reduce((s, r) => s + Number(r.jumlah || 0) + Number(r.biaya || 0), 0);
+  const cashPosition = bankBalance + cashInToday - cashOutToday;
+  const cashInMonth = incomeRows.filter(r => isCurrentMonth(r.tanggal)).reduce((s, r) => s + Number(r.nominal || 0), 0);
+  const cashOutMonth = outcomeRows.filter(r => isCurrentMonth(r.tanggal)).reduce((s, r) => s + Number(r.jumlah || 0) + Number(r.biaya || 0), 0);
+  const cashOutRatio = cashInMonth > 0 ? cashOutMonth / cashInMonth : 0;
+  const omzetRealMonth = omzetRows.filter(isCurrentOmzetMonth).reduce((s, r) => s + Number(r.realisasi_omzet || 0), 0);
+  const cashConversion = omzetRealMonth > 0 ? cashInMonth / omzetRealMonth : 0;
+  const receivableRisk = omzetRealMonth > 0 ? receivableOutstanding / omzetRealMonth : 0;
+  const payableRisk = cashInMonth > 0 ? payableOutstanding / cashInMonth : 0;
+  const forecastInRows = (forecast.data || []).map(r => ({ date: r.estimasi_cair, nominal: Number(r.nominal_estimasi || 0) }));
+  const forecastOutRows = (forecastOut.data || []).map(r => ({ date: r.estimasi_keluar, nominal: Number(r.nominal_estimasi || 0) }));
+  const forecastCashPosition30 = forecastCashPosition(bankBalance, forecastInRows, forecastOutRows, addDays(30));
 
   // Charts — build from real data
   // Monthly cashflow: group income/outcome by month
@@ -181,10 +199,17 @@ async function supabaseGetAppState(filters = {}, auth) {
         budgetRequested, pendingApproval,
         budgetOutstanding: payableOutstanding,
         payableOutstanding,
+        receivableOutstanding,
         omzetAchievement,
         omzetReal: totalRealisasi,
         omzetTarget: totalTarget,
         approvalRate,
+        cashPosition,
+        cashOutRatio,
+        cashConversion,
+        receivableRisk,
+        payableRisk,
+        forecastCashPosition30,
       },
       charts: {
         monthlyCashFlow,
@@ -197,6 +222,7 @@ async function supabaseGetAppState(filters = {}, auth) {
         payableAging,
         budgetByCategory: outcomeByCategory,
       },
+      forecast: { in: forecastInRows, out: forecastOutRows },
       tables: { pendingBudget, dueSoon },
     },
   };

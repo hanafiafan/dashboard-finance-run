@@ -3,7 +3,8 @@ import { supabase } from '../api/supabaseClient';
 
 const AuthContext = createContext(null);
 
-// Demo hardcoded credentials — used in local dev only
+// Demo hardcoded credentials — used in local dev only, never in production
+// (production auth is real Supabase Auth, see login() below).
 const DEMO_CREDENTIALS = [
   { email: 'admin@runfinance.com', password: 'superadmin123', name: 'Super Admin', role: 'superadmin', canApprove: true, canManageUsers: true },
   { email: 'finance@runfinance.com', password: 'finance123', name: 'Admin Finance', role: 'finance', canApprove: true, canManageUsers: true },
@@ -13,42 +14,36 @@ const DEMO_CREDENTIALS = [
 
 const STORAGE_KEY_OVERRIDES = 'financeRunCredentialsOverrides';
 const STORAGE_KEY_USERS = 'financeRunUsers';
-const STORAGE_KEY_EMAIL = 'financeRunEmail';
-const STORAGE_KEY_PASSWORD = 'financeRunPassword';
-
-// ponytail: base64 obfuscation, not encryption — prevents casual shoulder-surfing in devtools
-const encodePassword = (pw) => btoa(unescape(encodeURIComponent(pw)));
-const decodePassword = (encoded) => {
-  try { return decodeURIComponent(escape(atob(encoded))); } catch { return ''; }
-};
 
 const isProduction = typeof window !== 'undefined' && !window.location.hostname.match(/^(localhost|127\.0\.0\.1)$/);
 
-function buildSession(match, demoMode) {
-  const isSuperadmin = match.role === 'superadmin';
+function buildSession(profile, demoMode, accessToken) {
+  const isSuperadmin = profile.role === 'superadmin';
   return {
-    email: match.email,
-    name: match.name,
-    role: match.role,
+    email: profile.email,
+    name: profile.name,
+    role: profile.role,
     permissions: {
-      canApprove: match.canApprove || isSuperadmin,
-      canManageUsers: match.canManageUsers || isSuperadmin,
-      canImport: isSuperadmin || match.role === 'finance',
+      canApprove: profile.canApprove ?? profile.role !== 'pic_brand',
+      canManageUsers: profile.canManageUsers ?? (isSuperadmin || profile.role === 'finance'),
+      canImport: isSuperadmin || profile.role === 'finance',
     },
     isDemo: demoMode,
+    accessToken,
   };
 }
 
+async function loadProfile(userId) {
+  const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
+  return data;
+}
+
+// Dev-only helpers backing the local demo credential list — never used in production.
 export function getDemoCredentials() {
   try {
     const overridesRaw = localStorage.getItem(STORAGE_KEY_OVERRIDES);
     const overrides = overridesRaw ? JSON.parse(overridesRaw) : {};
-    return DEMO_CREDENTIALS.map(c => {
-      if (overrides[c.email]) {
-        return { ...c, password: overrides[c.email], isHardcoded: true };
-      }
-      return { ...c, isHardcoded: true };
-    });
+    return DEMO_CREDENTIALS.map(c => ({ ...c, password: overrides[c.email] || c.password, isHardcoded: true }));
   } catch {
     return DEMO_CREDENTIALS.map(c => ({ ...c, isHardcoded: true }));
   }
@@ -78,14 +73,8 @@ export function saveStoredUsers(users) {
 export function resetUserPassword(email, newPassword) {
   const users = getStoredUsers();
   const idx = users.findIndex(u => u.email === email);
-  if (idx >= 0) {
-    users[idx].password = newPassword;
-    saveStoredUsers(users);
-  }
-  const isDemoUser = DEMO_CREDENTIALS.some(c => c.email === email);
-  if (isDemoUser) {
-    saveDemoCredentialOverride(email, newPassword);
-  }
+  if (idx >= 0) { users[idx].password = newPassword; saveStoredUsers(users); }
+  if (DEMO_CREDENTIALS.some(c => c.email === email)) saveDemoCredentialOverride(email, newPassword);
 }
 
 export function addUser(user) {
@@ -95,8 +84,7 @@ export function addUser(user) {
 }
 
 export function removeUser(email) {
-  const users = getStoredUsers().filter(u => u.email !== email);
-  saveStoredUsers(users);
+  saveStoredUsers(getStoredUsers().filter(u => u.email !== email));
 }
 
 export function AuthProvider({ children }) {
@@ -106,66 +94,46 @@ export function AuthProvider({ children }) {
   const [loginError, setLoginError] = useState('');
 
   useEffect(() => {
-    const email = localStorage.getItem(STORAGE_KEY_EMAIL);
-    const raw = localStorage.getItem(STORAGE_KEY_PASSWORD);
-    if (!email || !raw) { setLoading(false); return; }
-
-    const decoded = decodePassword(raw);
-    const password = decoded || raw;
-    if (!decoded) localStorage.setItem(STORAGE_KEY_PASSWORD, encodePassword(password));
-
-    if (isProduction) {
-      // Live: verify against Supabase
-      supabase.from('fin_users').select('*').eq('email', email).eq('password_hash', password).eq('active', true).single()
-        .then(({ data }) => {
-          if (data) {
-            setSession(buildSession({ email: data.email, name: data.name, role: data.role, canApprove: data.role !== 'pic_brand', canManageUsers: data.role === 'superadmin' || data.role === 'finance' }, false));
-            setDemo(false);
-          }
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
-      return;
-    }
-    // Local dev: check hardcoded + localStorage users
-    const stored = getStoredUsers();
-    const allUsers = [...DEMO_CREDENTIALS, ...stored];
-    const match = allUsers.find(c => c.email === email && c.password === password);
-    if (match) {
-      setSession(buildSession(match, true));
-      setDemo(true);
-    }
-    setLoading(false);
+    if (!isProduction) { setLoading(false); return; }
+    // Live: restore whatever Supabase Auth session already exists (it persists
+    // its own token in localStorage — we just resolve the role from `profiles`).
+    supabase.auth.getSession().then(async ({ data }) => {
+      const user = data?.session?.user;
+      if (!user) { setLoading(false); return; }
+      const profile = await loadProfile(user.id);
+      if (profile?.active) {
+        setSession(buildSession(profile, false, data.session.access_token));
+        setDemo(false);
+      } else {
+        await supabase.auth.signOut();
+      }
+      setLoading(false);
+    });
   }, []);
 
   const login = useCallback(async (email, password) => {
     if (isProduction) {
-      // Live: authenticate against Supabase fin_users
-      const { data, error } = await supabase
-        .from('fin_users')
-        .select('*')
-        .eq('email', email)
-        .eq('password_hash', password)
-        .eq('active', true)
-        .single();
-      if (error || !data) {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error || !data?.session) {
         setLoginError('Email atau password salah.');
         return;
       }
-      localStorage.setItem(STORAGE_KEY_EMAIL, email);
-      localStorage.setItem(STORAGE_KEY_PASSWORD, encodePassword(password));
-      setSession(buildSession({ email: data.email, name: data.name, role: data.role, canApprove: data.role !== 'pic_brand', canManageUsers: data.role === 'superadmin' || data.role === 'finance' }, false));
+      const profile = await loadProfile(data.session.user.id);
+      if (!profile?.active) {
+        await supabase.auth.signOut();
+        setLoginError('Akun tidak aktif atau tidak ditemukan.');
+        return;
+      }
+      setSession(buildSession(profile, false, data.session.access_token));
       setDemo(false);
       setLoginError('');
       return;
     }
     // Local dev: check hardcoded + localStorage users
     const stored = getStoredUsers();
-    const allUsers = [...DEMO_CREDENTIALS, ...stored];
+    const allUsers = [...getDemoCredentials(), ...stored];
     const match = allUsers.find(c => c.email === email && c.password === password);
     if (match) {
-      localStorage.setItem(STORAGE_KEY_EMAIL, email);
-      localStorage.setItem(STORAGE_KEY_PASSWORD, encodePassword(password));
       setSession(buildSession(match, true));
       setDemo(true);
       setLoginError('');
@@ -182,8 +150,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY_EMAIL);
-    localStorage.removeItem(STORAGE_KEY_PASSWORD);
+    if (isProduction) supabase.auth.signOut();
     setSession(null);
     setDemo(false);
     setLoginError('');
@@ -201,4 +168,3 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 }
-

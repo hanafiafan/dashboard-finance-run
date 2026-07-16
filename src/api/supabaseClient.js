@@ -10,13 +10,14 @@ export const TABLE_MAP = {
   budget: 'fin_budget',
   income: 'fin_income',
   forecast: 'fin_forecast_cashin',
+  forecastOut: 'fin_forecast_cashout',
   outcome: 'fin_outcome',
   omzet: 'fin_omzet',
   bank: 'fin_bank',
   service: 'fin_service',
   payables: 'fin_payables',
   receivables: 'fin_receivables',
-  users: 'fin_users',
+  users: 'profiles',
   brands: 'fin_brands',
   sources: 'fin_sources',
   vendors: 'fin_vendors',
@@ -40,6 +41,10 @@ const COL_MAP = {
   },
   forecast: {
     brand_key: 'Brand', estimasi_cair: 'Estimasi Cair', marketplace: 'Marketplace',
+    nominal_estimasi: 'Nominal Estimasi', status: 'Status', catatan: 'Catatan',
+  },
+  forecastOut: {
+    brand_key: 'Brand', estimasi_keluar: 'Estimasi Keluar', kategori: 'Kategori',
     nominal_estimasi: 'Nominal Estimasi', status: 'Status', catatan: 'Catatan',
   },
   outcome: {

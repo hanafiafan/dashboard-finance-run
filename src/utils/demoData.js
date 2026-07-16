@@ -1,3 +1,5 @@
+import { forecastCashPosition, addDays } from './ews';
+
 export function demoApi(action, args, session) {
   const state = demoState(args[0] || {}, session);
   if (action === 'getAppState') return state;
@@ -17,7 +19,7 @@ const ROLE_PERMISSIONS = {
   pic_brand:  { canApprove: false, canManageUsers: false, canImport: false, canEditAll: false },
 };
 
-const ALL_ENTITIES = ['budget', 'income', 'forecast', 'outcome', 'omzet', 'bank', 'service', 'payables', 'receivables'];
+const ALL_ENTITIES = ['budget', 'income', 'forecast', 'forecastOut', 'outcome', 'omzet', 'bank', 'service', 'payables', 'receivables'];
 const MASTER_ENTITIES = ['users', 'brands', 'sources', 'vendors', 'customers'];
 
 export function buildEntities(role) {
@@ -156,6 +158,34 @@ export function demoState(filters = {}, session = null) {
   const totalBank = bankBalance.reduce((s, b) => s + b.value, 0);
   const avgOmzet = perf.length ? perf.reduce((s, p) => s + (p.omzetAchievement || 0), 0) / perf.length : 0;
 
+  // Early Warning System demo figures — "bulan berjalan" = latest month in monthlyCashFlow/omzetByMonth
+  const currentMonth = monthlyCashFlow[monthlyCashFlow.length - 1];
+  const cashInMonth = currentMonth.cashIn;
+  const cashOutMonth = currentMonth.cashOut;
+  const cashInToday = Math.round(cashInMonth / 22);
+  const cashOutToday = Math.round(cashOutMonth / 22);
+  const cashPosition = totalBank + cashInToday - cashOutToday;
+  const cashOutRatio = cashInMonth > 0 ? cashOutMonth / cashInMonth : 0;
+  const omzetRealMonth = omzetByMonth[omzetByMonth.length - 1].real;
+  const cashConversion = omzetRealMonth > 0 ? cashInMonth / omzetRealMonth : 0;
+  const receivableOutstanding = 45000000;
+  const receivableRisk = omzetRealMonth > 0 ? receivableOutstanding / omzetRealMonth : 0;
+
+  // Raw forecast rows for Forecast/Projected Cash Position (indicators #7, #8)
+  const forecastIn = [
+    { date: addDays(5), nominal: 60000000 },
+    { date: addDays(12), nominal: 45000000 },
+    { date: addDays(20), nominal: 80000000 },
+    { date: addDays(35), nominal: 55000000 },
+  ];
+  const forecastOut = [
+    { date: addDays(3), nominal: 20000000 },
+    { date: addDays(10), nominal: 35000000 },
+    { date: addDays(18), nominal: 25000000 },
+    { date: addDays(30), nominal: 40000000 },
+  ];
+  const forecastCashPosition30 = forecastCashPosition(totalBank, forecastIn, forecastOut, addDays(30));
+
   // Filtered table data
   const makeRow = (brand) => ({
     Brand: brand,
@@ -164,6 +194,7 @@ export function demoState(filters = {}, session = null) {
     'Nominal Pengajuan (Rp)': Math.floor(Math.random() * 15000000) + 5000000,
     Prioritas: ['High', 'Medium', 'Low'][Math.floor(Math.random() * 3)],
     Status: ['Diajukan', 'Approved', 'Need Revision'][Math.floor(Math.random() * 3)],
+    'Tgl Dibutuhkan': addDays(3 + Math.floor(Math.random() * 30)),
   });
 
   const pendingBudget = visibleBrands.map(b => makeRow(b.Brand)).slice(0, 8);
@@ -174,6 +205,8 @@ export function demoState(filters = {}, session = null) {
     'Sisa Hutang (Rp)': Math.floor(Math.random() * 20000000) + 3000000,
     Status: ['DP', 'Termin', 'Belum Dibayar'][Math.floor(Math.random() * 3)],
   })).slice(0, 6);
+
+  const payableOutstanding = dueSoon.reduce((s, r) => s + (r['Sisa Hutang (Rp)'] || 0), 0);
 
   const role = session?.role || 'finance';
   const perms = ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.pic_brand;
@@ -210,11 +243,18 @@ export function demoState(filters = {}, session = null) {
         budgetRequested: pendingBudget.reduce((s, r) => s + (r['Nominal Pengajuan (Rp)'] || 0), 0),
         pendingApproval: pendingBudget.filter(r => r.Status !== 'Approved').length,
         budgetOutstanding: pendingBudget.reduce((s, r) => s + (r['Nominal Pengajuan (Rp)'] || 0), 0),
-        payableOutstanding: dueSoon.reduce((s, r) => s + (r['Sisa Hutang (Rp)'] || 0), 0),
+        payableOutstanding,
+        receivableOutstanding,
         omzetAchievement: avgOmzet,
         omzetReal: perf.reduce((s, p) => s + (p.cashIn || 0), 0),
         omzetTarget: perf.reduce((s, p) => s + ((p.cashIn || 0) / (p.omzetAchievement || 1)), 0),
         approvalRate: pendingBudget.length ? pendingBudget.filter(r => r.Status === 'Approved').length / pendingBudget.length : 0,
+        cashPosition,
+        cashOutRatio,
+        cashConversion,
+        receivableRisk,
+        payableRisk: cashInMonth > 0 ? payableOutstanding / cashInMonth : 0,
+        forecastCashPosition30,
       },
       charts: {
         monthlyCashFlow,
@@ -227,6 +267,7 @@ export function demoState(filters = {}, session = null) {
         payableAging,
         budgetByCategory: outcomeByCategory,
       },
+      forecast: { in: forecastIn, out: forecastOut },
       tables: { pendingBudget, dueSoon },
     },
     auditLog: [],
