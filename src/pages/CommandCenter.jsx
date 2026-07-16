@@ -58,12 +58,12 @@ export default function CommandCenter() {
   const forecastCashPosColor = forecastCashPositionStatus(s.forecastCashPosition30 || 0, s.bankBalance || 0);
 
   const ewsMetrics = [
-    { label: 'Cash Position', value: money.format(s.cashPosition || 0), color: cashPosColor, note: 'Saldo + Cash In − Cash Out hari ini', statusLabel: ewsDetail('cashPosition', cashPosColor).label, arti: ewsDetail('cashPosition', cashPosColor).arti },
-    { label: 'Cash Out Ratio', value: pct.format(s.cashOutRatio || 0), color: cashOutRatioColor, note: 'Cash Out ÷ Cash In bulan ini', statusLabel: ewsDetail('cashOutRatio', cashOutRatioColor).label, arti: ewsDetail('cashOutRatio', cashOutRatioColor).arti },
-    { label: 'Cash Conversion', value: pct.format(s.cashConversion || 0), color: cashConversionColor, note: 'Cash In ÷ Realisasi Omzet bulan ini', statusLabel: ewsDetail('cashConversion', cashConversionColor).label, arti: ewsDetail('cashConversion', cashConversionColor).arti },
-    { label: 'Receivable Risk', value: pct.format(s.receivableRisk || 0), color: receivableRiskColor, note: 'Piutang ÷ Realisasi Omzet bulan ini', statusLabel: ewsDetail('receivableRisk', receivableRiskColor).label, arti: ewsDetail('receivableRisk', receivableRiskColor).arti },
-    { label: 'Payable Risk', value: pct.format(s.payableRisk || 0), color: payableRiskColor, note: 'Hutang ÷ Cash In bulan ini', statusLabel: ewsDetail('payableRisk', payableRiskColor).label, arti: ewsDetail('payableRisk', payableRiskColor).arti },
-    { label: 'Forecast Cash Position (30 hari)', value: money.format(s.forecastCashPosition30 || 0), color: forecastCashPosColor, note: 'Saldo + forecast in − forecast out, 30 hari ke depan', statusLabel: ewsDetail('forecastCashPosition', forecastCashPosColor).label, arti: ewsDetail('forecastCashPosition', forecastCashPosColor).arti },
+    { label: 'Cash Position', value: money.format(s.cashPosition || 0), color: cashPosColor, statusLabel: ewsDetail('cashPosition', cashPosColor).label, arti: ewsDetail('cashPosition', cashPosColor).arti },
+    { label: 'Cash Out Ratio', value: pct.format(s.cashOutRatio || 0), color: cashOutRatioColor, statusLabel: ewsDetail('cashOutRatio', cashOutRatioColor).label, arti: ewsDetail('cashOutRatio', cashOutRatioColor).arti },
+    { label: 'Cash Conversion', value: pct.format(s.cashConversion || 0), color: cashConversionColor, statusLabel: ewsDetail('cashConversion', cashConversionColor).label, arti: ewsDetail('cashConversion', cashConversionColor).arti },
+    { label: 'Receivable Risk', value: pct.format(s.receivableRisk || 0), color: receivableRiskColor, statusLabel: ewsDetail('receivableRisk', receivableRiskColor).label, arti: ewsDetail('receivableRisk', receivableRiskColor).arti },
+    { label: 'Payable Risk', value: pct.format(s.payableRisk || 0), color: payableRiskColor, statusLabel: ewsDetail('payableRisk', payableRiskColor).label, arti: ewsDetail('payableRisk', payableRiskColor).arti },
+    { label: 'Forecast Cash Position (30 hari)', value: money.format(s.forecastCashPosition30 || 0), color: forecastCashPosColor, statusLabel: ewsDetail('forecastCashPosition', forecastCashPosColor).label, arti: ewsDetail('forecastCashPosition', forecastCashPosColor).arti },
   ];
 
   const waterfallData = useMemo(() => (charts.monthlyCashFlow || []).map(x => ({ label: x.label, cashIn: x.cashIn, netCash: x.netCash, cashOut: x.cashOut })), [charts.monthlyCashFlow]);
