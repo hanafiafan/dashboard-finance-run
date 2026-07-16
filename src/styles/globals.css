@@ -477,6 +477,8 @@ p, span { color: inherit; }
 }
 
 .metric-card .note { font-size: 0.72rem; color: var(--text-secondary); font-weight: 500; }
+.metric-card .ews-status-row { margin-top: 0.4rem; }
+.metric-card .ews-arti { font-size: 0.72rem; color: var(--text-secondary); line-height: 1.4; margin-top: 0.35rem; }
 .metric-card .trend { font-size: 0.72rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem; }
 .metric-card .trend.up { color: var(--green); }
 .metric-card .trend.down { color: var(--rose); }

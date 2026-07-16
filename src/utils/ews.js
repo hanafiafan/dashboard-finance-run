@@ -29,6 +29,53 @@ export function cashPositionStatus(value) {
   return 'rose';
 }
 
+// Maps an EWS color to the "Status" + "Arti" wording from the source doc, so
+// direksi sees not just the number but what it means and how urgent it is.
+export const STATUS_CLASS = { green: 'ok', amber: 'warn', rose: 'bad' };
+
+const EWS_TEXT = {
+  cashPosition: {
+    green: { label: 'Sehat', arti: 'Kas operasional mencukupi seluruh kebutuhan hari ini.' },
+    amber: { label: 'Waspada', arti: 'Kas hanya cukup untuk kebutuhan hari ini — pengeluaran tambahan akan mulai mengganggu likuiditas.' },
+    rose: { label: 'Kritis', arti: 'Kas operasional tidak mencukupi — risiko keterlambatan bayar supplier, payroll, atau operasional meningkat.' },
+  },
+  cashOutRatio: {
+    green: { label: 'Sehat', arti: 'Pengeluaran masih efisien — ada ruang untuk investasi maupun menghadapi risiko.' },
+    amber: { label: 'Waspada', arti: 'Pengeluaran mulai mendekati batas kebijakan — cadangan kas bertambah lebih lambat.' },
+    rose: { label: 'Kritis', arti: 'Pengeluaran melebihi kebijakan cashflow — likuiditas jangka panjang berpotensi melemah.' },
+  },
+  cashConversion: {
+    green: { label: 'Sehat', arti: 'Sebagian besar omzet sudah menjadi kas — cashflow sehat, mudah memenuhi kewajiban.' },
+    amber: { label: 'Waspada', arti: 'Sebagian omzet masih tertahan — perlu percepatan collection agar tidak mengganggu kas.' },
+    rose: { label: 'Kritis', arti: 'Omzet tinggi tetapi kas belum masuk — risiko piutang meningkat, kemampuan bayar menurun.' },
+  },
+  omzetAchievement: {
+    green: { label: 'Aman', arti: 'Target omzet tercapai atau melebihi target — Cash In sesuai/melebihi rencana.' },
+    amber: { label: 'Waspada', arti: 'Target omzet belum tercapai namun masih dalam batas toleransi — forecast Cash In perlu dipantau.' },
+    rose: { label: 'Bahaya', arti: 'Target omzet jauh di bawah target — risiko Cash In tidak tercapai, cashflow beberapa minggu ke depan terganggu.' },
+  },
+  receivableRisk: {
+    green: { label: 'Low Risk', arti: 'Piutang masih terkendali — cashflow masih sehat.' },
+    amber: { label: 'Medium Risk', arti: 'Piutang mulai meningkat — collection perlu dipercepat.' },
+    rose: { label: 'High Risk', arti: 'Piutang terlalu besar dibanding aktivitas bisnis — risiko Cash In tertunda, likuiditas melemah.' },
+  },
+  payableRisk: {
+    green: { label: 'Low Risk', arti: 'Kewajiban masih mudah dipenuhi — cashflow stabil.' },
+    amber: { label: 'Medium Risk', arti: 'Tekanan pembayaran mulai meningkat — perlu pengaturan jadwal pembayaran.' },
+    rose: { label: 'High Risk', arti: 'Kewajiban mulai membebani kemampuan kas — risiko kekurangan kas meningkat.' },
+  },
+  forecastCashPosition: {
+    green: { label: 'Aman', arti: 'Seluruh kewajiban hingga tanggal tersebut masih dapat dipenuhi — likuiditas aman.' },
+    amber: { label: 'Waspada', arti: 'Kas masih cukup tetapi ruang pengeluaran tambahan sangat terbatas — perlu pengendalian cash out.' },
+    rose: { label: 'Kritis', arti: 'Perusahaan diproyeksikan kekurangan kas pada tanggal tersebut — risiko gagal bayar meningkat.' },
+  },
+};
+
+// indicator: one of the EWS_TEXT keys above; color: 'green'|'amber'|'rose' from the status functions.
+export function ewsDetail(indicator, color) {
+  return EWS_TEXT[indicator]?.[color] || { label: '', arti: '' };
+}
+
 export function addDays(days, from = new Date()) {
   const d = new Date(from);
   d.setDate(d.getDate() + days);

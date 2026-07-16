@@ -8,7 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useFilters } from '../hooks/useFilters';
 import { CHART_COLORS } from '../utils/constants';
 import { getChartTheme } from '../utils/chartTheme';
-import { ewsStatus, cashPositionStatus, forecastCashPositionStatus } from '../utils/ews';
+import { ewsStatus, cashPositionStatus, forecastCashPositionStatus, ewsDetail } from '../utils/ews';
 import PolarChartCard from '../components/charts/PolarChart';
 import ComboChart from '../components/charts/ComboChart';
 import HorizontalBar from '../components/charts/HorizontalBar';
@@ -37,6 +37,7 @@ export default function CommandCenter() {
 
   const ct = getChartTheme();
 
+  const omzetAchColor = ewsStatus(s.omzetAchievement || 0, 1.0, 0.8);
   const metrics = [
     { label: 'Cash In', value: money.format(s.cashIn), color: 'green', note: `${(charts.monthlyCashFlow || []).length} bulan` },
     { label: 'Cash Out', value: money.format(s.cashOut), color: 'coral', note: 'Total pengeluaran' },
@@ -45,17 +46,24 @@ export default function CommandCenter() {
     { label: 'Budget Request', value: money.format(s.budgetRequested), color: 'violet', note: `${s.pendingApproval} pending` },
     { label: 'Pending', value: number.format(s.pendingApproval), color: 'amber', note: 'Perlu review' },
     { label: 'Hutang', value: money.format(s.payableOutstanding || s.budgetOutstanding), color: 'rose', note: `${(charts.payableAging || []).length} bucket` },
-    { label: 'Capaian Omzet', value: pct.format(s.omzetAchievement || 0), color: ewsStatus(s.omzetAchievement || 0, 1.0, 0.8), note: `${money.format(s.omzetReal)} / ${money.format(s.omzetTarget)}` },
+    { label: 'Capaian Omzet', value: pct.format(s.omzetAchievement || 0), color: omzetAchColor, note: `${money.format(s.omzetReal)} / ${money.format(s.omzetTarget)}`, statusLabel: ewsDetail('omzetAchievement', omzetAchColor).label, arti: ewsDetail('omzetAchievement', omzetAchColor).arti },
   ];
 
   // Early Warning System — see RAW DATA DASHBOARD FINANCE/Early Warning System.docx
+  const cashPosColor = cashPositionStatus(s.cashPosition || 0);
+  const cashOutRatioColor = ewsStatus(s.cashOutRatio || 0, 0.85, 0.90, false);
+  const cashConversionColor = ewsStatus(s.cashConversion || 0, 0.65, 0.50);
+  const receivableRiskColor = ewsStatus(s.receivableRisk || 0, 0.20, 0.35, false);
+  const payableRiskColor = ewsStatus(s.payableRisk || 0, 0.30, 0.50, false);
+  const forecastCashPosColor = forecastCashPositionStatus(s.forecastCashPosition30 || 0, s.bankBalance || 0);
+
   const ewsMetrics = [
-    { label: 'Cash Position', value: money.format(s.cashPosition || 0), color: cashPositionStatus(s.cashPosition || 0), note: 'Saldo + Cash In − Cash Out hari ini' },
-    { label: 'Cash Out Ratio', value: pct.format(s.cashOutRatio || 0), color: ewsStatus(s.cashOutRatio || 0, 0.85, 0.90, false), note: 'Cash Out ÷ Cash In bulan ini' },
-    { label: 'Cash Conversion', value: pct.format(s.cashConversion || 0), color: ewsStatus(s.cashConversion || 0, 0.65, 0.50), note: 'Cash In ÷ Realisasi Omzet bulan ini' },
-    { label: 'Receivable Risk', value: pct.format(s.receivableRisk || 0), color: ewsStatus(s.receivableRisk || 0, 0.20, 0.35, false), note: 'Piutang ÷ Realisasi Omzet bulan ini' },
-    { label: 'Payable Risk', value: pct.format(s.payableRisk || 0), color: ewsStatus(s.payableRisk || 0, 0.30, 0.50, false), note: 'Hutang ÷ Cash In bulan ini' },
-    { label: 'Forecast Cash Position (30 hari)', value: money.format(s.forecastCashPosition30 || 0), color: forecastCashPositionStatus(s.forecastCashPosition30 || 0, s.bankBalance || 0), note: 'Saldo + forecast in − forecast out, 30 hari ke depan' },
+    { label: 'Cash Position', value: money.format(s.cashPosition || 0), color: cashPosColor, note: 'Saldo + Cash In − Cash Out hari ini', statusLabel: ewsDetail('cashPosition', cashPosColor).label, arti: ewsDetail('cashPosition', cashPosColor).arti },
+    { label: 'Cash Out Ratio', value: pct.format(s.cashOutRatio || 0), color: cashOutRatioColor, note: 'Cash Out ÷ Cash In bulan ini', statusLabel: ewsDetail('cashOutRatio', cashOutRatioColor).label, arti: ewsDetail('cashOutRatio', cashOutRatioColor).arti },
+    { label: 'Cash Conversion', value: pct.format(s.cashConversion || 0), color: cashConversionColor, note: 'Cash In ÷ Realisasi Omzet bulan ini', statusLabel: ewsDetail('cashConversion', cashConversionColor).label, arti: ewsDetail('cashConversion', cashConversionColor).arti },
+    { label: 'Receivable Risk', value: pct.format(s.receivableRisk || 0), color: receivableRiskColor, note: 'Piutang ÷ Realisasi Omzet bulan ini', statusLabel: ewsDetail('receivableRisk', receivableRiskColor).label, arti: ewsDetail('receivableRisk', receivableRiskColor).arti },
+    { label: 'Payable Risk', value: pct.format(s.payableRisk || 0), color: payableRiskColor, note: 'Hutang ÷ Cash In bulan ini', statusLabel: ewsDetail('payableRisk', payableRiskColor).label, arti: ewsDetail('payableRisk', payableRiskColor).arti },
+    { label: 'Forecast Cash Position (30 hari)', value: money.format(s.forecastCashPosition30 || 0), color: forecastCashPosColor, note: 'Saldo + forecast in − forecast out, 30 hari ke depan', statusLabel: ewsDetail('forecastCashPosition', forecastCashPosColor).label, arti: ewsDetail('forecastCashPosition', forecastCashPosColor).arti },
   ];
 
   const waterfallData = useMemo(() => (charts.monthlyCashFlow || []).map(x => ({ label: x.label, cashIn: x.cashIn, netCash: x.netCash, cashOut: x.cashOut })), [charts.monthlyCashFlow]);
