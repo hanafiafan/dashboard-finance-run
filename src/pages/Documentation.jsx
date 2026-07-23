@@ -212,11 +212,6 @@ const EWS_GLOSSARY = [
   { name: 'Rekomendasi Kas (Approval)', formula: 'Forecast Cash Position (s/d Tgl Dibutuhkan) − Nominal Pengajuan', tiers: [['sisa besar', 'Approve', 'green'], ['sisa < 20%', 'Review', 'amber'], ['negatif', 'Hold', 'rose']] },
 ];
 
-function StatusChip({ cond, label, color }) {
-  const cls = color === 'green' ? 'ok' : color === 'amber' ? 'warn' : 'bad';
-  return <span className={`status ${cls} doc-chip`}>{cond} {label}</span>;
-}
-
 function EntityGuide({ id }) {
   const g = ENTITY_GUIDES[id];
   const Icon = ENTITY_ICON[id];
@@ -381,24 +376,21 @@ export function Documentation() {
             <p>Muncul di panel "Early Warning System" pada halaman Dashboard.</p>
           </div>
         </div>
-        <div className="data-table-wrap">
-          <table className="data-table doc-ews-table">
-            <colgroup><col style={{ width: '24%' }} /><col style={{ width: '46%' }} /><col style={{ width: '30%' }} /></colgroup>
-            <thead><tr><th>Indikator</th><th>Formula</th><th>Ambang Status</th></tr></thead>
-            <tbody>
-              {EWS_GLOSSARY.map((row) => (
-                <tr key={row.name}>
-                  <td>{row.name}</td>
-                  <td className="mono" style={{ fontSize: '0.78rem' }}>{row.formula}</td>
-                  <td>
-                    <div className="doc-chip-row">
-                      {row.tiers.map(([cond, label, color]) => <StatusChip key={label} cond={cond} label={label} color={color} />)}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="doc-ews-grid">
+          {EWS_GLOSSARY.map((row) => (
+            <div key={row.name} className="doc-ews-card">
+              <h5>{row.name}</h5>
+              <code className="doc-ews-formula">{row.formula}</code>
+              <div className="doc-ews-tiers">
+                {row.tiers.map(([cond, label, color]) => (
+                  <div key={label} className={`doc-ews-tier ${color}`}>
+                    <span className="doc-ews-tier-cond">{cond}</span>
+                    <span className="doc-ews-tier-label">{label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

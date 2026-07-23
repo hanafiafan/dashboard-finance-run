@@ -663,12 +663,38 @@ p, span { color: inherit; }
 .doc-catatan svg { flex-shrink: 0; margin-top: 0.1rem; }
 .doc-catatan-strong { color: var(--rose); background: var(--rose-bg); font-weight: 600; }
 
-.doc-chip-row { display: flex; flex-direction: column; align-items: flex-start; gap: 0.3rem; }
-.doc-chip { font-size: 0.68rem !important; padding: 0.2rem 0.55rem !important; white-space: nowrap; min-width: 9.5rem; }
-.doc-ews-table { table-layout: fixed; min-width: 720px; }
-.doc-ews-table td { white-space: normal; vertical-align: top; padding-top: 0.85rem; padding-bottom: 0.85rem; word-break: break-word; }
-.doc-ews-table th { white-space: nowrap; }
-.doc-ews-table td.mono { white-space: normal; }
+.doc-ews-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.85rem;
+  padding: 1.1rem 1.15rem;
+}
+.doc-ews-card {
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md, 8px);
+  padding: 0.85rem 1rem;
+  background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.doc-ews-card h5 { margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--text-primary); }
+.doc-ews-formula {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+  padding: 0.4rem 0.55rem;
+  border-radius: 5px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+.doc-ews-tiers { display: flex; flex-direction: column; gap: 0.3rem; }
+.doc-ews-tier { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; padding: 0.3rem 0.55rem; border-radius: 5px; font-size: 0.74rem; font-weight: 600; }
+.doc-ews-tier-cond { font-family: 'JetBrains Mono', monospace; font-weight: 500; opacity: 0.85; }
+.doc-ews-tier.green { background: var(--green-bg); color: var(--green); }
+.doc-ews-tier.amber { background: var(--amber-bg); color: var(--amber); }
+.doc-ews-tier.rose { background: var(--rose-bg); color: var(--rose); }
 
 .doc-tips { list-style: none; margin: 0.5rem 0 0.75rem; padding: 0; display: flex; flex-direction: column; gap: 0.65rem; }
 .doc-tips li { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.85rem; line-height: 1.6; color: var(--text-secondary); }
