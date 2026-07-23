@@ -606,19 +606,69 @@ p, span { color: inherit; }
 /* ============================================================
    DOCUMENTATION PAGE
    ============================================================ */
+.doc-role-tabs button { display: inline-flex; align-items: center; gap: 0.4rem; }
+
+.doc-role-hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: 1rem 1.15rem;
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--border-light);
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+.doc-role-hero p { margin: 0.25rem 0 0; font-weight: 600; font-size: 0.95rem; color: var(--text-primary); }
+.doc-role-hero-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; opacity: 0.85; }
+.doc-role-hero-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.55); flex-shrink: 0;
+}
+[data-theme="dark"] .doc-role-hero-icon { background: rgba(255,255,255,0.08); }
+.doc-role-hero.violet { background: var(--card-violet); border-color: var(--violet-light); color: var(--violet); }
+.doc-role-hero.teal { background: var(--card-teal); border-color: var(--teal-light); color: var(--teal); }
+.doc-role-hero.blue { background: var(--card-blue); border-color: var(--blue-light); color: var(--blue); }
+.doc-role-hero.amber { background: var(--card-amber); border-color: var(--amber-light); color: var(--amber); }
+.doc-role-hero.violet .doc-role-hero-icon { color: var(--violet); }
+.doc-role-hero.teal .doc-role-hero-icon { color: var(--teal); }
+.doc-role-hero.blue .doc-role-hero-icon { color: var(--blue); }
+.doc-role-hero.amber .doc-role-hero-icon { color: var(--amber); }
+
+.doc-checklist { list-style: none; margin: 0 0 1.1rem; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.doc-checklist li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.85rem; line-height: 1.55; color: var(--text-secondary); }
+.doc-check-icon { color: var(--green); flex-shrink: 0; margin-top: 0.15rem; }
+
+.doc-section-heading { display: flex; align-items: center; gap: 0.4rem; margin: 1.1rem 0 0.6rem; font-size: 0.95rem; }
+
 .doc-entity {
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md, 8px);
   padding: 0.6rem 0.9rem;
   margin-bottom: 0.6rem;
   background: var(--bg-card);
+  transition: border-color var(--transition-base, 0.15s);
 }
+.doc-entity:hover { border-color: var(--border-medium); }
 .doc-entity summary { cursor: pointer; font-weight: 600; font-size: 0.88rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .doc-entity summary::marker { color: var(--text-tertiary); }
+.doc-entity-title { display: inline-flex; align-items: center; gap: 0.5rem; }
+.doc-entity-icon { color: var(--teal); flex-shrink: 0; }
 .doc-menu-path { font-weight: 400; font-size: 0.72rem; color: var(--text-tertiary); font-family: 'JetBrains Mono', monospace; }
 .doc-tujuan { font-size: 0.82rem; color: var(--text-secondary); margin: 0.5rem 0; }
-.doc-entity ol { margin: 0.4rem 0 0.4rem 1.2rem; font-size: 0.82rem; line-height: 1.7; }
-.doc-catatan { font-size: 0.8rem; color: var(--amber); background: var(--amber-bg); padding: 0.5rem 0.75rem; border-radius: 6px; margin-top: 0.5rem; }
+.doc-steps { margin: 0.4rem 0 0.4rem 1.2rem; font-size: 0.82rem; line-height: 1.8; }
+.doc-steps li::marker { color: var(--teal); font-weight: 700; }
+.doc-catatan { display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.8rem; color: var(--amber); background: var(--amber-bg); padding: 0.5rem 0.75rem; border-radius: 6px; margin-top: 0.5rem; }
+.doc-catatan svg { flex-shrink: 0; margin-top: 0.1rem; }
+.doc-catatan-strong { color: var(--rose); background: var(--rose-bg); font-weight: 600; }
+
+.doc-chip-row { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.doc-chip { font-size: 0.68rem !important; padding: 0.15rem 0.5rem !important; white-space: nowrap; }
+
+.doc-tips { list-style: none; margin: 0.5rem 0 0.75rem; padding: 0; display: flex; flex-direction: column; gap: 0.65rem; }
+.doc-tips li { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.85rem; line-height: 1.6; color: var(--text-secondary); }
+.doc-tip-icon { color: var(--teal); flex-shrink: 0; margin-top: 0.1rem; }
 
 /* ============================================================
    PANELS

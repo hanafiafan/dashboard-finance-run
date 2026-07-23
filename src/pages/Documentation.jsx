@@ -1,6 +1,27 @@
 import { useState } from 'react';
-import { BookOpen } from 'lucide-react';
+import {
+  BookOpen, ShieldCheck, Landmark, Eye, UserCog, Wallet, ArrowDownCircle, ArrowUpCircle,
+  CalendarClock, CalendarX2, BarChart3, Truck, Users, Tag, HandCoins, Briefcase,
+  CheckCircle2, Filter, RefreshCw, Download, SunMoon, MessageCircleWarning,
+  ClipboardList, AlertTriangle, ShieldAlert,
+} from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+
+const ENTITY_ICON = {
+  budget: Wallet,
+  income: ArrowDownCircle,
+  forecast: CalendarClock,
+  forecastOut: CalendarX2,
+  outcome: ArrowUpCircle,
+  omzet: BarChart3,
+  bank: Landmark,
+  service: Briefcase,
+  payables: HandCoins,
+  receivables: HandCoins,
+  vendors: Truck,
+  customers: Users,
+  brands: Tag,
+};
 
 // Step-by-step input guide per data module — shared across roles, since the
 // form itself doesn't change per role, only who's allowed to open it.
@@ -174,42 +195,41 @@ const ENTITY_GUIDES = {
 };
 
 const ROLE_META = {
-  superadmin: { label: 'Super Admin', color: 'ok' },
-  finance: { label: 'Finance', color: 'warn' },
-  owner: { label: 'Owner', color: 'info' },
-  pic_brand: { label: 'PIC Brand', color: 'bad' },
+  superadmin: { label: 'Super Admin', icon: ShieldCheck, banner: 'violet' },
+  finance: { label: 'Finance', icon: Landmark, banner: 'teal' },
+  owner: { label: 'Owner', icon: Eye, banner: 'blue' },
+  pic_brand: { label: 'PIC Brand', icon: UserCog, banner: 'amber' },
 };
-
-// Which entities each role can EDIT (source of truth mirrors src/utils/demoData.js buildEntities()).
-const ROLE_EDIT_ACCESS = {
-  superadmin: ['budget', 'income', 'forecast', 'forecastOut', 'outcome', 'omzet', 'bank', 'service', 'payables', 'receivables', 'vendors', 'customers', 'brands'],
-  finance: ['budget', 'income', 'forecast', 'forecastOut', 'outcome', 'omzet', 'bank', 'service', 'payables', 'receivables', 'vendors', 'customers', 'brands'],
-  owner: ['budget', 'income', 'forecast', 'forecastOut', 'outcome'],
-  pic_brand: ['budget'],
-};
-// Everything else in ENTITY_GUIDES that a role can't edit is still visible to them read-only,
-// except pic_brand's view is also scoped to their own Brand Key only.
 
 const EWS_GLOSSARY = [
-  { name: 'Cash Position', formula: 'Saldo Rekening + Cash In hari ini − Cash Out hari ini', tiers: '> 0 Sehat · = 0 Waspada · < 0 Kritis' },
-  { name: 'Cash Out Ratio', formula: 'Cash Out bulan ini ÷ Cash In bulan ini', tiers: '≤ 85% Sehat · 85–90% Waspada · ≥ 90% Kritis' },
-  { name: 'Cash Conversion', formula: 'Cash In bulan ini ÷ Realisasi Omzet bulan ini', tiers: '≥ 65% Sehat · 50–65% Waspada · ≤ 50% Kritis' },
-  { name: 'Capaian Omzet', formula: 'Realisasi Omzet ÷ Target Omzet', tiers: '≥ 100% Aman · 80–99% Waspada · ≤ 80% Bahaya' },
-  { name: 'Receivable Risk', formula: 'Piutang ÷ Realisasi Omzet bulan ini', tiers: '≤ 20% Low Risk · 20–35% Medium Risk · ≥ 35% High Risk' },
-  { name: 'Payable Risk', formula: 'Hutang ÷ Cash In bulan ini', tiers: '≤ 30% Low Risk · 30–50% Medium Risk · ≥ 50% High Risk' },
-  { name: 'Forecast Cash Position (30 hari)', formula: 'Saldo + forecast in − forecast out, 30 hari ke depan', tiers: '> 0 Aman · di bawah 10% saldo Waspada · < 0 Kritis' },
-  { name: 'Rekomendasi Kas (di halaman Approval)', formula: 'Forecast Cash Position (s/d Tgl Dibutuhkan) − Nominal Pengajuan', tiers: 'Positif & sisa besar Approve · sisa tipis (>80% terpakai) Review · negatif Hold' },
+  { name: 'Cash Position', formula: 'Saldo Rekening + Cash In hari ini − Cash Out hari ini', tiers: [['> 0', 'Sehat', 'green'], ['= 0', 'Waspada', 'amber'], ['< 0', 'Kritis', 'rose']] },
+  { name: 'Cash Out Ratio', formula: 'Cash Out bulan ini ÷ Cash In bulan ini', tiers: [['≤ 85%', 'Sehat', 'green'], ['85–90%', 'Waspada', 'amber'], ['≥ 90%', 'Kritis', 'rose']] },
+  { name: 'Cash Conversion', formula: 'Cash In bulan ini ÷ Realisasi Omzet bulan ini', tiers: [['≥ 65%', 'Sehat', 'green'], ['50–65%', 'Waspada', 'amber'], ['≤ 50%', 'Kritis', 'rose']] },
+  { name: 'Capaian Omzet', formula: 'Realisasi Omzet ÷ Target Omzet', tiers: [['≥ 100%', 'Aman', 'green'], ['80–99%', 'Waspada', 'amber'], ['≤ 80%', 'Bahaya', 'rose']] },
+  { name: 'Receivable Risk', formula: 'Piutang ÷ Realisasi Omzet bulan ini', tiers: [['≤ 20%', 'Low Risk', 'green'], ['20–35%', 'Medium Risk', 'amber'], ['≥ 35%', 'High Risk', 'rose']] },
+  { name: 'Payable Risk', formula: 'Hutang ÷ Cash In bulan ini', tiers: [['≤ 30%', 'Low Risk', 'green'], ['30–50%', 'Medium Risk', 'amber'], ['≥ 50%', 'High Risk', 'rose']] },
+  { name: 'Forecast Cash Position (30 hari)', formula: 'Saldo + forecast in − forecast out, 30 hari ke depan', tiers: [['> 0', 'Aman', 'green'], ['< 10% saldo', 'Waspada', 'amber'], ['< 0', 'Kritis', 'rose']] },
+  { name: 'Rekomendasi Kas (Approval)', formula: 'Forecast Cash Position (s/d Tgl Dibutuhkan) − Nominal Pengajuan', tiers: [['sisa besar', 'Approve', 'green'], ['sisa < 20%', 'Review', 'amber'], ['negatif', 'Hold', 'rose']] },
 ];
+
+function StatusChip({ cond, label, color }) {
+  const cls = color === 'green' ? 'ok' : color === 'amber' ? 'warn' : 'bad';
+  return <span className={`status ${cls} doc-chip`}>{cond} {label}</span>;
+}
 
 function EntityGuide({ id }) {
   const g = ENTITY_GUIDES[id];
+  const Icon = ENTITY_ICON[id];
   if (!g) return null;
   return (
     <details className="doc-entity">
-      <summary>{g.title} <span className="doc-menu-path">{g.menu}</span></summary>
+      <summary>
+        <span className="doc-entity-title">{Icon && <Icon size={16} className="doc-entity-icon" />}{g.title}</span>
+        <span className="doc-menu-path">{g.menu}</span>
+      </summary>
       <p className="doc-tujuan">{g.tujuan}</p>
-      <ol>{g.steps.map((s, i) => <li key={i}>{s}</li>)}</ol>
-      {g.catatan && <p className="doc-catatan">⚠️ {g.catatan}</p>}
+      <ol className="doc-steps">{g.steps.map((s, i) => <li key={i}>{s}</li>)}</ol>
+      {g.catatan && <p className="doc-catatan"><AlertTriangle size={14} /> {g.catatan}</p>}
     </details>
   );
 }
@@ -258,49 +278,74 @@ const ROLE_CONTENT = {
   },
 };
 
+const GENERAL_TIPS = [
+  { icon: Filter, text: <><strong>Filter</strong> (Company/Brand/Kategori/Tanggal) di bagian atas berlaku ke semua halaman — kosongkan filter untuk melihat semua data lagi.</> },
+  { icon: RefreshCw, text: <><strong>Refresh</strong> di pojok kanan atas / sidebar untuk menarik ulang data terbaru dari database.</> },
+  { icon: Download, text: <><strong>CSV</strong> muncul saat kamu sedang membuka tabel data (Operasional/Master Data) — untuk unduh data yang sedang tampil.</> },
+  { icon: SunMoon, text: <><strong>Light/Dark mode</strong> di pojok kanan atas, murni preferensi tampilan.</> },
+  { icon: MessageCircleWarning, text: 'Kalau muncul pesan error saat menyimpan data, screenshot pesannya dan kirim ke Finance/Super Admin untuk dicek.' },
+];
+
 export function Documentation() {
   const { session } = useAuth();
   const myRole = session?.role || 'pic_brand';
   const [activeRole, setActiveRole] = useState(myRole);
 
   const content = ROLE_CONTENT[activeRole];
+  const meta = ROLE_META[activeRole];
+  const RoleIcon = meta.icon;
 
   return (
     <div className="doc-page">
       <div className="panel tight">
         <div className="panel-head">
           <div>
-            <h3><BookOpen size={16} style={{ verticalAlign: -3, marginRight: 6 }} />Dokumentasi & Panduan Penggunaan</h3>
+            <h3><BookOpen size={18} style={{ verticalAlign: -3, marginRight: 6 }} />Dokumentasi & Panduan Penggunaan</h3>
             <p>Cara input data dan menjalankan dashboard untuk setiap role.</p>
           </div>
         </div>
 
-        <div className="tabs" style={{ marginTop: '0.75rem' }}>
-          {Object.keys(ROLE_META).map((role) => (
-            <button key={role} className={activeRole === role ? 'active' : ''} onClick={() => setActiveRole(role)}>
-              {ROLE_META[role].label}{role === myRole ? ' (Kamu)' : ''}
-            </button>
-          ))}
+        <div className="tabs doc-role-tabs">
+          {Object.keys(ROLE_META).map((role) => {
+            const TabIcon = ROLE_META[role].icon;
+            return (
+              <button key={role} className={activeRole === role ? 'active' : ''} onClick={() => setActiveRole(role)}>
+                <TabIcon size={15} /> {ROLE_META[role].label}{role === myRole ? ' (Kamu)' : ''}
+              </button>
+            );
+          })}
         </div>
 
-        <div style={{ padding: '1rem 0 0.25rem' }}>
-          <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{content.ringkasan}</p>
-          <ul style={{ margin: '0 0 1rem 1.1rem', fontSize: '0.85rem', lineHeight: 1.7 }}>
-            {content.bullets.map((b, i) => <li key={i}>{b}</li>)}
+        <div style={{ padding: '1.1rem 1.15rem 0.25rem' }}>
+          <div className={`doc-role-hero ${meta.banner}`}>
+            <div className="doc-role-hero-icon"><RoleIcon size={26} /></div>
+            <div>
+              <div className="doc-role-hero-label">{meta.label}</div>
+              <p>{content.ringkasan}</p>
+            </div>
+          </div>
+
+          <ul className="doc-checklist">
+            {content.bullets.map((b, i) => (
+              <li key={i}><CheckCircle2 size={16} className="doc-check-icon" /><span>{b}</span></li>
+            ))}
           </ul>
 
-          {content.warning && <p className="doc-catatan" style={{ marginBottom: '1rem' }}>⚠️ {content.warning}</p>}
+          {content.warning && <p className="doc-catatan doc-catatan-strong"><ShieldAlert size={15} /> {content.warning}</p>}
 
-          <h4 style={{ margin: '0.5rem 0' }}>Cara input data — modul yang bisa diedit oleh {ROLE_META[activeRole].label}</h4>
+          <h4 className="doc-section-heading"><ClipboardList size={16} /> Cara input data — modul yang bisa diedit oleh {meta.label}</h4>
           {content.entities.map((id) => <EntityGuide key={id} id={id} />)}
 
-          {content.readonlyNote && <p className="doc-catatan" style={{ marginTop: '1rem' }}>ℹ️ {content.readonlyNote}</p>}
+          {content.readonlyNote && <p className="doc-catatan"><Eye size={14} /> {content.readonlyNote}</p>}
 
           {(activeRole === 'superadmin' || activeRole === 'finance') && (
             <details className="doc-entity">
-              <summary>Kelola User <span className="doc-menu-path">Master Data → tab "Users"</span></summary>
+              <summary>
+                <span className="doc-entity-title"><UserCog size={16} className="doc-entity-icon" />Kelola User</span>
+                <span className="doc-menu-path">Master Data → tab "Users"</span>
+              </summary>
               <p className="doc-tujuan">Menambah akun baru, reset password, atau menghapus user.</p>
-              <ol>
+              <ol className="doc-steps">
                 <li>Buka Master Data → tab Users.</li>
                 <li>Klik "Add User" — isi Email, Nama, Role, dan Password awal.</li>
                 <li>Super Admin bisa memilih role apa saja termasuk Super Admin; Finance tidak bisa membuat akun Super Admin baru.</li>
@@ -313,14 +358,17 @@ export function Documentation() {
 
           {(activeRole === 'superadmin' || activeRole === 'finance' || activeRole === 'owner') && (
             <details className="doc-entity">
-              <summary>Approve Budget Request <span className="doc-menu-path">Menu "Approval"</span></summary>
+              <summary>
+                <span className="doc-entity-title"><CheckCircle2 size={16} className="doc-entity-icon" />Approve Budget Request</span>
+                <span className="doc-menu-path">Menu "Approval"</span>
+              </summary>
               <p className="doc-tujuan">Menyetujui, meminta revisi, atau menolak pengajuan dana dari PIC Brand/role lain.</p>
-              <ol>
+              <ol className="doc-steps">
                 <li>Buka menu Approval — lihat daftar "Antrian approval".</li>
                 <li>Cek kolom "Rekomendasi Kas" di sebelah kanan setiap baris: 🟢 Approve (aman), 🟡 Review (kas menipis, pertimbangkan dulu), 🔴 Hold (proyeksi kas jadi negatif kalau disetujui).</li>
                 <li>Klik ikon centang untuk Approve (akan diminta isi nominal yang dibayar & catatan feedback), ikon panah untuk minta revisi, atau ikon silang untuk tolak.</li>
               </ol>
-              <p className="doc-catatan">⚠️ Rekomendasi Kas ini bantu keputusan, bukan aturan otomatis — kamu tetap bisa approve walau statusnya Hold kalau memang ada pertimbangan lain.</p>
+              <p className="doc-catatan"><AlertTriangle size={14} /> Rekomendasi Kas ini bantu keputusan, bukan aturan otomatis — kamu tetap bisa approve walau statusnya Hold kalau memang ada pertimbangan lain.</p>
             </details>
           )}
         </div>
@@ -341,7 +389,11 @@ export function Documentation() {
                 <tr key={row.name}>
                   <td>{row.name}</td>
                   <td className="mono" style={{ fontSize: '0.78rem' }}>{row.formula}</td>
-                  <td style={{ fontSize: '0.78rem' }}>{row.tiers}</td>
+                  <td>
+                    <div className="doc-chip-row">
+                      {row.tiers.map(([cond, label, color]) => <StatusChip key={label} cond={cond} label={label} color={color} />)}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -355,12 +407,11 @@ export function Documentation() {
             <h3>Panduan Umum</h3>
           </div>
         </div>
-        <ul style={{ margin: '0.5rem 0 0.75rem 1.1rem', fontSize: '0.85rem', lineHeight: 1.8 }}>
-          <li><strong>Filter (Company/Brand/Kategori/Tanggal)</strong> di bagian atas berlaku ke semua halaman — kosongkan filter untuk melihat semua data lagi.</li>
-          <li><strong>Refresh</strong> di pojok kanan atas / sidebar untuk menarik ulang data terbaru dari database.</li>
-          <li><strong>CSV</strong> muncul saat kamu sedang membuka tabel data (Operasional/Master Data) — untuk unduh data yang sedang tampil.</li>
-          <li><strong>Light/Dark mode</strong> di pojok kanan atas, murni preferensi tampilan.</li>
-          <li>Kalau muncul pesan error saat menyimpan data, screenshot pesannya dan kirim ke Finance/Super Admin untuk dicek.</li>
+        <ul className="doc-tips">
+          {GENERAL_TIPS.map((t, i) => {
+            const TipIcon = t.icon;
+            return <li key={i}><TipIcon size={16} className="doc-tip-icon" /><span>{t.text}</span></li>;
+          })}
         </ul>
       </div>
     </div>
