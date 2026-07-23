@@ -696,7 +696,7 @@ p, span { color: inherit; }
 .doc-ews-tier.amber { background: var(--amber-bg); color: var(--amber); }
 .doc-ews-tier.rose { background: var(--rose-bg); color: var(--rose); }
 
-.doc-tips { list-style: none; margin: 0.5rem 0 0.75rem; padding: 0; display: flex; flex-direction: column; gap: 0.65rem; }
+.doc-tips { list-style: none; margin: 0; padding: 1rem 1.15rem 1.15rem; display: flex; flex-direction: column; gap: 0.65rem; }
 .doc-tips li { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.85rem; line-height: 1.6; color: var(--text-secondary); }
 .doc-tip-icon { color: var(--teal); flex-shrink: 0; margin-top: 0.1rem; }
 
