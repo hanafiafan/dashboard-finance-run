@@ -382,7 +382,7 @@ export function Documentation() {
           </div>
         </div>
         <div className="data-table-wrap">
-          <table className="data-table">
+          <table className="data-table doc-ews-table">
             <thead><tr><th>Indikator</th><th>Formula</th><th>Ambang Status</th></tr></thead>
             <tbody>
               {EWS_GLOSSARY.map((row) => (
