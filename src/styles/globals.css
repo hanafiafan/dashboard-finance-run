@@ -665,8 +665,10 @@ p, span { color: inherit; }
 
 .doc-chip-row { display: flex; flex-direction: column; align-items: flex-start; gap: 0.3rem; }
 .doc-chip { font-size: 0.68rem !important; padding: 0.2rem 0.55rem !important; white-space: nowrap; min-width: 9.5rem; }
-.doc-ews-table td { white-space: normal; vertical-align: top; padding-top: 0.85rem; padding-bottom: 0.85rem; }
+.doc-ews-table { table-layout: fixed; min-width: 720px; }
+.doc-ews-table td { white-space: normal; vertical-align: top; padding-top: 0.85rem; padding-bottom: 0.85rem; word-break: break-word; }
 .doc-ews-table th { white-space: nowrap; }
+.doc-ews-table td.mono { white-space: normal; }
 
 .doc-tips { list-style: none; margin: 0.5rem 0 0.75rem; padding: 0; display: flex; flex-direction: column; gap: 0.65rem; }
 .doc-tips li { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.85rem; line-height: 1.6; color: var(--text-secondary); }

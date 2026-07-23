@@ -383,6 +383,7 @@ export function Documentation() {
         </div>
         <div className="data-table-wrap">
           <table className="data-table doc-ews-table">
+            <colgroup><col style={{ width: '24%' }} /><col style={{ width: '46%' }} /><col style={{ width: '30%' }} /></colgroup>
             <thead><tr><th>Indikator</th><th>Formula</th><th>Ambang Status</th></tr></thead>
             <tbody>
               {EWS_GLOSSARY.map((row) => (
