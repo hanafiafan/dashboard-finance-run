@@ -604,6 +604,23 @@ p, span { color: inherit; }
 .brand-card .brand-stat { font-size: 0.7rem; color: var(--text-tertiary); font-weight: 600; }
 
 /* ============================================================
+   DOCUMENTATION PAGE
+   ============================================================ */
+.doc-entity {
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md, 8px);
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 0.6rem;
+  background: var(--bg-card);
+}
+.doc-entity summary { cursor: pointer; font-weight: 600; font-size: 0.88rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.doc-entity summary::marker { color: var(--text-tertiary); }
+.doc-menu-path { font-weight: 400; font-size: 0.72rem; color: var(--text-tertiary); font-family: 'JetBrains Mono', monospace; }
+.doc-tujuan { font-size: 0.82rem; color: var(--text-secondary); margin: 0.5rem 0; }
+.doc-entity ol { margin: 0.4rem 0 0.4rem 1.2rem; font-size: 0.82rem; line-height: 1.7; }
+.doc-catatan { font-size: 0.8rem; color: var(--amber); background: var(--amber-bg); padding: 0.5rem 0.75rem; border-radius: 6px; margin-top: 0.5rem; }
+
+/* ============================================================
    PANELS
    ============================================================ */
 .panel {

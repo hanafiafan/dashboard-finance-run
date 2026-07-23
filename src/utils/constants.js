@@ -176,11 +176,12 @@ export const FORMS = {
 
 export const CHART_COLORS = ['#0f766e', '#2563eb', '#f9735b', '#f59e0b', '#7c3aed', '#16a34a', '#e11d48', '#0891b2', '#84cc16', '#d946ef'];
 
-export const VIEWS = ['command', 'analytics', 'operations', 'approval', 'master'];
+export const VIEWS = ['command', 'analytics', 'operations', 'approval', 'master', 'documentation'];
 export const VIEW_TITLES = {
   command: 'Command Center',
   analytics: 'Analytics Board',
   operations: 'Operasional Harian',
   approval: 'Approval Finance',
   master: 'Master Data',
+  documentation: 'Dokumentasi & Panduan',
 };

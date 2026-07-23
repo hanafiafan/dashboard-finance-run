@@ -1,7 +1,7 @@
 import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import {
   LayoutDashboard, ChartNoAxesCombined, Table2, BadgeCheck,
-  Settings2, RefreshCw, LogOut, DownloadCloud, Download, Sun, Moon
+  Settings2, RefreshCw, LogOut, DownloadCloud, Download, Sun, Moon, BookOpen
 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -11,6 +11,7 @@ import { Analytics } from '../pages/Analytics';
 import { Operations } from '../pages/Operations';
 import { Approval } from '../pages/Approval';
 import { Master } from '../pages/Master';
+import { Documentation } from '../pages/Documentation';
 import { VIEW_TITLES } from '../utils/constants';
 import { formatDateTime } from '../utils/formatters';
 import FilterBar from '../components/filters/FilterBar';
@@ -22,6 +23,7 @@ const NAV_ITEMS = [
   { view: 'operations', icon: Table2, label: 'Operasional' },
   { view: 'approval', icon: BadgeCheck, label: 'Approval' },
   { view: 'master', icon: Settings2, label: 'Master Data' },
+  { view: 'documentation', icon: BookOpen, label: 'Dokumentasi' },
 ];
 
 export default function AppShell() {
@@ -112,6 +114,7 @@ export default function AppShell() {
       case 'operations': return <Operations />;
       case 'approval': return <Approval />;
       case 'master': return <Master />;
+      case 'documentation': return <Documentation />;
       default: return <CommandCenter />;
     }
   };
