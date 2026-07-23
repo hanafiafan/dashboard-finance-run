@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   BookOpen, ShieldCheck, Landmark, Eye, UserCog, Wallet, ArrowDownCircle, ArrowUpCircle,
   CalendarClock, CalendarX2, BarChart3, Truck, Users, Tag, HandCoins, Briefcase,
@@ -201,17 +200,6 @@ const ROLE_META = {
   pic_brand: { label: 'PIC Brand', icon: UserCog, banner: 'amber' },
 };
 
-const EWS_GLOSSARY = [
-  { name: 'Cash Position', formula: 'Saldo Rekening + Cash In hari ini − Cash Out hari ini', tiers: [['> 0', 'Sehat', 'green'], ['= 0', 'Waspada', 'amber'], ['< 0', 'Kritis', 'rose']] },
-  { name: 'Cash Out Ratio', formula: 'Cash Out bulan ini ÷ Cash In bulan ini', tiers: [['≤ 85%', 'Sehat', 'green'], ['85–90%', 'Waspada', 'amber'], ['≥ 90%', 'Kritis', 'rose']] },
-  { name: 'Cash Conversion', formula: 'Cash In bulan ini ÷ Realisasi Omzet bulan ini', tiers: [['≥ 65%', 'Sehat', 'green'], ['50–65%', 'Waspada', 'amber'], ['≤ 50%', 'Kritis', 'rose']] },
-  { name: 'Capaian Omzet', formula: 'Realisasi Omzet ÷ Target Omzet', tiers: [['≥ 100%', 'Aman', 'green'], ['80–99%', 'Waspada', 'amber'], ['≤ 80%', 'Bahaya', 'rose']] },
-  { name: 'Receivable Risk', formula: 'Piutang ÷ Realisasi Omzet bulan ini', tiers: [['≤ 20%', 'Low Risk', 'green'], ['20–35%', 'Medium Risk', 'amber'], ['≥ 35%', 'High Risk', 'rose']] },
-  { name: 'Payable Risk', formula: 'Hutang ÷ Cash In bulan ini', tiers: [['≤ 30%', 'Low Risk', 'green'], ['30–50%', 'Medium Risk', 'amber'], ['≥ 50%', 'High Risk', 'rose']] },
-  { name: 'Forecast Cash Position (30 hari)', formula: 'Saldo + forecast in − forecast out, 30 hari ke depan', tiers: [['> 0', 'Aman', 'green'], ['< 10% saldo', 'Waspada', 'amber'], ['< 0', 'Kritis', 'rose']] },
-  { name: 'Rekomendasi Kas (Approval)', formula: 'Forecast Cash Position (s/d Tgl Dibutuhkan) − Nominal Pengajuan', tiers: [['sisa besar', 'Approve', 'green'], ['sisa < 20%', 'Review', 'amber'], ['negatif', 'Hold', 'rose']] },
-];
-
 function EntityGuide({ id }) {
   const g = ENTITY_GUIDES[id];
   const Icon = ENTITY_ICON[id];
@@ -284,11 +272,11 @@ const GENERAL_TIPS = [
 export function Documentation() {
   const { session } = useAuth();
   const myRole = session?.role || 'pic_brand';
-  const [activeRole, setActiveRole] = useState(myRole);
 
-  const content = ROLE_CONTENT[activeRole];
-  const meta = ROLE_META[activeRole];
+  const content = ROLE_CONTENT[myRole];
+  const meta = ROLE_META[myRole];
   const RoleIcon = meta.icon;
+  const activeRole = myRole;
 
   return (
     <div className="doc-page">
@@ -296,19 +284,8 @@ export function Documentation() {
         <div className="panel-head">
           <div>
             <h3><BookOpen size={18} style={{ verticalAlign: -3, marginRight: 6 }} />Dokumentasi & Panduan Penggunaan</h3>
-            <p>Cara input data dan menjalankan dashboard untuk setiap role.</p>
+            <p>Panduan pengoperasian dashboard untuk akun {meta.label}.</p>
           </div>
-        </div>
-
-        <div className="tabs doc-role-tabs">
-          {Object.keys(ROLE_META).map((role) => {
-            const TabIcon = ROLE_META[role].icon;
-            return (
-              <button key={role} className={activeRole === role ? 'active' : ''} onClick={() => setActiveRole(role)}>
-                <TabIcon size={15} /> {ROLE_META[role].label}{role === myRole ? ' (Kamu)' : ''}
-              </button>
-            );
-          })}
         </div>
 
         <div style={{ padding: '1.1rem 1.15rem 0.25rem' }}>
@@ -366,31 +343,6 @@ export function Documentation() {
               <p className="doc-catatan"><AlertTriangle size={14} /> Rekomendasi Kas ini bantu keputusan, bukan aturan otomatis — kamu tetap bisa approve walau statusnya Hold kalau memang ada pertimbangan lain.</p>
             </details>
           )}
-        </div>
-      </div>
-
-      <div className="panel tight" style={{ marginTop: '1rem' }}>
-        <div className="panel-head">
-          <div>
-            <h3>Kamus Indikator Early Warning System</h3>
-            <p>Muncul di panel "Early Warning System" pada halaman Dashboard.</p>
-          </div>
-        </div>
-        <div className="doc-ews-grid">
-          {EWS_GLOSSARY.map((row) => (
-            <div key={row.name} className="doc-ews-card">
-              <h5>{row.name}</h5>
-              <code className="doc-ews-formula">{row.formula}</code>
-              <div className="doc-ews-tiers">
-                {row.tiers.map(([cond, label, color]) => (
-                  <div key={label} className={`doc-ews-tier ${color}`}>
-                    <span className="doc-ews-tier-cond">{cond}</span>
-                    <span className="doc-ews-tier-label">{label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
         </div>
       </div>
 
