@@ -102,9 +102,7 @@ export const FORMS = {
   bank: [
     { key: 'Brand', label: 'Brand Key', type: 'brand' },
     { key: 'Bank', label: 'Nama Bank', type: 'select', optionsKey: 'banks' },
-    { key: 'Saldo Awal', label: 'Saldo Awal', type: 'number' },
-    { key: 'Pemasukan', label: 'Pemasukan', type: 'number' },
-    { key: 'Pengeluaran', label: 'Pengeluaran', type: 'number' },
+    { key: 'Saldo Awal', label: 'Saldo Awal (Saldo Pembukaan)', type: 'number' },
   ],
   service: [
     { key: 'Brand', label: 'Brand Key', type: 'brand' },

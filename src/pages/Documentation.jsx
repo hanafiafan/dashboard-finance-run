@@ -55,7 +55,7 @@ const ENTITY_GUIDES = {
       'Pilih Bank Masuk — rekening/kas mana yang menerima.',
       'Simpan.',
     ],
-    catatan: 'Ini beda dengan "Forecast Cash In" — Cash In hanya untuk uang yang SUDAH masuk, bukan perkiraan.',
+    catatan: 'Ini beda dengan "Forecast Cash In" — Cash In hanya untuk uang yang SUDAH masuk, bukan perkiraan. Nominal ini juga otomatis menambah Pemasukan di Saldo Rekening untuk Brand + Bank Masuk yang sama.',
   },
   forecast: {
     title: 'Forecast Cash In (Estimasi Uang Masuk)',
@@ -98,6 +98,7 @@ const ENTITY_GUIDES = {
       'Pilih Bank Keluar.',
       'Simpan.',
     ],
+    catatan: 'Jumlah + Biaya otomatis menambah Pengeluaran di Saldo Rekening untuk Brand + Bank Keluar yang sama.',
   },
   omzet: {
     title: 'Omzet (Target vs Realisasi)',
@@ -114,13 +115,14 @@ const ENTITY_GUIDES = {
   bank: {
     title: 'Saldo Rekening',
     menu: 'Operasional → tab "Saldo Rekening"',
-    tujuan: 'Mencatat saldo awal, pemasukan, dan pengeluaran per rekening/kas per brand.',
+    tujuan: 'Mendaftarkan rekening/kas per brand dengan saldo pembukaannya.',
     steps: [
       'Klik "Tambah".',
       'Pilih Brand Key dan Nama Bank.',
-      'Isi Saldo Awal, Pemasukan, Pengeluaran.',
-      'Simpan — Total saldo dihitung otomatis.',
+      'Isi Saldo Awal (saldo pembukaan rekening).',
+      'Simpan — Pemasukan, Pengeluaran, dan Total dihitung otomatis dari data Cash In/Cash Out yang brand & nama banknya sama, tidak perlu diisi manual.',
     ],
+    catatan: 'Buat dulu baris Saldo Rekening untuk kombinasi Brand + Nama Bank sebelum mencatat Cash In/Cash Out dengan bank itu — kalau belum ada barisnya, sistem belum punya tempat untuk menambahkan pemasukan/pengeluarannya.',
   },
   service: {
     title: 'Biaya Layanan',
