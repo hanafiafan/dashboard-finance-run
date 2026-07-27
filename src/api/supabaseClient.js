@@ -146,6 +146,8 @@ export function uiToDb(entity, formData) {
   const out = {};
   for (const [key, val] of Object.entries(formData)) {
     if (key === 'ID' || key === 'id') continue;
+    // 'Total' (fin_bank) is a database GENERATED column — never writable, only readable via dbToUi.
+    if (key === 'Total') continue;
     const dbCol = aliases[key] || reverse[key] || key;
     out[dbCol] = val;
   }

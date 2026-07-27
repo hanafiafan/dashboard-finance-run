@@ -46,9 +46,6 @@ export function DynamicForm({ fields, values, options, onChange, onSubmit, onCan
       const found = vendors.find(v => v['Nama Vendor'] === value);
       if (found && !updated['ID Pemasok']) updated['ID Pemasok'] = found['ID Vendor'];
     }
-    if (key === 'Saldo Awal' || key === 'Pemasukan' || key === 'Pengeluaran') {
-      updated['Total'] = Number(updated['Saldo Awal'] || 0) + Number(updated['Pemasukan'] || 0) - Number(updated['Pengeluaran'] || 0);
-    }
     setFormData(updated);
     if (onChange) onChange(updated);
   };
