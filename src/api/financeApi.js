@@ -12,7 +12,7 @@ async function supabaseGetAppState(filters = {}, auth) {
     return query;
   };
 
-  const [brands, budget, income, outcome, omzet, bank, payables, receivables, forecast, forecastOut, service] = await Promise.all([
+  const [brands, budget, income, outcome, omzet, bank, payables, receivables, forecast, forecastOut, service, vendors, customers] = await Promise.all([
     supabase.from('fin_brands').select('*').eq('active', true),
     apply(supabase.from('fin_budget').select('*')),
     apply(supabase.from('fin_income').select('*')),
@@ -24,7 +24,12 @@ async function supabaseGetAppState(filters = {}, auth) {
     apply(supabase.from('fin_forecast_cashin').select('*')),
     apply(supabase.from('fin_forecast_cashout').select('*')),
     apply(supabase.from('fin_service').select('*')),
+    supabase.from('fin_vendors').select('*'),
+    supabase.from('fin_customers').select('*'),
   ]);
+
+  const vendorList = (vendors.data || []).map(r => dbToUi('vendors', r));
+  const customerList = (customers.data || []).map(r => dbToUi('customers', r));
 
   const brandRows = (brands.data || []).map(b => ({
     Company: b.company, Brand: b.brand, 'Brand Key': b.brand_key, 'PIC Email': b.pic_email,
@@ -191,6 +196,8 @@ async function supabaseGetAppState(filters = {}, auth) {
       controls: ['OK', 'Revisi', 'Hold'],
       months: ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'],
       roles: ['superadmin', 'finance', 'owner', 'pic_brand'],
+      vendorList,
+      customerList,
     },
     dashboard: {
       generatedAt: new Date().toISOString(),

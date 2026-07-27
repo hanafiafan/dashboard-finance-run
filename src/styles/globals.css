@@ -1,6 +1,6 @@
 /* ============================================================
-   DASHBOARD FINANCE RUN v3 — Dual Theme Design System
-   Light + Dark | Tech-Finance Fusion | Premium · Professional
+  DASHBOARD FINANCE RUN v3 — Dual Theme Design System
+  Light + Dark | Tech-Finance Fusion | Premium · Professional
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
@@ -8,7 +8,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* ============================================================
-   LIGHT THEME (default)
+    LIGHT THEME (default)
    ============================================================ */
 :root,
 [data-theme="light"] {

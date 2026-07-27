@@ -231,6 +231,8 @@ export function demoState(filters = {}, session = null) {
       priorities: ['High', 'Medium', 'Low'],
       budgetStatuses: ['Diajukan', 'Approved', 'Need Revision', 'Rejected', 'DP', 'Termin', 'Lunas'],
       paymentTypes: ['Belum Dibayar', 'DP', 'Termin', 'Lunas'],
+      vendorList: DEMO_VENDORS,
+      customerList: DEMO_CUSTOMERS,
     },
     period: { year: 2026, month: 7 },
     dashboard: {
@@ -274,7 +276,18 @@ export function demoState(filters = {}, session = null) {
   };
 }
 
+const DEMO_VENDORS = [
+  { ID: 1, 'ID Vendor': 'V001', 'Nama Vendor': 'PT Supplier Indo', PIC: 'Andi', Telepon: '081234567890', Alamat: '-', Keterangan: 'Supplier utama' },
+  { ID: 2, 'ID Vendor': 'V002', 'Nama Vendor': 'CV Distribusi Jaya', PIC: 'Budi', Telepon: '081234567891', Alamat: '-', Keterangan: 'Distribusi' },
+];
+const DEMO_CUSTOMERS = [
+  { ID: 1, 'ID Pelanggan': 'C001', 'Nama Pelanggan': 'Toko Makmur', PIC: 'Sari', Telepon: '081234567892', Alamat: '-', Keterangan: 'Reseller' },
+  { ID: 2, 'ID Pelanggan': 'C002', 'Nama Pelanggan': 'UD Sumber Rejeki', PIC: 'Deni', Telepon: '081234567893', Alamat: '-', Keterangan: 'Grosir' },
+];
+
 const DEMO_ROWS = {
+  vendors: DEMO_VENDORS,
+  customers: DEMO_CUSTOMERS,
   budget: [
     { ID: 1, Brand: 'HAN', Kategori: 'Operasional', Keterangan: 'Listrik', 'Nominal Pengajuan (Rp)': 2500000, Prioritas: 'High', Status: 'Diajukan', 'Tgl Pengajuan': '2026-07-01' },
     { ID: 2, Brand: 'LBP', Kategori: 'Marketing', Keterangan: 'Social media ads', 'Nominal Pengajuan (Rp)': 8000000, Prioritas: 'Medium', Status: 'Approved', 'Tgl Pengajuan': '2026-07-02' },
