@@ -65,9 +65,22 @@ ChartJS.register(
 );
 
 function AppContent() {
-  const { session, loading, demo, login, startDemo } = useAuth();
+  const { session, loading, demo, login, startDemo, logout } = useAuth();
   const { app, loadDemo, setState } = useApp();
-  const [status, setStatus] = useState('init'); // init → login → loading → ready
+  const [status, setStatus] = useState('init'); // init → login → loading → ready → error
+  const [loadError, setLoadError] = useState('');
+
+  const loadLiveState = () => {
+    setStatus('loading');
+    setLoadError('');
+    getAppState(app.filters, session)
+      .then(newState => { setState(newState); setStatus('ready'); })
+      .catch(err => {
+        console.error('Gagal memuat data dashboard:', err);
+        setLoadError(err.message || 'Gagal memuat data dari server.');
+        setStatus('error');
+      });
+  };
 
   useEffect(() => {
     if (loading) return;
@@ -83,14 +96,11 @@ function AppContent() {
       return;
     }
 
-    // Live mode — fetch initial state from API
-    setStatus('loading');
-    getAppState(app.filters, session)
-      .then(newState => { setState(newState); setStatus('ready'); })
-      .catch(() => {
-        loadDemo(session);
-        setStatus('ready');
-      });
+    // Live mode — fetch initial state from API. On failure we show a real error
+    // instead of silently substituting demo data — this is a real finance tool,
+    // showing fabricated numbers as if they were live data is worse than an error screen.
+    loadLiveState();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, loading, demo, loadDemo, setState]);
 
   // Loading spinner
@@ -110,6 +120,23 @@ function AppContent() {
   // Login page
   if (status === 'login') {
     return <Login onLogin={login} onDemo={startDemo} />;
+  }
+
+  // Data load failed — never fall back to demo data for a real session.
+  if (status === 'error') {
+    return (
+      <div className="boot">
+        <div className="boot-panel">
+          <div className="brand-mark">RN</div>
+          <strong>Gagal memuat data dashboard</strong>
+          <span>{loadError}</span>
+          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            <button className="btn blue" onClick={loadLiveState}>Coba Lagi</button>
+            <button className="btn ghost" onClick={logout}>Keluar & Login Ulang</button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Dashboard

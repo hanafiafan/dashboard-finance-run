@@ -284,12 +284,10 @@ async function supabaseApproveBudget(id, status, paid, feedback) {
 
 export async function getAppState(filters = {}, auth) {
   if (auth?.isDemo) return demoState(filters, auth);
-  try {
-    return await supabaseGetAppState(filters, auth);
-  } catch (err) {
-    console.error('Supabase getAppState failed, falling back to demo:', err);
-    return demoState(filters, auth);
-  }
+  // Never silently substitute demo data for a real session on failure — a finance
+  // tool showing fabricated numbers as if they were live is worse than an error.
+  // Callers (App.jsx, AppShell.jsx) are responsible for surfacing the rejection.
+  return supabaseGetAppState(filters, auth);
 }
 
 export async function getRecords(entity, filters = {}, auth) {

@@ -54,7 +54,7 @@ export default function AppShell() {
     setRefreshing(true);
     getAppState(filters, session)
       .then(newState => { setState(newState); setLastSyncAt(newState?.generatedAt || new Date().toISOString()); })
-      .catch(console.error)
+      .catch(err => { console.error(err); alert(`Gagal memuat ulang data: ${err.message || err}`); })
       .finally(() => setRefreshing(false));
   }, [filters.company, filters.brandKey, filters.startDate, filters.endDate, filters.year, filters.category]);
 
@@ -64,7 +64,7 @@ export default function AppShell() {
       const newState = await getAppState(filters, session);
       setState(newState);
       setLastSyncAt(newState?.generatedAt || new Date().toISOString());
-    } catch (err) { console.error(err); }
+    } catch (err) { console.error(err); alert(`Gagal memuat ulang data: ${err.message || err}`); }
     setRefreshing(false);
   }, [filters, session, setState]);
 

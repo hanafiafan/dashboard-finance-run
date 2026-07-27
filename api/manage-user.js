@@ -8,6 +8,11 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+async function isSuperadminTarget(admin, targetId) {
+  const { data } = await admin.from('profiles').select('role').eq('id', targetId).single();
+  return data?.role === 'superadmin';
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, error: 'Method not allowed' });
@@ -59,6 +64,9 @@ export default async function handler(req, res) {
       if (listErr) return res.status(500).json({ ok: false, error: listErr.message });
       const target = list.users.find(u => u.email === targetEmail);
       if (!target) return res.status(404).json({ ok: false, error: 'User tidak ditemukan.' });
+      if (await isSuperadminTarget(admin, target.id) && callerProfile.role !== 'superadmin') {
+        return res.status(403).json({ ok: false, error: 'Hanya superadmin yang bisa reset password akun superadmin.' });
+      }
       const { error: updateErr } = await admin.auth.admin.updateUserById(target.id, { password: body.password });
       if (updateErr) return res.status(400).json({ ok: false, error: updateErr.message });
       return res.status(200).json({ ok: true });
@@ -71,6 +79,9 @@ export default async function handler(req, res) {
       if (listErr) return res.status(500).json({ ok: false, error: listErr.message });
       const target = list.users.find(u => u.email === targetEmail);
       if (!target) return res.status(404).json({ ok: false, error: 'User tidak ditemukan.' });
+      if (await isSuperadminTarget(admin, target.id) && callerProfile.role !== 'superadmin') {
+        return res.status(403).json({ ok: false, error: 'Hanya superadmin yang bisa menghapus akun superadmin.' });
+      }
       const { error: deleteErr } = await admin.auth.admin.deleteUser(target.id);
       if (deleteErr) return res.status(400).json({ ok: false, error: deleteErr.message });
       return res.status(200).json({ ok: true });
