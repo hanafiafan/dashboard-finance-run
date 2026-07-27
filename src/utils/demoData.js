@@ -270,11 +270,22 @@ export function demoState(filters = {}, session = null) {
         budgetByCategory: outcomeByCategory,
       },
       forecast: { in: forecastIn, out: forecastOut },
-      tables: { pendingBudget, dueSoon },
+      tables: {
+        pendingBudget, dueSoon,
+        recentIncome: DEMO_ROWS.income,
+        recentOutcome: DEMO_ROWS.outcome,
+        bank: DEMO_BANK_ROWS,
+      },
     },
     auditLog: [],
   };
 }
+
+const DEMO_BANK_ROWS = [
+  { ID: 1, Brand: 'HAN', Bank: 'Bank BCA', 'Saldo Awal': 150000000, Pemasukan: 45000000, Pengeluaran: 10000000, Total: 185000000 },
+  { ID: 2, Brand: 'LBP', Bank: 'Bank Mandiri', 'Saldo Awal': 280000000, Pemasukan: 60000000, Pengeluaran: 20000000, Total: 320000000 },
+  { ID: 3, Brand: 'NUSASEED', Bank: 'Bank BRI', 'Saldo Awal': 120000000, Pemasukan: 30000000, Pengeluaran: 5000000, Total: 145000000 },
+];
 
 const DEMO_VENDORS = [
   { ID: 1, 'ID Vendor': 'V001', 'Nama Vendor': 'PT Supplier Indo', PIC: 'Andi', Telepon: '081234567890', Alamat: '-', Keterangan: 'Supplier utama' },
@@ -294,11 +305,11 @@ const DEMO_ROWS = {
     { ID: 3, Brand: 'BSS', Kategori: 'Gaji dan Upah', Keterangan: 'Gaji staff', 'Nominal Pengajuan (Rp)': 15000000, Prioritas: 'High', Status: 'Approved', 'Tgl Pengajuan': '2026-07-03' },
   ],
   outcome: [
-    { ID: 1, Brand: 'HAN', Kategori: 'Operasional', 'Nominal (Rp)': 1800000, 'Tgl': '2026-07-05', Vendor: 'PLN', Status: 'Lunas' },
-    { ID: 2, Brand: 'LBP', Kategori: 'Marketing', 'Nominal (Rp)': 7500000, 'Tgl': '2026-07-08', Vendor: 'FB Ads', Status: 'DP' },
+    { ID: 1, Brand: 'HAN', Tanggal: '2026-07-05', Keterangan: 'Bayar listrik', Kategori: 'Operasional', 'Jumlah (Rp)': 1800000, 'Biaya (Rp)': 0, 'Total Pengeluaran (Rp)': 1800000, 'Bank Keluar': 'Bank BCA', Status: 'Lunas' },
+    { ID: 2, Brand: 'LBP', Tanggal: '2026-07-08', Keterangan: 'Iklan Facebook Ads', Kategori: 'Marketing', 'Jumlah (Rp)': 7500000, 'Biaya (Rp)': 0, 'Total Pengeluaran (Rp)': 7500000, 'Bank Keluar': 'Bank Mandiri', Status: 'DP' },
   ],
   income: [
-    { ID: 1, Brand: 'NUSASEED', 'Nominal (Rp)': 25000000, 'Tgl': '2026-07-10', Sumber: 'Penjualan', Keterangan: 'Sales batch 1' },
+    { ID: 1, Brand: 'NUSASEED', Tanggal: '2026-07-10', Keterangan: 'Sales batch 1', Customer: 'Toko Makmur', Nominal: 25000000, 'Bank Masuk': 'Bank BRI' },
   ],
 };
 

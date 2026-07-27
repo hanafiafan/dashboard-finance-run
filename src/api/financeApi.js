@@ -1,29 +1,45 @@
 import { demoState, demoRows, demoApi, buildEntities } from '../utils/demoData';
 import { supabase, TABLE_MAP, dbToUi, uiToDb } from './supabaseClient';
-import { isToday, isCurrentMonth, isCurrentOmzetMonth, forecastCashPosition, addDays } from '../utils/ews';
+import { isToday, isCurrentMonth, isCurrentOmzetMonth, forecastCashPosition, addDays, localDateStr } from '../utils/ews';
+
+// Which DB column each entity's From/To date filter and Kategori filter should
+// apply to — entities without a real date/category column (omzet uses Tahun
+// instead, bank/payables/receivables have neither) are simply skipped.
+const ENTITY_DATE_COL = {
+  budget: 'tgl_pengajuan', income: 'tanggal', outcome: 'tanggal',
+  forecast: 'estimasi_cair', forecastOut: 'estimasi_keluar', service: 'tanggal',
+};
+const ENTITY_CATEGORY_COL = { budget: 'kategori', outcome: 'kategori', forecastOut: 'kategori' };
 
 // ── Supabase live queries ──────────────────────────────────
 
 async function supabaseGetAppState(filters = {}, auth) {
   const brandFilter = filters.brandKey;
 
-  const apply = (query) => {
-    if (brandFilter) return query.eq('brand_key', brandFilter);
+  // Each entity's own date/category column, if it has one — used to actually apply
+  // the From/To/Kategori filters the FilterBar exposes (previously only Brand worked).
+  const apply = (query, entity) => {
+    if (brandFilter) query = query.eq('brand_key', brandFilter);
+    const dateCol = ENTITY_DATE_COL[entity];
+    if (dateCol && filters.startDate) query = query.gte(dateCol, filters.startDate);
+    if (dateCol && filters.endDate) query = query.lte(dateCol, filters.endDate);
+    const catCol = ENTITY_CATEGORY_COL[entity];
+    if (catCol && filters.category) query = query.eq(catCol, filters.category);
     return query;
   };
 
   const [brands, budget, income, outcome, omzet, bank, payables, receivables, forecast, forecastOut, service, vendors, customers] = await Promise.all([
     supabase.from('fin_brands').select('*').eq('active', true),
-    apply(supabase.from('fin_budget').select('*')),
-    apply(supabase.from('fin_income').select('*')),
-    apply(supabase.from('fin_outcome').select('*')),
-    apply(supabase.from('fin_omzet').select('*')),
-    apply(supabase.from('fin_bank').select('*')),
-    apply(supabase.from('fin_payables').select('*')),
-    apply(supabase.from('fin_receivables').select('*')),
-    apply(supabase.from('fin_forecast_cashin').select('*')),
-    apply(supabase.from('fin_forecast_cashout').select('*')),
-    apply(supabase.from('fin_service').select('*')),
+    apply(supabase.from('fin_budget').select('*'), 'budget'),
+    apply(supabase.from('fin_income').select('*'), 'income'),
+    apply(supabase.from('fin_outcome').select('*'), 'outcome'),
+    filters.year ? apply(supabase.from('fin_omzet').select('*'), 'omzet').eq('tahun', filters.year) : apply(supabase.from('fin_omzet').select('*'), 'omzet'),
+    apply(supabase.from('fin_bank').select('*'), 'bank'),
+    apply(supabase.from('fin_payables').select('*'), 'payables'),
+    apply(supabase.from('fin_receivables').select('*'), 'receivables'),
+    apply(supabase.from('fin_forecast_cashin').select('*'), 'forecast'),
+    apply(supabase.from('fin_forecast_cashout').select('*'), 'forecastOut'),
+    apply(supabase.from('fin_service').select('*'), 'service'),
     supabase.from('fin_vendors').select('*'),
     supabase.from('fin_customers').select('*'),
   ]);
@@ -43,6 +59,12 @@ async function supabaseGetAppState(filters = {}, auth) {
   const bankRows = bank.data || [];
   const payableRows = payables.data || [];
   const receivableRows = receivables.data || [];
+
+  // Recent transactions for the Analytics page — sourced from the rows already
+  // fetched above, just sorted/sliced, no extra query needed.
+  const recentIncome = [...incomeRows].sort((a, b) => (b.tanggal || '').localeCompare(a.tanggal || '')).slice(0, 8).map(r => dbToUi('income', r));
+  const recentOutcome = [...outcomeRows].sort((a, b) => (b.tanggal || '').localeCompare(a.tanggal || '')).slice(0, 8).map(r => dbToUi('outcome', r));
+  const bankRowsUi = bankRows.map(r => dbToUi('bank', r));
 
   const pendingBudget = budgetRows
     .filter(r => r.status === 'Pending')
@@ -169,17 +191,22 @@ async function supabaseGetAppState(filters = {}, auth) {
   });
   const omzetByMonth = Object.values(omzetMonthMap);
 
-  // Payable aging
+  // Payable aging — bucketed by days overdue vs. Tgl Jatuh Tempo. Rows without a due
+  // date (not filled in yet) default to the safest "0-30 hari" bucket rather than
+  // being excluded, since we have no evidence they're actually overdue.
   const payableAging = [
     { label: '0-30 hari', value: 0 },
     { label: '31-60 hari', value: 0 },
     { label: '61-90 hari', value: 0 },
     { label: '90+ hari', value: 0 },
   ];
+  const todayMs = new Date(localDateStr()).getTime();
   payableRows.forEach(r => {
     const sisa = Number(r.total_hutang || 0) - Number(r.total_dibayar || 0);
     if (sisa <= 0) return;
-    payableAging[0].value += sisa;
+    const daysOverdue = r.tgl_jatuh_tempo ? Math.floor((todayMs - new Date(r.tgl_jatuh_tempo).getTime()) / 86400000) : 0;
+    const bucket = daysOverdue > 90 ? 3 : daysOverdue > 60 ? 2 : daysOverdue > 30 ? 1 : 0;
+    payableAging[bucket].value += sisa;
   });
 
   return {
@@ -230,7 +257,7 @@ async function supabaseGetAppState(filters = {}, auth) {
         budgetByCategory: outcomeByCategory,
       },
       forecast: { in: forecastInRows, out: forecastOutRows },
-      tables: { pendingBudget, dueSoon },
+      tables: { pendingBudget, dueSoon, recentIncome, recentOutcome, bank: bankRowsUi },
     },
   };
 }
@@ -243,6 +270,12 @@ async function supabaseGetRecords(entity, filters = {}, auth) {
   if (filters.brandKey && entity !== 'vendors' && entity !== 'customers' && entity !== 'users') {
     query = query.eq('brand_key', filters.brandKey);
   }
+  const dateCol = ENTITY_DATE_COL[entity];
+  if (dateCol && filters.startDate) query = query.gte(dateCol, filters.startDate);
+  if (dateCol && filters.endDate) query = query.lte(dateCol, filters.endDate);
+  const catCol = ENTITY_CATEGORY_COL[entity];
+  if (catCol && filters.category) query = query.eq(catCol, filters.category);
+  if (entity === 'omzet' && filters.year) query = query.eq('tahun', filters.year);
 
   const { data, error } = await query.order('created_at', { ascending: false });
   if (error) throw new Error(error.message);

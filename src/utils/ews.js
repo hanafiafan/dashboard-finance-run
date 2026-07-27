@@ -1,12 +1,22 @@
 // Early Warning System — indicator thresholds from RAW DATA DASHBOARD FINANCE/Early Warning System.docx
 export const MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 
+// toISOString() converts to UTC first — for Indonesia (UTC+7/8/9) that rolls
+// "today" back to yesterday for several hours every morning. Format from the
+// browser's local calendar fields instead, matching what <input type="date"> stores.
+export function localDateStr(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 export function isToday(dateStr, today = new Date()) {
-  return dateStr === today.toISOString().slice(0, 10);
+  return dateStr === localDateStr(today);
 }
 
 export function isCurrentMonth(dateStr, today = new Date()) {
-  return dateStr?.slice(0, 7) === today.toISOString().slice(0, 7);
+  return dateStr?.slice(0, 7) === localDateStr(today).slice(0, 7);
 }
 
 export function isCurrentOmzetMonth(row, today = new Date()) {
@@ -79,7 +89,7 @@ export function ewsDetail(indicator, color) {
 export function addDays(days, from = new Date()) {
   const d = new Date(from);
   d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
+  return localDateStr(d);
 }
 
 function sumBetween(rows, fromStr, toStr) {

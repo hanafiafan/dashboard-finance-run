@@ -20,19 +20,19 @@ export const ENTITY_LABELS = {
 };
 
 export const TABLE_COLUMNS = {
-  budget: ['Brand', 'Tgl Pengajuan', 'Tgl Dibutuhkan', 'Kategori', 'Keterangan', 'Vendor', 'ID Vendor', 'Nominal Pengajuan (Rp)', 'Nominal Dibayar (Rp)', 'Sisa Hutang (Rp)', 'Jenis Bayar', 'Tgl Pembayaran Selanjutnya', 'Tgl Pelunasan', 'Prioritas', 'Status', 'Kontrol Pengajuan', 'Form Feedback Finance'],
-  income: ['Brand', 'Tanggal', 'Keterangan', 'Customer', 'Nominal', 'Bank Masuk'],
+  budget: ['Brand', 'Tgl Pengajuan', 'Tgl Dibutuhkan', 'Kategori', 'Keterangan', 'Vendor', 'ID Vendor', 'Nominal Pengajuan (Rp)', 'Nominal Dibayar (Rp)', 'Sisa Hutang (Rp)', 'Jenis Bayar', 'Tgl Pembayaran Selanjutnya', 'Tgl Pelunasan', 'Prioritas', 'Status', 'Kontrol Pengajuan', 'Form Feedback Finance', 'Dokumen URL'],
+  income: ['Brand', 'Tanggal', 'Keterangan', 'Customer', 'Nominal', 'Bank Masuk', 'Catatan'],
   forecast: ['Brand', 'Estimasi Cair', 'Marketplace', 'Nominal Estimasi', 'Status', 'Catatan'],
   forecastOut: ['Brand', 'Estimasi Keluar', 'Kategori', 'Nominal Estimasi', 'Status', 'Catatan'],
   outcome: ['Brand', 'Tanggal', 'Keterangan', 'Kategori', 'Jumlah (Rp)', 'Biaya (Rp)', 'Total Pengeluaran (Rp)', 'Bank Keluar'],
   omzet: ['Brand', 'Tahun', 'Bulan', 'Target Omzet', 'Realisasi Omzet', 'Selisih', 'Capaian'],
   bank: ['Brand', 'Bank', 'Saldo Awal', 'Pemasukan', 'Pengeluaran', 'Total'],
-  service: ['Brand', 'Tanggal', 'Keterangan', 'Vendor', 'Nominal', 'Status'],
-  payables: ['Brand', 'Nama Pemasok', 'ID Pemasok', 'Total Hutang', 'Total Dibayar', 'Sisa Hutang', 'Progress %', 'Status'],
-  receivables: ['Brand', 'Nama Pelanggan', 'ID Pelanggan', 'Total Piutang', 'Total Diterima', 'Sisa Piutang', 'Progress %', 'Status'],
+  service: ['Brand', 'Tanggal', 'Keterangan', 'Vendor', 'Nominal', 'Status', 'Catatan'],
+  payables: ['Brand', 'Nama Pemasok', 'ID Pemasok', 'Total Hutang', 'Total Dibayar', 'Sisa Hutang', 'Progress %', 'Status', 'Tgl Jatuh Tempo', 'Source'],
+  receivables: ['Brand', 'Nama Pelanggan', 'ID Pelanggan', 'Total Piutang', 'Total Diterima', 'Sisa Piutang', 'Progress %', 'Status', 'Source'],
   users: ['Email', 'Name', 'Role', 'Company Scope', 'Brand Scope', 'Active'],
   brands: ['Company', 'Brand', 'Brand Key', 'Active', 'PIC Email'],
-  sources: ['Company', 'Brand', 'Brand Key', 'Spreadsheet ID', 'Active', 'Last Imported At'],
+  sources: ['Company', 'Brand', 'Brand Key', 'Spreadsheet ID', 'Active', 'Last Imported At', 'Notes'],
   vendors: ['ID Vendor', 'Nama Vendor', 'PIC', 'Telepon', 'Alamat', 'Keterangan'],
   customers: ['ID Pelanggan', 'Nama Pelanggan', 'PIC', 'Telepon', 'Alamat', 'Keterangan'],
 };
@@ -119,6 +119,7 @@ export const FORMS = {
     { key: 'ID Pemasok', label: 'ID Pemasok', type: 'vendor', required: true },
     { key: 'Total Hutang', label: 'Total Hutang', type: 'number' },
     { key: 'Total Dibayar', label: 'Total Dibayar', type: 'number' },
+    { key: 'Tgl Jatuh Tempo', label: 'Tgl Jatuh Tempo', type: 'date' },
     { key: 'Status', label: 'Status', type: 'text' },
     { key: 'Source', label: 'Source', type: 'text' },
   ],

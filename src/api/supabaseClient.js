@@ -33,11 +33,11 @@ const COL_MAP = {
     sisa_hutang: 'Sisa Hutang (Rp)', jenis_bayar: 'Jenis Bayar',
     tgl_pembayaran_selanjutnya: 'Tgl Pembayaran Selanjutnya', tgl_pelunasan: 'Tgl Pelunasan',
     prioritas: 'Prioritas', status: 'Status', kontrol_pengajuan: 'Kontrol Pengajuan',
-    feedback_finance: 'Form Feedback Finance',
+    feedback_finance: 'Form Feedback Finance', dokumen_url: 'Dokumen URL',
   },
   income: {
     brand_key: 'Brand', tanggal: 'Tanggal', keterangan: 'Keterangan',
-    customer: 'Customer', nominal: 'Nominal', bank_masuk: 'Bank Masuk',
+    customer: 'Customer', nominal: 'Nominal', bank_masuk: 'Bank Masuk', catatan: 'Catatan',
   },
   forecast: {
     brand_key: 'Brand', estimasi_cair: 'Estimasi Cair', marketplace: 'Marketplace',
@@ -63,17 +63,19 @@ const COL_MAP = {
   },
   service: {
     brand_key: 'Brand', tanggal: 'Tanggal', keterangan: 'Keterangan',
-    vendor: 'Vendor', nominal: 'Nominal', status: 'Status',
+    vendor: 'Vendor', nominal: 'Nominal', status: 'Status', catatan: 'Catatan',
   },
   payables: {
     brand_key: 'Brand', nama_pemasok: 'Nama Pemasok', id_pemasok: 'ID Pemasok',
     total_hutang: 'Total Hutang', total_dibayar: 'Total Dibayar',
     sisa_hutang: 'Sisa Hutang', progress_pct: 'Progress %', status: 'Status',
+    source: 'Source', tgl_jatuh_tempo: 'Tgl Jatuh Tempo',
   },
   receivables: {
     brand_key: 'Brand', nama_pelanggan: 'Nama Pelanggan', id_pelanggan: 'ID Pelanggan',
     total_piutang: 'Total Piutang', total_diterima: 'Total Diterima',
     sisa_piutang: 'Sisa Piutang', progress_pct: 'Progress %', status: 'Status',
+    source: 'Source',
   },
   users: {
     email: 'Email', name: 'Name', role: 'Role',
@@ -86,6 +88,7 @@ const COL_MAP = {
   sources: {
     company: 'Company', brand: 'Brand', brand_key: 'Brand Key',
     spreadsheet_id: 'Spreadsheet ID', active: 'Active', last_imported_at: 'Last Imported At',
+    notes: 'Notes',
   },
   vendors: {
     vendor_id: 'ID Vendor', nama: 'Nama Vendor', pic: 'PIC',
