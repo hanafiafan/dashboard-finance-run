@@ -43,7 +43,9 @@ export function buildEntities(role) {
       entities[e] = { canEdit: true };
     } else if (role === 'finance') {
       entities[e] = { canEdit: e !== 'users' };
-    } else {
+    } else if (e !== 'sources') {
+      // fin_sources RLS restricts read/write to superadmin/finance only —
+      // omit the entity entirely so the tab doesn't show an always-empty table.
       entities[e] = { canEdit: false };
     }
   }

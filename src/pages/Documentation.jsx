@@ -2,7 +2,7 @@ import {
   BookOpen, ShieldCheck, Landmark, Eye, UserCog, Wallet, ArrowDownCircle, ArrowUpCircle,
   CalendarClock, CalendarX2, BarChart3, Truck, Users, Tag, HandCoins, Briefcase,
   CheckCircle2, Filter, RefreshCw, Download, SunMoon, MessageCircleWarning,
-  ClipboardList, AlertTriangle, ShieldAlert,
+  ClipboardList, AlertTriangle, ShieldAlert, FileSpreadsheet,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -20,6 +20,7 @@ const ENTITY_ICON = {
   vendors: Truck,
   customers: Users,
   brands: Tag,
+  sources: FileSpreadsheet,
 };
 
 // Step-by-step input guide per data module — shared across roles, since the
@@ -144,9 +145,11 @@ const ENTITY_GUIDES = {
       'Klik "Tambah".',
       'Pilih Brand Key, isi Nama Pemasok dan pilih ID Pemasok dari daftar Vendor.',
       'Isi Total Hutang dan Total Dibayar (Sisa Hutang & Progress % dihitung otomatis).',
+      'Isi Tgl Jatuh Tempo — tanggal ini yang dipakai grafik "Payable Aging" di Dashboard untuk menghitung berapa hari sudah/akan telat.',
       'Isi Status.',
       'Simpan.',
     ],
+    catatan: 'Kalau Tgl Jatuh Tempo dikosongkan, hutang itu tidak akan masuk ke bucket aging manapun di grafik Dashboard.',
   },
   receivables: {
     title: 'Piutang (Receivables)',
@@ -193,6 +196,20 @@ const ENTITY_GUIDES = {
     ],
     catatan: 'Brand Key yang dipakai di sini HARUS sama persis dengan yang diisi di kolom "Brand Scope" milik akun PIC Brand terkait (lihat panduan User Management), kalau tidak, PIC tidak akan melihat datanya sendiri.',
   },
+  sources: {
+    title: 'Master Data — Source Workbooks',
+    menu: 'Master Data → tab "Source Workbooks"',
+    tujuan: 'Daftar spreadsheet sumber data per brand — dipakai kalau nanti fitur Import dari Source Workbooks sudah aktif.',
+    steps: [
+      'Klik "Tambah".',
+      'Pilih Company dan Brand, isi Brand Key.',
+      'Isi Spreadsheet ID (ID dari URL Google Sheets sumbernya).',
+      'Aktifkan toggle Active kalau sumber ini mau dipakai.',
+      'Isi Notes kalau perlu catatan tambahan.',
+      'Simpan.',
+    ],
+    catatan: 'Hanya Super Admin dan Finance yang bisa melihat/mengubah data ini — role lain tidak melihat tab ini sama sekali. Tombol "Import" di pojok kanan atas belum berfungsi (fitur belum tersedia), jadi mengisi data di sini belum berdampak ke sistem.',
+  },
 };
 
 const ROLE_META = {
@@ -228,7 +245,7 @@ const ROLE_CONTENT = {
       'Satu-satunya role yang bisa membuat akun Super Admin baru (lewat menu Master Data → Users → Add User).',
       'Bisa reset password dan menonaktifkan user mana pun.',
     ],
-    entities: ['budget', 'income', 'forecast', 'forecastOut', 'outcome', 'omzet', 'bank', 'service', 'payables', 'receivables', 'vendors', 'customers', 'brands'],
+    entities: ['budget', 'income', 'forecast', 'forecastOut', 'outcome', 'omzet', 'bank', 'service', 'payables', 'receivables', 'vendors', 'customers', 'brands', 'sources'],
   },
   finance: {
     ringkasan: 'Setara Super Admin untuk operasional harian — bedanya cuma tidak bisa membuat akun Super Admin baru.',
@@ -237,7 +254,7 @@ const ROLE_CONTENT = {
       'Bertugas melakukan approval Budget Request — cek tab "Rekomendasi Kas" di halaman Approval sebelum klik Approve.',
       'Bisa mengelola user (tambah/reset password/hapus) untuk role Finance, Owner, PIC Brand.',
     ],
-    entities: ['budget', 'income', 'forecast', 'forecastOut', 'outcome', 'omzet', 'bank', 'service', 'payables', 'receivables', 'vendors', 'customers', 'brands'],
+    entities: ['budget', 'income', 'forecast', 'forecastOut', 'outcome', 'omzet', 'bank', 'service', 'payables', 'receivables', 'vendors', 'customers', 'brands', 'sources'],
   },
   owner: {
     ringkasan: 'Bisa melihat semua data di semua company/brand untuk pengawasan, tapi hanya bisa mengedit modul transaksi utama.',
