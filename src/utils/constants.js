@@ -100,8 +100,12 @@ export const FORMS = {
     { key: 'Realisasi Omzet', label: 'Realisasi Omzet', type: 'number' },
   ],
   bank: [
-    { key: 'Brand', label: 'Brand Key', type: 'brand' },
-    { key: 'Bank', label: 'Nama Bank', type: 'select', optionsKey: 'banks' },
+    { key: 'Brand', label: 'Brand Key', type: 'brand', required: true },
+    // Free text, not a fixed dropdown — this is where a bank/kas name gets
+    // registered for the first time, so it can't be limited to a pre-existing
+    // list (Bank Masuk/Bank Keluar elsewhere DO use a dropdown, sourced from
+    // whatever's been registered here).
+    { key: 'Bank', label: 'Nama Bank', type: 'text', required: true },
     { key: 'Saldo Awal', label: 'Saldo Awal (Saldo Pembukaan)', type: 'number' },
   ],
   service: [

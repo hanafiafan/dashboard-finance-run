@@ -119,11 +119,11 @@ const ENTITY_GUIDES = {
     tujuan: 'Mendaftarkan rekening/kas per brand dengan saldo pembukaannya.',
     steps: [
       'Klik "Tambah".',
-      'Pilih Brand Key dan Nama Bank.',
+      'Pilih Brand Key, lalu ketik Nama Bank (bebas — rekening bank, kas kecil, e-wallet, apa saja, tidak perlu sudah terdaftar sebelumnya).',
       'Isi Saldo Awal (saldo pembukaan rekening).',
       'Simpan — Pemasukan, Pengeluaran, dan Total dihitung otomatis dari data Cash In/Cash Out yang brand & nama banknya sama, tidak perlu diisi manual.',
     ],
-    catatan: 'Buat dulu baris Saldo Rekening untuk kombinasi Brand + Nama Bank sebelum mencatat Cash In/Cash Out dengan bank itu — kalau belum ada barisnya, sistem belum punya tempat untuk menambahkan pemasukan/pengeluarannya.',
+    catatan: 'Buat dulu baris Saldo Rekening untuk kombinasi Brand + Nama Bank sebelum mencatat Cash In/Cash Out dengan bank itu. Pastikan menulis Nama Bank persis sama setiap kali (misalnya selalu "BCA", jangan kadang "Bank BCA") — di form Cash In/Cash Out, Nama Bank ini dipilih dari dropdown yang otomatis berisi semua nama yang pernah didaftarkan di sini, jadi ejaan yang beda dianggap bank yang berbeda.',
   },
   service: {
     title: 'Biaya Layanan',

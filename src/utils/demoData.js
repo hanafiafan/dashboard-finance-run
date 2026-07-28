@@ -228,7 +228,7 @@ export function demoState(filters = {}, session = null) {
     options: {
       companies: [...new Set(allBrands.map(b => b.Company))],
       categories: ['Operasional', 'Marketing', 'Aset', 'Persediaan', 'Hutang', 'Gaji dan Upah', 'Sewa', 'Saving', 'Transfer Antar Bank', 'Jasa Konsultasi & Manajemen RUN'],
-      banks: ['Bank Sentral', 'Bank BRI', 'Bank BCA', 'Bank BSI', 'Bank BNI', 'Bank Mandiri', 'Kas Kecil', 'Kas Ditangan', 'E-wallet'],
+      banks: [...new Set(['Bank Sentral', 'Bank BRI', 'Bank BCA', 'Bank BSI', 'Bank BNI', 'Bank Mandiri', 'Kas Kecil', 'Kas Ditangan', 'E-wallet', ...DEMO_BANK_ROWS.map(r => r.Bank)])],
       priorities: ['High', 'Medium', 'Low'],
       budgetStatuses: ['Diajukan', 'Approved', 'Need Revision', 'Rejected', 'DP', 'Termin', 'Lunas'],
       paymentTypes: ['Belum Dibayar', 'DP', 'Termin', 'Lunas'],
