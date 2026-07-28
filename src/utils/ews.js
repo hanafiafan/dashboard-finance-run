@@ -32,6 +32,15 @@ export function ewsStatus(value, greenBound, amberBound, higherIsBetter = true) 
   return 'rose';
 }
 
+// ponytail: ratios computed over "bulan berjalan" divide by a nearly-zero
+// denominator on the 1st-2nd of the month, so a single transaction can swing
+// straight to Kritis/High Risk with no real signal behind it yet. Caps at
+// amber during that window rather than a full statistical days-elapsed
+// model — revisit if finance wants a proper minimum-sample-size rule.
+export function capEarlyMonthStatus(color, today = new Date()) {
+  return today.getDate() <= 2 && color === 'rose' ? 'amber' : color;
+}
+
 // Cash Position has a 3-way split centered on exactly 0, doesn't fit the bound-pair shape above.
 export function cashPositionStatus(value) {
   if (value > 0) return 'green';

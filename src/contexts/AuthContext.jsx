@@ -34,8 +34,7 @@ function buildSession(profile, demoMode, accessToken) {
 }
 
 async function loadProfile(userId) {
-  const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
-  return data;
+  return supabase.from('profiles').select('*').eq('id', userId).single();
 }
 
 // Dev-only helpers backing the local demo credential list — never used in production.
@@ -100,15 +99,32 @@ export function AuthProvider({ children }) {
     supabase.auth.getSession().then(async ({ data }) => {
       const user = data?.session?.user;
       if (!user) { setLoading(false); return; }
-      const profile = await loadProfile(user.id);
+      const { data: profile, error } = await loadProfile(user.id);
       if (profile?.active) {
         setSession(buildSession(profile, false, data.session.access_token));
         setDemo(false);
-      } else {
+      } else if (!error) {
+        // Query succeeded and genuinely found no active profile — sign out for real.
         await supabase.auth.signOut();
       }
+      // On a query error (network blip, transient outage) we deliberately do NOT
+      // sign out — the underlying Supabase session is left intact and this check
+      // simply retries next time the app loads, instead of silently logging out
+      // a valid user because one request happened to fail.
       setLoading(false);
     });
+
+    // Keep the cached access token fresh — without this, api/manage-user.js calls
+    // (create/reset/delete user) start failing with a confusing "invalid session"
+    // error about an hour into a perfectly valid browsing session, since
+    // supabase-js auto-refreshes the underlying token but we never picked up
+    // the new value.
+    const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
+      if (event === 'TOKEN_REFRESHED' && newSession) {
+        setSession(prev => (prev ? { ...prev, accessToken: newSession.access_token } : prev));
+      }
+    });
+    return () => sub.subscription.unsubscribe();
   }, []);
 
   const login = useCallback(async (email, password) => {
@@ -118,10 +134,10 @@ export function AuthProvider({ children }) {
         setLoginError('Email atau password salah.');
         return;
       }
-      const profile = await loadProfile(data.session.user.id);
+      const { data: profile, error: profileErr } = await loadProfile(data.session.user.id);
       if (!profile?.active) {
         await supabase.auth.signOut();
-        setLoginError('Akun tidak aktif atau tidak ditemukan.');
+        setLoginError(profileErr ? 'Gagal memuat profil, coba lagi.' : 'Akun tidak aktif atau tidak ditemukan.');
         return;
       }
       setSession(buildSession(profile, false, data.session.access_token));

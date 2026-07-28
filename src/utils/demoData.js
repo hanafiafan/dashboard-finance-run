@@ -23,7 +23,6 @@ const ALL_ENTITIES = ['budget', 'income', 'forecast', 'forecastOut', 'outcome', 
 const MASTER_ENTITIES = ['users', 'brands', 'sources', 'vendors', 'customers'];
 
 export function buildEntities(role) {
-  const perms = ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.pic_brand;
   const entities = {};
 
   for (const e of ALL_ENTITIES) {

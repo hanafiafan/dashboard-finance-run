@@ -1,5 +1,4 @@
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { money } from '../../utils/formatters';
 
 const STATUS_CLASS = { green: 'ok', amber: 'warn', rose: 'bad' };
 

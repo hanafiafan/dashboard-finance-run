@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Key, Trash2, X, UserPlus } from 'lucide-react';
+import { Key, Trash2, X, UserPlus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { getStoredUsers, addUser, removeUser, resetUserPassword } from '../contexts/AuthContext';
 import { getRecords } from '../api/financeApi';

@@ -1,6 +1,4 @@
 import { money, pct } from '../../utils/formatters';
-import { TrendingUp, TrendingDown } from 'lucide-react';
-import TrendSparkline from './TrendSparkline';
 
 export default function BrandHeatmap({ brands, brandPerformance }) {
   if (!brands || !brands.length) return null;

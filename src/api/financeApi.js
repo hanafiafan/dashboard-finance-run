@@ -1,4 +1,4 @@
-import { demoState, demoRows, demoApi, buildEntities } from '../utils/demoData';
+import { demoState, demoRows, buildEntities } from '../utils/demoData';
 import { supabase, TABLE_MAP, dbToUi, uiToDb } from './supabaseClient';
 import { isToday, isCurrentMonth, isCurrentOmzetMonth, forecastCashPosition, addDays, localDateStr } from '../utils/ews';
 
@@ -28,7 +28,7 @@ async function supabaseGetAppState(filters = {}, auth) {
     return query;
   };
 
-  const [brands, budget, income, outcome, omzet, bank, payables, receivables, forecast, forecastOut, service, vendors, customers] = await Promise.all([
+  const [brands, budget, income, outcome, omzet, bank, payables, receivables, forecast, forecastOut, , vendors, customers] = await Promise.all([
     supabase.from('fin_brands').select('*').eq('active', true),
     apply(supabase.from('fin_budget').select('*'), 'budget'),
     apply(supabase.from('fin_income').select('*'), 'income'),
@@ -262,7 +262,7 @@ async function supabaseGetAppState(filters = {}, auth) {
   };
 }
 
-async function supabaseGetRecords(entity, filters = {}, auth) {
+async function supabaseGetRecords(entity, filters = {}) {
   const table = TABLE_MAP[entity];
   if (!table) return { rows: [] };
 
@@ -345,5 +345,7 @@ export async function approveBudget(id, status, paid, feedback, auth) {
 
 export async function importFromSources(auth) {
   if (auth?.isDemo) return { ok: true, results: [{ brand: 'Demo', imported: 24 }] };
-  return { ok: true, results: [{ brand: 'Supabase', imported: 0 }] };
+  // Not implemented yet — say so plainly instead of a fake "0 diproses" success,
+  // which reads as "nothing new to import" rather than "this button doesn't work".
+  throw new Error('Fitur import dari Source Workbooks belum tersedia.');
 }

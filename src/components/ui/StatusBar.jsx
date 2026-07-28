@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Wifi, WifiOff, Database, Clock, AlertCircle, CheckCircle2, Cloud, CloudOff } from 'lucide-react';
+import { Wifi, WifiOff, Database, Clock, CheckCircle2, Cloud, CloudOff } from 'lucide-react';
 
 /**
  * StatusBar — shows connection status, sync date, database health

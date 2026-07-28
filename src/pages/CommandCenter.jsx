@@ -4,11 +4,10 @@ import { Panel } from '../components/ui/MetricCard';
 import ExpandablePanel from '../components/ui/ExpandablePanel';
 import { money, number, pct, shortMoney } from '../utils/formatters';
 import { useApp } from '../contexts/AppContext';
-import { useAuth } from '../contexts/AuthContext';
 import { useFilters } from '../hooks/useFilters';
 import { CHART_COLORS } from '../utils/constants';
 import { getChartTheme } from '../utils/chartTheme';
-import { ewsStatus, cashPositionStatus, forecastCashPositionStatus, ewsDetail } from '../utils/ews';
+import { ewsStatus, cashPositionStatus, forecastCashPositionStatus, ewsDetail, capEarlyMonthStatus } from '../utils/ews';
 import PolarChartCard from '../components/charts/PolarChart';
 import ComboChart from '../components/charts/ComboChart';
 import HorizontalBar from '../components/charts/HorizontalBar';
@@ -22,49 +21,16 @@ import { useMemo, useState, useEffect } from 'react';
 
 export default function CommandCenter() {
   const { app, setFilters } = useApp();
-  const { session } = useAuth();
   useFilters();
 
+  // charts/d may briefly be undefined before the first data load — every hook
+  // below must still run every render regardless (React's rules of hooks), so
+  // they're computed with safe fallbacks BEFORE the early return, not after.
   const d = app.state?.dashboard;
-  if (!d) return <div className="empty animate-fade-in">Loading dashboard...</div>;
+  const charts = d?.charts || {};
 
-  const s = d.summary;
-  const charts = d.charts;
-  const brandPerf = charts.brandPerformance || [];
-  const activeBrand = app.filters.brandKey;
   const [chartReady, setChartReady] = useState(false);
   useEffect(() => { const t = setTimeout(() => setChartReady(true), 150); return () => clearTimeout(t); }, []);
-
-  const ct = getChartTheme();
-
-  const omzetAchColor = ewsStatus(s.omzetAchievement || 0, 1.0, 0.8);
-  const metrics = [
-    { label: 'Cash In', value: money.format(s.cashIn), color: 'green', note: `${(charts.monthlyCashFlow || []).length} bulan` },
-    { label: 'Cash Out', value: money.format(s.cashOut), color: 'coral', note: 'Total pengeluaran' },
-    { label: 'Net Cash', value: money.format(s.netCash), color: s.netCash >= 0 ? 'teal' : 'rose', note: `${pct.format(s.netCash / (s.cashIn || 1))} margin` },
-    { label: 'Saldo Rekening', value: money.format(s.bankBalance), color: 'blue', note: `${(charts.bankBalance || []).length} akun` },
-    { label: 'Budget Request', value: money.format(s.budgetRequested), color: 'violet', note: `${s.pendingApproval} pending` },
-    { label: 'Pending', value: number.format(s.pendingApproval), color: 'amber', note: 'Perlu review' },
-    { label: 'Hutang', value: money.format(s.payableOutstanding || s.budgetOutstanding), color: 'rose', note: `${(charts.payableAging || []).length} bucket` },
-    { label: 'Capaian Omzet', value: pct.format(s.omzetAchievement || 0), color: omzetAchColor, note: `${money.format(s.omzetReal)} / ${money.format(s.omzetTarget)}`, statusLabel: ewsDetail('omzetAchievement', omzetAchColor).label, arti: ewsDetail('omzetAchievement', omzetAchColor).arti },
-  ];
-
-  // Early Warning System — see RAW DATA DASHBOARD FINANCE/Early Warning System.docx
-  const cashPosColor = cashPositionStatus(s.cashPosition || 0);
-  const cashOutRatioColor = ewsStatus(s.cashOutRatio || 0, 0.85, 0.90, false);
-  const cashConversionColor = ewsStatus(s.cashConversion || 0, 0.65, 0.50);
-  const receivableRiskColor = ewsStatus(s.receivableRisk || 0, 0.20, 0.35, false);
-  const payableRiskColor = ewsStatus(s.payableRisk || 0, 0.30, 0.50, false);
-  const forecastCashPosColor = forecastCashPositionStatus(s.forecastCashPosition30 || 0, s.bankBalance || 0);
-
-  const ewsMetrics = [
-    { label: 'Cash Position', value: money.format(s.cashPosition || 0), color: cashPosColor, statusLabel: ewsDetail('cashPosition', cashPosColor).label, arti: ewsDetail('cashPosition', cashPosColor).arti },
-    { label: 'Cash Out Ratio', value: pct.format(s.cashOutRatio || 0), color: cashOutRatioColor, statusLabel: ewsDetail('cashOutRatio', cashOutRatioColor).label, arti: ewsDetail('cashOutRatio', cashOutRatioColor).arti },
-    { label: 'Cash Conversion', value: pct.format(s.cashConversion || 0), color: cashConversionColor, statusLabel: ewsDetail('cashConversion', cashConversionColor).label, arti: ewsDetail('cashConversion', cashConversionColor).arti },
-    { label: 'Receivable Risk', value: pct.format(s.receivableRisk || 0), color: receivableRiskColor, statusLabel: ewsDetail('receivableRisk', receivableRiskColor).label, arti: ewsDetail('receivableRisk', receivableRiskColor).arti },
-    { label: 'Payable Risk', value: pct.format(s.payableRisk || 0), color: payableRiskColor, statusLabel: ewsDetail('payableRisk', payableRiskColor).label, arti: ewsDetail('payableRisk', payableRiskColor).arti },
-    { label: 'Forecast Cash Position (30 hari)', value: money.format(s.forecastCashPosition30 || 0), color: forecastCashPosColor, statusLabel: ewsDetail('forecastCashPosition', forecastCashPosColor).label, arti: ewsDetail('forecastCashPosition', forecastCashPosColor).arti },
-  ];
 
   const waterfallData = useMemo(() => (charts.monthlyCashFlow || []).map(x => ({ label: x.label, cashIn: x.cashIn, netCash: x.netCash, cashOut: x.cashOut })), [charts.monthlyCashFlow]);
 
@@ -95,6 +61,45 @@ export default function CommandCenter() {
       { label: 'Realisasi', data: (charts.omzetByMonth || []).map(x => x.real), backgroundColor: '#2563eb', borderRadius: 4 },
     ],
   }), [charts.omzetByMonth]);
+
+  if (!d) return <div className="empty animate-fade-in">Loading dashboard...</div>;
+
+  const s = d.summary;
+  const brandPerf = charts.brandPerformance || [];
+  const activeBrand = app.filters.brandKey;
+  const ct = getChartTheme();
+
+  const omzetAchColor = ewsStatus(s.omzetAchievement || 0, 1.0, 0.8);
+  const metrics = [
+    { label: 'Cash In', value: money.format(s.cashIn), color: 'green', note: `${(charts.monthlyCashFlow || []).length} bulan` },
+    { label: 'Cash Out', value: money.format(s.cashOut), color: 'coral', note: 'Total pengeluaran' },
+    { label: 'Net Cash', value: money.format(s.netCash), color: s.netCash >= 0 ? 'teal' : 'rose', note: `${pct.format(s.netCash / (s.cashIn || 1))} margin` },
+    { label: 'Saldo Rekening', value: money.format(s.bankBalance), color: 'blue', note: `${(charts.bankBalance || []).length} akun` },
+    { label: 'Budget Request', value: money.format(s.budgetRequested), color: 'violet', note: `${s.pendingApproval} pending` },
+    { label: 'Pending', value: number.format(s.pendingApproval), color: 'amber', note: 'Perlu review' },
+    { label: 'Hutang', value: money.format(s.payableOutstanding || s.budgetOutstanding), color: 'rose', note: `${(charts.payableAging || []).length} bucket` },
+    { label: 'Capaian Omzet', value: pct.format(s.omzetAchievement || 0), color: omzetAchColor, note: `${money.format(s.omzetReal)} / ${money.format(s.omzetTarget)}`, statusLabel: ewsDetail('omzetAchievement', omzetAchColor).label, arti: ewsDetail('omzetAchievement', omzetAchColor).arti },
+  ];
+
+  // Early Warning System — see RAW DATA DASHBOARD FINANCE/Early Warning System.docx
+  // cashOutRatio/cashConversion/receivableRisk/payableRisk are capped via
+  // capEarlyMonthStatus() to avoid a false "Kritis" in the first couple of days
+  // of a new month, when their monthly denominator is still nearly zero.
+  const cashPosColor = cashPositionStatus(s.cashPosition || 0);
+  const cashOutRatioColor = capEarlyMonthStatus(ewsStatus(s.cashOutRatio || 0, 0.85, 0.90, false));
+  const cashConversionColor = capEarlyMonthStatus(ewsStatus(s.cashConversion || 0, 0.65, 0.50));
+  const receivableRiskColor = capEarlyMonthStatus(ewsStatus(s.receivableRisk || 0, 0.20, 0.35, false));
+  const payableRiskColor = capEarlyMonthStatus(ewsStatus(s.payableRisk || 0, 0.30, 0.50, false));
+  const forecastCashPosColor = forecastCashPositionStatus(s.forecastCashPosition30 || 0, s.bankBalance || 0);
+
+  const ewsMetrics = [
+    { label: 'Cash Position', value: money.format(s.cashPosition || 0), color: cashPosColor, statusLabel: ewsDetail('cashPosition', cashPosColor).label, arti: ewsDetail('cashPosition', cashPosColor).arti },
+    { label: 'Cash Out Ratio', value: pct.format(s.cashOutRatio || 0), color: cashOutRatioColor, statusLabel: ewsDetail('cashOutRatio', cashOutRatioColor).label, arti: ewsDetail('cashOutRatio', cashOutRatioColor).arti },
+    { label: 'Cash Conversion', value: pct.format(s.cashConversion || 0), color: cashConversionColor, statusLabel: ewsDetail('cashConversion', cashConversionColor).label, arti: ewsDetail('cashConversion', cashConversionColor).arti },
+    { label: 'Receivable Risk', value: pct.format(s.receivableRisk || 0), color: receivableRiskColor, statusLabel: ewsDetail('receivableRisk', receivableRiskColor).label, arti: ewsDetail('receivableRisk', receivableRiskColor).arti },
+    { label: 'Payable Risk', value: pct.format(s.payableRisk || 0), color: payableRiskColor, statusLabel: ewsDetail('payableRisk', payableRiskColor).label, arti: ewsDetail('payableRisk', payableRiskColor).arti },
+    { label: 'Forecast Cash Position (30 hari)', value: money.format(s.forecastCashPosition30 || 0), color: forecastCashPosColor, statusLabel: ewsDetail('forecastCashPosition', forecastCashPosColor).label, arti: ewsDetail('forecastCashPosition', forecastCashPosColor).arti },
+  ];
 
   const approvalRate = s.approvalRate || 0;
   const collectionRate = s.cashIn > 0 ? Math.min(1, (s.cashIn - s.cashOut) / s.cashIn) : 0;

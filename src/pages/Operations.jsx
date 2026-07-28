@@ -14,7 +14,6 @@ export function Operations() {
   const { app, setEntity, setRows } = useApp();
   const { session } = useAuth();
   const [records, setRecords] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editRow, setEditRow] = useState(null);
@@ -30,7 +29,6 @@ export function Operations() {
   }, [entity, app.state]);
 
   const loadRecords = async () => {
-    setLoading(true);
     try {
       const result = await getRecords(entity, app.filters, session);
       const rows = result.rows || [];
@@ -38,8 +36,8 @@ export function Operations() {
       setRows(entity, rows);
     } catch (err) {
       console.error(err);
+      alert(`Gagal memuat data: ${err.message || err}`);
     }
-    setLoading(false);
   };
 
   const openAdd = () => {

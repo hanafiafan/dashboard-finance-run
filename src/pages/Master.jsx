@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Download, Search, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal, DynamicForm } from '../components/ui/Modal';
 import { useApp } from '../contexts/AppContext';
@@ -37,6 +37,7 @@ export function Master() {
       setRows(entity, rows);
     } catch (err) {
       console.error(err);
+      alert(`Gagal memuat data: ${err.message || err}`);
     }
   };
 
