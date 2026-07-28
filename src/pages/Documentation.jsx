@@ -340,7 +340,7 @@ export function Documentation() {
                 <li>Buka Master Data → tab Users.</li>
                 <li>Klik "Add User" — isi Email, Nama, Role, dan Password awal.</li>
                 <li>Super Admin bisa memilih role apa saja termasuk Super Admin; Finance tidak bisa membuat akun Super Admin baru.</li>
-                <li>Kalau role-nya PIC Brand, ingatkan untuk mengisi kolom Brand Scope (lewat Supabase, belum ada form khusus di UI) supaya user itu bisa melihat data brand-nya.</li>
+                <li>Kalau role-nya PIC Brand, form akan menampilkan dropdown "Brand" — wajib pilih satu brand, ini yang membatasi akun tersebut hanya bisa melihat data brand itu saja. Kolom "Brand" di tabel User Management menunjukkan brand yang sudah diatur untuk tiap akun PIC.</li>
                 <li>Untuk reset password: klik ikon kunci di baris user, isi password baru.</li>
                 <li>Untuk hapus akun: klik ikon tempat sampah — aksi ini permanen.</li>
               </ol>

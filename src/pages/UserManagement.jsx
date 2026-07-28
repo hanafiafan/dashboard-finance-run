@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Key, Trash2, X, UserPlus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { getStoredUsers, addUser, removeUser, resetUserPassword } from '../contexts/AuthContext';
+import { useApp } from '../contexts/AppContext';
 import { getRecords } from '../api/financeApi';
 
 // Privileged actions (create/reset/delete) need the service_role key, which
@@ -20,8 +21,10 @@ async function callManageUser(session, body) {
 
 export default function UserManagement() {
   const { session } = useAuth();
+  const { app } = useApp();
   const [users, setUsers] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
+  const [newUserRole, setNewUserRole] = useState('finance');
   const [resetTarget, setResetTarget] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -29,12 +32,13 @@ export default function UserManagement() {
   const isSuperadmin = session?.role === 'superadmin';
   const canManageUsers = session?.permissions?.canManageUsers;
   const isDemo = session?.isDemo;
+  const brands = app.state?.brands || [];
 
   const refresh = async () => {
     if (isDemo) { setUsers(getStoredUsers()); return; }
     try {
       const { rows } = await getRecords('users', {}, session);
-      setUsers((rows || []).map(r => ({ email: r.Email, name: r.Name, role: r.Role, active: r.Active })));
+      setUsers((rows || []).map(r => ({ email: r.Email, name: r.Name, role: r.Role, active: r.Active, brand_scope: r['Brand Scope'] })));
     } catch (err) {
       setError(err.message);
     }
@@ -42,12 +46,20 @@ export default function UserManagement() {
 
   useEffect(() => { refresh(); }, [isDemo]);
 
+  const openAdd = () => { setNewUserRole('finance'); setShowAdd(true); };
+
   const handleAdd = async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
     const email = fd.get('email').trim().toLowerCase();
     if (!email) return;
-    const payload = { email, name: fd.get('name').trim(), role: fd.get('role'), password: fd.get('password').trim() };
+    const role = fd.get('role');
+    let brand_scope = null;
+    if (role === 'pic_brand') {
+      brand_scope = fd.get('brand_scope');
+      if (!brand_scope) { setError('Pilih brand untuk PIC Brand ini.'); return; }
+    }
+    const payload = { email, name: fd.get('name').trim(), role, password: fd.get('password').trim(), brand_scope };
     setBusy(true);
     setError('');
     try {
@@ -96,7 +108,7 @@ export default function UserManagement() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
         <h3 style={{ margin: 0 }}>User Management</h3>
         {canManageUsers && (
-          <button className="btn blue sm" onClick={() => setShowAdd(true)} disabled={busy}>
+          <button className="btn blue sm" onClick={openAdd} disabled={busy}>
             <UserPlus size={14} /> Add User
           </button>
         )}
@@ -110,19 +122,25 @@ export default function UserManagement() {
             <th>Email</th>
             <th>Name</th>
             <th>Role</th>
+            <th>Brand</th>
             <th>Active</th>
             <th style={{ width: 140 }}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {users.length === 0 && (
-            <tr><td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-tertiary)' }}>Belum ada user.</td></tr>
+            <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-tertiary)' }}>Belum ada user.</td></tr>
           )}
           {users.map(u => (
             <tr key={u.email}>
               <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem' }}>{u.email}</td>
               <td>{u.name}</td>
               <td><span className={`role-badge ${u.role}`}>{u.role}</span></td>
+              <td style={{ fontSize: '0.75rem' }}>
+                {u.role === 'pic_brand'
+                  ? (u.brand_scope || <span style={{ color: 'var(--rose)' }}>belum diatur</span>)
+                  : <span style={{ color: 'var(--text-tertiary)' }}>—</span>}
+              </td>
               <td style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>{u.active === false ? 'Nonaktif' : 'Aktif'}</td>
               <td>
                 <div style={{ display: 'flex', gap: '0.3rem' }}>
@@ -157,13 +175,24 @@ export default function UserManagement() {
             </div>
             <div className="field">
               <label>Role</label>
-              <select name="role">
+              <select name="role" value={newUserRole} onChange={(e) => setNewUserRole(e.target.value)}>
                 {isSuperadmin && <option value="superadmin">Super Admin</option>}
                 <option value="finance">Finance</option>
                 <option value="owner">Owner</option>
                 <option value="pic_brand">PIC Brand</option>
               </select>
             </div>
+            {newUserRole === 'pic_brand' && (
+              <div className="field">
+                <label>Brand (PIC untuk brand ini)</label>
+                <select name="brand_scope" required defaultValue="">
+                  <option value="" disabled>Pilih brand...</option>
+                  {brands.map((b) => (
+                    <option key={b['Brand Key']} value={b['Brand Key']}>{b.Brand} — {b.Company}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className="field">
               <label>Password</label>
               <input name="password" type="text" required placeholder="Min 6 characters" minLength={6} />
