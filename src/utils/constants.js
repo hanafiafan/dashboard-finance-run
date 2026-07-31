@@ -21,12 +21,12 @@ export const ENTITY_LABELS = {
 
 export const TABLE_COLUMNS = {
   budget: ['Brand', 'Tgl Pengajuan', 'Tgl Dibutuhkan', 'Kategori', 'Keterangan', 'Vendor', 'ID Vendor', 'Nominal Pengajuan (Rp)', 'Nominal Dibayar (Rp)', 'Sisa Hutang (Rp)', 'Jenis Bayar', 'Tgl Pembayaran Selanjutnya', 'Tgl Pelunasan', 'Prioritas', 'Status', 'Kontrol Pengajuan', 'Form Feedback Finance', 'Dokumen URL'],
-  income: ['Brand', 'Tanggal', 'Keterangan', 'Customer', 'Nominal', 'Bank Masuk', 'Catatan'],
+  income: ['Brand', 'Tanggal', 'Keterangan', 'Customer', 'Nominal', 'ID Bank Masuk', 'Bank Masuk', 'Catatan'],
   forecast: ['Brand', 'Estimasi Cair', 'Marketplace', 'Nominal Estimasi', 'Status', 'Catatan'],
   forecastOut: ['Brand', 'Estimasi Keluar', 'Kategori', 'Nominal Estimasi', 'Status', 'Catatan'],
-  outcome: ['Brand', 'Tanggal', 'Keterangan', 'Kategori', 'Jumlah (Rp)', 'Biaya (Rp)', 'Total Pengeluaran (Rp)', 'Bank Keluar'],
+  outcome: ['Brand', 'Tanggal', 'Keterangan', 'Kategori', 'Jumlah (Rp)', 'Biaya (Rp)', 'Total Pengeluaran (Rp)', 'ID Bank Keluar', 'Bank Keluar'],
   omzet: ['Brand', 'Tahun', 'Bulan', 'Target Omzet', 'Realisasi Omzet', 'Selisih', 'Capaian'],
-  bank: ['Brand', 'Bank', 'Saldo Awal', 'Pemasukan', 'Pengeluaran', 'Total'],
+  bank: ['Brand', 'ID Bank', 'Bank', 'Saldo Awal', 'Pemasukan', 'Pengeluaran', 'Total'],
   service: ['Brand', 'Tanggal', 'Keterangan', 'Vendor', 'Nominal', 'Status', 'Catatan'],
   payables: ['Brand', 'Nama Pemasok', 'ID Pemasok', 'Total Hutang', 'Total Dibayar', 'Sisa Hutang', 'Progress %', 'Status', 'Tgl Jatuh Tempo', 'Source'],
   receivables: ['Brand', 'Nama Pelanggan', 'ID Pelanggan', 'Total Piutang', 'Total Diterima', 'Sisa Piutang', 'Progress %', 'Status', 'Source'],
@@ -64,7 +64,9 @@ export const FORMS = {
     { key: 'Keterangan', label: 'Keterangan', type: 'text' },
     { key: 'Customer', label: 'Customer', type: 'customer' },
     { key: 'Nominal', label: 'Nominal', type: 'number' },
-    { key: 'Bank Masuk', label: 'Bank Masuk', type: 'select', optionsKey: 'banks' },
+    // Nama bank otomatis terisi dari ID Bank yang dipilih (lihat handleChange
+    // di Modal.jsx) — hanya bank yang sudah punya ID Bank yang muncul di sini.
+    { key: 'ID Bank Masuk', label: 'ID Bank Masuk', type: 'bank', required: true },
     { key: 'Catatan', label: 'Catatan', type: 'textarea' },
   ],
   forecast: [
@@ -90,7 +92,7 @@ export const FORMS = {
     { key: 'Kategori', label: 'Kategori', type: 'select', optionsKey: 'categories' },
     { key: 'Jumlah', label: 'Jumlah (Rp)', type: 'number' },
     { key: 'Biaya', label: 'Biaya (Rp)', type: 'number' },
-    { key: 'Bank Keluar', label: 'Bank Keluar', type: 'select', optionsKey: 'banks' },
+    { key: 'ID Bank Keluar', label: 'ID Bank Keluar', type: 'bank', required: true },
     { key: 'Catatan', label: 'Catatan', type: 'textarea' },
   ],
   omzet: [
@@ -102,10 +104,12 @@ export const FORMS = {
   ],
   bank: [
     { key: 'Brand', label: 'Brand Key', type: 'brand', required: true },
+    // ID Bank (kode unik, diisi manual seperti ID Vendor) — inilah yang dipakai
+    // Cash In/Cash Out untuk menautkan ke rekening ini, bukan nama banknya.
+    { key: 'ID Bank', label: 'ID Bank (kode unik)', type: 'text', required: true },
     // Free text, not a fixed dropdown — this is where a bank/kas name gets
     // registered for the first time, so it can't be limited to a pre-existing
-    // list (Bank Masuk/Bank Keluar elsewhere DO use a dropdown, sourced from
-    // whatever's been registered here).
+    // list.
     { key: 'Bank', label: 'Nama Bank', type: 'text', required: true },
     { key: 'Saldo Awal', label: 'Saldo Awal (Saldo Pembukaan)', type: 'number' },
   ],

@@ -37,7 +37,8 @@ const COL_MAP = {
   },
   income: {
     brand_key: 'Brand', tanggal: 'Tanggal', keterangan: 'Keterangan',
-    customer: 'Customer', nominal: 'Nominal', bank_masuk: 'Bank Masuk', catatan: 'Catatan',
+    customer: 'Customer', nominal: 'Nominal', bank_masuk: 'Bank Masuk',
+    bank_id: 'ID Bank Masuk', catatan: 'Catatan',
   },
   forecast: {
     brand_key: 'Brand', estimasi_cair: 'Estimasi Cair', marketplace: 'Marketplace',
@@ -51,6 +52,7 @@ const COL_MAP = {
     brand_key: 'Brand', tanggal: 'Tanggal', keterangan: 'Keterangan',
     kategori: 'Kategori', jumlah: 'Jumlah (Rp)', biaya: 'Biaya (Rp)',
     total_pengeluaran: 'Total Pengeluaran (Rp)', bank_keluar: 'Bank Keluar',
+    bank_id: 'ID Bank Keluar',
   },
   omzet: {
     brand_key: 'Brand', tahun: 'Tahun', bulan: 'Bulan',
@@ -58,7 +60,7 @@ const COL_MAP = {
     selisih: 'Selisih', capaian: 'Capaian',
   },
   bank: {
-    brand_key: 'Brand', bank: 'Bank', saldo_awal: 'Saldo Awal',
+    brand_key: 'Brand', id_bank: 'ID Bank', bank: 'Bank', saldo_awal: 'Saldo Awal',
     pemasukan: 'Pemasukan', pengeluaran: 'Pengeluaran', total: 'Total',
   },
   service: {

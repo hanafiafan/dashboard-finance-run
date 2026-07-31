@@ -11,8 +11,6 @@ const ENTITY_DATE_COL = {
 };
 const ENTITY_CATEGORY_COL = { budget: 'kategori', outcome: 'kategori', forecastOut: 'kategori' };
 
-const DEFAULT_BANKS = ['BCA', 'BNI', 'BRI', 'Mandiri', 'BSI', 'Kas Kecil', 'E-wallet'];
-
 // ── Supabase live queries ──────────────────────────────────
 
 async function supabaseGetAppState(filters = {}, auth) {
@@ -218,10 +216,10 @@ async function supabaseGetAppState(filters = {}, auth) {
     options: {
       companies,
       categories: ['Marketing', 'Operasional', 'Produksi', 'Gaji dan Upah', 'Sewa', 'Aset', 'Hutang', 'Lain-lain'],
-      // Bank Masuk/Bank Keluar pick from here — union of a few sane defaults
-      // with whatever's actually been registered via Saldo Rekening, so a
-      // custom bank/kas name someone adds there shows up here immediately.
-      banks: [...new Set([...DEFAULT_BANKS, ...bankRows.map(r => r.bank).filter(Boolean)])],
+      // Bank Masuk/Bank Keluar pick from ID Bank registered via Saldo Rekening
+      // (bankRowsUi already carries 'ID Bank' + 'Bank' from dbToUi) — banks
+      // without an ID Bank yet are filtered out in Modal.jsx's picker.
+      bankList: bankRowsUi,
       priorities: ['High', 'Medium', 'Low'],
       budgetStatuses: ['Pending', 'Approved', 'Need Revision', 'Rejected', 'Paid'],
       paymentTypes: ['Transfer', 'Cash', 'Giro', 'Kartu Kredit'],

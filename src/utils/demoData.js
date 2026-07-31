@@ -236,7 +236,7 @@ export function demoState(filters = {}, session = null) {
     options: {
       companies: [...new Set(allBrands.map(b => b.Company))],
       categories: ['Operasional', 'Marketing', 'Aset', 'Persediaan', 'Hutang', 'Gaji dan Upah', 'Sewa', 'Saving', 'Transfer Antar Bank', 'Jasa Konsultasi & Manajemen RUN'],
-      banks: [...new Set(['Bank Sentral', 'Bank BRI', 'Bank BCA', 'Bank BSI', 'Bank BNI', 'Bank Mandiri', 'Kas Kecil', 'Kas Ditangan', 'E-wallet', ...DEMO_BANK_ROWS.map(r => r.Bank)])],
+      bankList: DEMO_BANK_ROWS,
       priorities: ['High', 'Medium', 'Low'],
       budgetStatuses: ['Diajukan', 'Approved', 'Need Revision', 'Rejected', 'DP', 'Termin', 'Lunas'],
       paymentTypes: ['Belum Dibayar', 'DP', 'Termin', 'Lunas'],
@@ -291,9 +291,9 @@ export function demoState(filters = {}, session = null) {
 }
 
 const DEMO_BANK_ROWS = [
-  { ID: 1, Brand: 'HAN', Bank: 'Bank BCA', 'Saldo Awal': 150000000, Pemasukan: 45000000, Pengeluaran: 10000000, Total: 185000000 },
-  { ID: 2, Brand: 'LBP', Bank: 'Bank Mandiri', 'Saldo Awal': 280000000, Pemasukan: 60000000, Pengeluaran: 20000000, Total: 320000000 },
-  { ID: 3, Brand: 'NUSASEED', Bank: 'Bank BRI', 'Saldo Awal': 120000000, Pemasukan: 30000000, Pengeluaran: 5000000, Total: 145000000 },
+  { ID: 1, Brand: 'HAN', 'ID Bank': 'BNK-001', Bank: 'Bank BCA', 'Saldo Awal': 150000000, Pemasukan: 45000000, Pengeluaran: 10000000, Total: 185000000 },
+  { ID: 2, Brand: 'LBP', 'ID Bank': 'BNK-002', Bank: 'Bank Mandiri', 'Saldo Awal': 280000000, Pemasukan: 60000000, Pengeluaran: 20000000, Total: 320000000 },
+  { ID: 3, Brand: 'NUSASEED', 'ID Bank': 'BNK-003', Bank: 'Bank BRI', 'Saldo Awal': 120000000, Pemasukan: 30000000, Pengeluaran: 5000000, Total: 145000000 },
 ];
 
 const DEMO_VENDORS = [

@@ -47,6 +47,14 @@ export function DynamicForm({ fields, values, options, onChange, onSubmit, onCan
       const found = (options?.customerList || []).find(c => c['ID Pelanggan'] === value);
       if (found) updated['Nama Pelanggan'] = found['Nama Pelanggan'];
     }
+    if (key === 'ID Bank Masuk') {
+      const found = (options?.bankList || []).find(b => b['ID Bank'] === value);
+      if (found) updated['Bank Masuk'] = found['Bank'];
+    }
+    if (key === 'ID Bank Keluar') {
+      const found = (options?.bankList || []).find(b => b['ID Bank'] === value);
+      if (found) updated['Bank Keluar'] = found['Bank'];
+    }
     setFormData(updated);
     if (onChange) onChange(updated);
   };
@@ -98,6 +106,17 @@ function renderField(field, formData, options, onChange) {
             <option key={item['ID Vendor'] || item['ID Pelanggan']} value={item['ID Vendor'] || item['ID Pelanggan']}>
               {item['ID Vendor'] || item['ID Pelanggan']} — {item['Nama Vendor'] || item['Nama Pelanggan']}
             </option>
+          ))}
+        </select>
+      );
+    }
+    case 'bank': {
+      const dataList = (options?.bankList || []).filter(b => b['ID Bank']);
+      return (
+        <select id={id} value={value} onChange={e => onChange(field.key, e.target.value)}>
+          <option value="">Pilih Bank</option>
+          {dataList.map(item => (
+            <option key={item['ID Bank']} value={item['ID Bank']}>{item['ID Bank']} — {item['Bank']}</option>
           ))}
         </select>
       );
