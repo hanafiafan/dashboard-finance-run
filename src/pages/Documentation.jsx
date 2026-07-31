@@ -143,7 +143,7 @@ const ENTITY_GUIDES = {
     tujuan: 'Mencatat kewajiban ke supplier/vendor yang belum lunas.',
     steps: [
       'Klik "Tambah".',
-      'Pilih Brand Key, isi Nama Pemasok dan pilih ID Pemasok dari daftar Vendor.',
+      'Pilih Brand Key, lalu pilih ID Pemasok dari daftar Vendor — nama pemasok otomatis terisi, tidak perlu diketik.',
       'Isi Total Hutang dan Total Dibayar (Sisa Hutang & Progress % dihitung otomatis).',
       'Isi Tgl Jatuh Tempo — tanggal ini yang dipakai grafik "Payable Aging" di Dashboard untuk menghitung berapa hari sudah/akan telat.',
       'Isi Status.',
@@ -157,7 +157,7 @@ const ENTITY_GUIDES = {
     tujuan: 'Mencatat uang yang masih harus diterima dari pelanggan.',
     steps: [
       'Klik "Tambah".',
-      'Pilih Brand Key, isi Nama Pelanggan dan pilih ID Pelanggan dari daftar Customer.',
+      'Pilih Brand Key, lalu pilih ID Pelanggan dari daftar Customer — nama pelanggan otomatis terisi, tidak perlu diketik.',
       'Isi Total Piutang dan Total Diterima (Sisa Piutang & Progress % dihitung otomatis).',
       'Isi Status.',
       'Simpan.',

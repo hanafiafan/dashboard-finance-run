@@ -44,7 +44,8 @@ export const FORMS = {
     { key: 'Tgl Dibutuhkan', label: 'Tgl Dibutuhkan', type: 'date' },
     { key: 'Kategori', label: 'Kategori', type: 'select', optionsKey: 'categories' },
     { key: 'Keterangan', label: 'Keterangan', type: 'textarea' },
-    { key: 'Vendor', label: 'Vendor (Nama)', type: 'text' },
+    // 'Vendor' (nama) sengaja tidak ada di sini — otomatis terisi dari ID Vendor
+    // yang dipilih (lihat DynamicForm.handleChange di Modal.jsx), bukan diketik.
     { key: 'ID Vendor', label: 'ID Vendor', type: 'vendor', required: true },
     { key: 'Nominal Pengajuan', label: 'Nominal Pengajuan (Rp)', type: 'number' },
     { key: 'Nominal Dibayar', label: 'Nominal Dibayar (Rp)', type: 'number' },
@@ -119,7 +120,7 @@ export const FORMS = {
   ],
   payables: [
     { key: 'Brand', label: 'Brand Key', type: 'brand' },
-    { key: 'Nama Pemasok', label: 'Nama Pemasok', type: 'text' },
+    // 'Nama Pemasok' otomatis terisi dari ID Pemasok yang dipilih, tidak diketik.
     { key: 'ID Pemasok', label: 'ID Pemasok', type: 'vendor', required: true },
     { key: 'Total Hutang', label: 'Total Hutang', type: 'number' },
     { key: 'Total Dibayar', label: 'Total Dibayar', type: 'number' },
@@ -129,7 +130,7 @@ export const FORMS = {
   ],
   receivables: [
     { key: 'Brand', label: 'Brand Key', type: 'brand' },
-    { key: 'Nama Pelanggan', label: 'Nama Pelanggan', type: 'text' },
+    // 'Nama Pelanggan' otomatis terisi dari ID Pelanggan yang dipilih, tidak diketik.
     { key: 'ID Pelanggan', label: 'ID Pelanggan', type: 'customer', required: true },
     { key: 'Total Piutang', label: 'Total Piutang', type: 'number' },
     { key: 'Total Diterima', label: 'Total Diterima', type: 'number' },

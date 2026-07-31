@@ -31,20 +31,21 @@ export function DynamicForm({ fields, values, options, onChange, onSubmit, onCan
   const handleChange = (key, value) => {
     const updated = { ...formData, [key]: value };
 
+    // Nama Vendor/Pemasok/Pelanggan are never typed directly anymore — they're
+    // purely derived from whichever ID is selected, always overwritten (not
+    // just filled-if-empty) so they can never drift from the ID, including
+    // when editing an existing row and changing which ID is selected.
     if (key === 'ID Vendor') {
-      const vendors = options?.vendorList || [];
-      const found = vendors.find(v => v['ID Vendor'] === value);
-      if (found && !updated['Vendor']) updated['Vendor'] = found['Nama Vendor'];
+      const found = (options?.vendorList || []).find(v => v['ID Vendor'] === value);
+      if (found) updated['Vendor'] = found['Nama Vendor'];
+    }
+    if (key === 'ID Pemasok') {
+      const found = (options?.vendorList || []).find(v => v['ID Vendor'] === value);
+      if (found) updated['Nama Pemasok'] = found['Nama Vendor'];
     }
     if (key === 'ID Pelanggan') {
-      const customers = options?.customerList || [];
-      const found = customers.find(c => c['ID Pelanggan'] === value);
-      if (found && !updated['Nama Pelanggan']) updated['Nama Pelanggan'] = found['Nama Pelanggan'];
-    }
-    if (key === 'Nama Pemasok') {
-      const vendors = options?.vendorList || [];
-      const found = vendors.find(v => v['Nama Vendor'] === value);
-      if (found && !updated['ID Pemasok']) updated['ID Pemasok'] = found['ID Vendor'];
+      const found = (options?.customerList || []).find(c => c['ID Pelanggan'] === value);
+      if (found) updated['Nama Pelanggan'] = found['Nama Pelanggan'];
     }
     setFormData(updated);
     if (onChange) onChange(updated);
