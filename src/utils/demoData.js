@@ -15,23 +15,28 @@ export function demoApi(action, args, session) {
 const ROLE_PERMISSIONS = {
   superadmin: { canApprove: true, canManageUsers: true, canImport: true, canEditAll: true },
   finance:    { canApprove: true, canManageUsers: true, canImport: true, canEditAll: true },
-  owner:      { canApprove: true, canManageUsers: false, canImport: false, canEditAll: false },
+  owner:      { canApprove: false, canManageUsers: false, canImport: false, canEditAll: false },
   pic_brand:  { canApprove: false, canManageUsers: false, canImport: false, canEditAll: false },
 };
 
 const ALL_ENTITIES = ['budget', 'income', 'forecast', 'forecastOut', 'outcome', 'omzet', 'bank', 'service', 'payables', 'receivables'];
 const MASTER_ENTITIES = ['users', 'brands', 'sources', 'vendors', 'customers'];
 
+// PIC Brand entities that allow insert+update but never delete (audit trail —
+// once a Cash In/Cash Out/Hutang row exists, it can be corrected but not erased).
+const PIC_EDITABLE_ENTITIES = ['budget', 'income', 'outcome', 'payables'];
+
 export function buildEntities(role) {
   const entities = {};
 
   for (const e of ALL_ENTITIES) {
     if (role === 'pic_brand') {
-      // PIC can only submit budget requests and view their own data
-      entities[e] = { canEdit: e === 'budget' };
+      // PIC can submit/edit budget, cash in/out, and hutang for their own
+      // brand — never delete (RLS backs this with no delete policy at all).
+      entities[e] = { canEdit: PIC_EDITABLE_ENTITIES.includes(e), canDelete: false };
     } else if (role === 'owner') {
-      // Owner can view all, edit budget/income/forecast (in & out)/outcome
-      entities[e] = { canEdit: ['budget', 'income', 'forecast', 'forecastOut', 'outcome'].includes(e) };
+      // Owner is read-only everywhere — sees all brands, edits nothing.
+      entities[e] = { canEdit: false };
     } else {
       // superadmin & finance: full CRUD
       entities[e] = { canEdit: true };
@@ -43,6 +48,9 @@ export function buildEntities(role) {
       entities[e] = { canEdit: true };
     } else if (role === 'finance') {
       entities[e] = { canEdit: e !== 'users' };
+    } else if (role === 'pic_brand' && e === 'vendors') {
+      // PIC can add new vendors (shared/global table) but not edit or delete them.
+      entities[e] = { canEdit: false, canInsert: true };
     } else if (e !== 'sources') {
       // fin_sources RLS restricts read/write to superadmin/finance only —
       // omit the entity entirely so the tab doesn't show an always-empty table.

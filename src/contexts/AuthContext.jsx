@@ -8,7 +8,7 @@ const AuthContext = createContext(null);
 const DEMO_CREDENTIALS = [
   { email: 'admin@runfinance.com', password: 'superadmin123', name: 'Super Admin', role: 'superadmin', canApprove: true, canManageUsers: true },
   { email: 'finance@runfinance.com', password: 'finance123', name: 'Admin Finance', role: 'finance', canApprove: true, canManageUsers: true },
-  { email: 'owner@runfinance.com', password: 'owner123', name: 'Company Owner', role: 'owner', canApprove: true, canManageUsers: false },
+  { email: 'owner@runfinance.com', password: 'owner123', name: 'Company Owner', role: 'owner', canApprove: false, canManageUsers: false },
   { email: 'pic@runfinance.com', password: 'pic123', name: 'PIC Brand', role: 'pic_brand', canApprove: false, canManageUsers: false },
 ];
 
@@ -24,7 +24,7 @@ function buildSession(profile, demoMode, accessToken) {
     name: profile.name,
     role: profile.role,
     permissions: {
-      canApprove: profile.canApprove ?? profile.role !== 'pic_brand',
+      canApprove: profile.canApprove ?? (isSuperadmin || profile.role === 'finance'),
       canManageUsers: profile.canManageUsers ?? (isSuperadmin || profile.role === 'finance'),
       canImport: isSuperadmin || profile.role === 'finance',
     },

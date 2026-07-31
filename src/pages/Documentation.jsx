@@ -257,25 +257,26 @@ const ROLE_CONTENT = {
     entities: ['budget', 'income', 'forecast', 'forecastOut', 'outcome', 'omzet', 'bank', 'service', 'payables', 'receivables', 'vendors', 'customers', 'brands', 'sources'],
   },
   owner: {
-    ringkasan: 'Bisa melihat semua data di semua company/brand untuk pengawasan, tapi hanya bisa mengedit modul transaksi utama.',
+    ringkasan: 'Bisa melihat semua data di semua company/brand untuk pengawasan — akses murni read-only, tidak bisa mengedit data apa pun.',
     bullets: [
-      'Bisa mengajukan dan mengedit Budget Request, Cash In, Forecast Cash In/Out, dan Cash Out.',
-      'Bisa approve Budget Request.',
-      'Read-only untuk Omzet, Saldo Rekening, Biaya Layanan, Hutang, Piutang, dan semua Master Data — kalau ada yang perlu diubah, minta Finance.',
+      'Read-only di seluruh modul operasional (Budget Request, Cash In, Cash Out, Forecast Cash In/Out, Omzet, Saldo Rekening, Biaya Layanan, Hutang, Piutang) dan seluruh Master Data.',
+      'Tidak bisa approve/reject/minta revisi Budget Request — approval sepenuhnya di tangan Finance/Super Admin.',
       'Tidak bisa mengelola user atau import data.',
     ],
-    entities: ['budget', 'income', 'forecast', 'forecastOut', 'outcome'],
-    readonlyNote: 'Omzet, Saldo Rekening, Biaya Layanan, Hutang, Piutang, dan Master Data bisa dilihat tapi tidak bisa diedit — kalau perlu koreksi data, hubungi Finance.',
+    entities: [],
+    readonlyNote: 'Semua modul di atas bisa dilihat tapi tidak bisa diedit sama sekali — kalau ada data yang perlu diubah atau budget yang perlu diproses, hubungi Finance/Super Admin.',
   },
   pic_brand: {
-    ringkasan: 'Akses paling terbatas — hanya untuk brand yang jadi tanggung jawabnya sendiri.',
+    ringkasan: 'Akses operasional harian untuk brand yang jadi tanggung jawabnya sendiri — Budget Request, Cash In, Cash Out, Hutang, dan menambah data Vendor.',
     bullets: [
-      'Hanya bisa mengajukan Budget Request untuk brand-nya sendiri.',
+      'Bisa mengajukan & mengedit Budget Request (selama masih Pending), mencatat Cash In & Cash Out, dan mencatat Hutang — semuanya untuk brand sendiri saja.',
+      'Bisa menambah Vendor baru di Master Data (tidak bisa mengedit atau menghapus vendor yang sudah ada).',
+      'Tidak ada tombol hapus di Budget Request/Cash In/Cash Out/Hutang — begitu tersimpan, data hanya bisa dikoreksi, bukan dihapus, supaya jejak transaksinya tetap utuh.',
       'Tidak bisa approve budget, tidak bisa kelola user, tidak bisa import data.',
       'Semua data yang terlihat (termasuk di Dashboard/Analytics) otomatis terbatas ke brand milik sendiri saja — brand lain tidak akan muncul.',
     ],
-    entities: ['budget'],
-    readonlyNote: 'Modul lain (Cash In, Cash Out, Omzet, dst.) bisa dilihat read-only untuk brand sendiri saja, tidak bisa diedit.',
+    entities: ['budget', 'income', 'outcome', 'payables', 'vendors'],
+    readonlyNote: 'Modul lain (Forecast Cash In/Out, Omzet, Saldo Rekening, Biaya Layanan, Piutang, dan Master Data selain Vendor) bisa dilihat read-only untuk brand sendiri saja, tidak bisa diedit.',
     warning: 'Kalau setelah login dashboard terlihat KOSONG sama sekali, kemungkinan kolom "Brand Scope" di akun kamu belum diisi oleh Finance/Super Admin — minta mereka cek di Master Data → Users.',
   },
 };
@@ -347,7 +348,7 @@ export function Documentation() {
             </details>
           )}
 
-          {(activeRole === 'superadmin' || activeRole === 'finance' || activeRole === 'owner') && (
+          {(activeRole === 'superadmin' || activeRole === 'finance') && (
             <details className="doc-entity">
               <summary>
                 <span className="doc-entity-title"><CheckCircle2 size={16} className="doc-entity-icon" />Approve Budget Request</span>

@@ -21,6 +21,8 @@ export function Operations() {
   const entity = app.entity;
   const entityInfo = app.state?.entities?.[entity] || {};
   const canEdit = entityInfo.canEdit;
+  const canInsert = entityInfo.canInsert ?? entityInfo.canEdit;
+  const canDelete = entityInfo.canDelete ?? entityInfo.canEdit;
   const options = app.state?.options || {};
   const brands = app.state?.brands || [];
 
@@ -116,7 +118,7 @@ export function Operations() {
             <p>{number.format(filtered.length)} data</p>
           </div>
           <div className="row-actions">
-            {canEdit && (
+            {canInsert && (
               <button className="btn blue" onClick={openAdd}>
                 <Plus size={16} /> Tambah
               </button>
@@ -142,13 +144,15 @@ export function Operations() {
           columns={TABLE_COLUMNS[entity]}
           rows={filtered}
           renderActions={
-            canEdit
+            (canEdit || canDelete)
               ? (row) => (
                   <>
-                    <button className="icon-btn" onClick={() => openEdit(row)} title="Edit">
-                      <Pencil size={15} />
-                    </button>
-                    {row.ID && (
+                    {canEdit && (
+                      <button className="icon-btn" onClick={() => openEdit(row)} title="Edit">
+                        <Pencil size={15} />
+                      </button>
+                    )}
+                    {canDelete && row.ID && (
                       <button
                         className="icon-btn"
                         onClick={() => handleDelete(row.ID)}
