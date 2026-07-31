@@ -7,7 +7,7 @@ import { useApp } from '../contexts/AppContext';
 import { useFilters } from '../hooks/useFilters';
 import { CHART_COLORS } from '../utils/constants';
 import { getChartTheme } from '../utils/chartTheme';
-import { ewsStatus, cashPositionStatus, forecastCashPositionStatus, ewsDetail, capEarlyMonthStatus } from '../utils/ews';
+import { ewsStatus, cashPositionStatus, forecastCashPositionStatus, ewsDetail, ewsFormula, capEarlyMonthStatus } from '../utils/ews';
 import PolarChartCard from '../components/charts/PolarChart';
 import ComboChart from '../components/charts/ComboChart';
 import HorizontalBar from '../components/charts/HorizontalBar';
@@ -70,15 +70,16 @@ export default function CommandCenter() {
   const ct = getChartTheme();
 
   const omzetAchColor = ewsStatus(s.omzetAchievement || 0, 1.0, 0.8);
+  const omzetD = ewsDetail('omzetAchievement', omzetAchColor);
   const metrics = [
-    { label: 'Cash In', value: money.format(s.cashIn), color: 'green', note: `${(charts.monthlyCashFlow || []).length} bulan` },
-    { label: 'Cash Out', value: money.format(s.cashOut), color: 'coral', note: 'Total pengeluaran' },
-    { label: 'Net Cash', value: money.format(s.netCash), color: s.netCash >= 0 ? 'teal' : 'rose', note: `${pct.format(s.netCash / (s.cashIn || 1))} margin` },
-    { label: 'Saldo Rekening', value: money.format(s.bankBalance), color: 'blue', note: `${(charts.bankBalance || []).length} akun` },
-    { label: 'Budget Request', value: money.format(s.budgetRequested), color: 'violet', note: `${s.pendingApproval} pending` },
-    { label: 'Pending', value: number.format(s.pendingApproval), color: 'amber', note: 'Perlu review' },
-    { label: 'Hutang', value: money.format(s.payableOutstanding || s.budgetOutstanding), color: 'rose', note: `${(charts.payableAging || []).length} bucket` },
-    { label: 'Capaian Omzet', value: pct.format(s.omzetAchievement || 0), color: omzetAchColor, note: `${money.format(s.omzetReal)} / ${money.format(s.omzetTarget)}`, statusLabel: ewsDetail('omzetAchievement', omzetAchColor).label, arti: ewsDetail('omzetAchievement', omzetAchColor).arti },
+    { label: 'Cash In', value: money.format(s.cashIn), color: 'green', note: `${(charts.monthlyCashFlow || []).length} bulan`, arti: 'Total uang masuk sesuai filter aktif.', rumus: ewsFormula('cashIn') },
+    { label: 'Cash Out', value: money.format(s.cashOut), color: 'coral', note: 'Total pengeluaran', arti: 'Total uang keluar sesuai filter aktif.', rumus: ewsFormula('cashOut') },
+    { label: 'Net Cash', value: money.format(s.netCash), color: s.netCash >= 0 ? 'teal' : 'rose', note: `${pct.format(s.netCash / (s.cashIn || 1))} margin`, arti: 'Selisih uang masuk dan keluar — indikator dasar arus kas.', rumus: ewsFormula('netCash') },
+    { label: 'Saldo Rekening', value: money.format(s.bankBalance), color: 'blue', note: `${(charts.bankBalance || []).length} akun`, arti: 'Total saldo seluruh rekening/kas yang terdaftar.', rumus: ewsFormula('bankBalance') },
+    { label: 'Budget Request', value: money.format(s.budgetRequested), color: 'violet', note: `${s.pendingApproval} pending`, arti: 'Total nominal seluruh pengajuan dana.', rumus: ewsFormula('budgetRequested') },
+    { label: 'Pending', value: number.format(s.pendingApproval), color: 'amber', note: 'Perlu review', arti: 'Jumlah pengajuan yang masih menunggu keputusan Finance.', rumus: ewsFormula('pendingApproval') },
+    { label: 'Hutang', value: money.format(s.payableOutstanding || s.budgetOutstanding), color: 'rose', note: `${(charts.payableAging || []).length} bucket`, arti: 'Sisa kewajiban ke supplier/vendor yang belum lunas.', rumus: ewsFormula('payableOutstanding') },
+    { label: 'Capaian Omzet', value: pct.format(s.omzetAchievement || 0), color: omzetAchColor, note: `${money.format(s.omzetReal)} / ${money.format(s.omzetTarget)}`, statusLabel: omzetD.label, arti: omzetD.arti, rumus: omzetD.rumus },
   ];
 
   // Early Warning System — see RAW DATA DASHBOARD FINANCE/Early Warning System.docx
@@ -92,13 +93,20 @@ export default function CommandCenter() {
   const payableRiskColor = capEarlyMonthStatus(ewsStatus(s.payableRisk || 0, 0.30, 0.50, false));
   const forecastCashPosColor = forecastCashPositionStatus(s.forecastCashPosition30 || 0, s.bankBalance || 0);
 
+  const cashPosD = ewsDetail('cashPosition', cashPosColor);
+  const cashOutRatioD = ewsDetail('cashOutRatio', cashOutRatioColor);
+  const cashConversionD = ewsDetail('cashConversion', cashConversionColor);
+  const receivableRiskD = ewsDetail('receivableRisk', receivableRiskColor);
+  const payableRiskD = ewsDetail('payableRisk', payableRiskColor);
+  const forecastCashPosD = ewsDetail('forecastCashPosition', forecastCashPosColor);
+
   const ewsMetrics = [
-    { label: 'Cash Position', value: money.format(s.cashPosition || 0), color: cashPosColor, statusLabel: ewsDetail('cashPosition', cashPosColor).label, arti: ewsDetail('cashPosition', cashPosColor).arti },
-    { label: 'Cash Out Ratio', value: pct.format(s.cashOutRatio || 0), color: cashOutRatioColor, statusLabel: ewsDetail('cashOutRatio', cashOutRatioColor).label, arti: ewsDetail('cashOutRatio', cashOutRatioColor).arti },
-    { label: 'Cash Conversion', value: pct.format(s.cashConversion || 0), color: cashConversionColor, statusLabel: ewsDetail('cashConversion', cashConversionColor).label, arti: ewsDetail('cashConversion', cashConversionColor).arti },
-    { label: 'Receivable Risk', value: pct.format(s.receivableRisk || 0), color: receivableRiskColor, statusLabel: ewsDetail('receivableRisk', receivableRiskColor).label, arti: ewsDetail('receivableRisk', receivableRiskColor).arti },
-    { label: 'Payable Risk', value: pct.format(s.payableRisk || 0), color: payableRiskColor, statusLabel: ewsDetail('payableRisk', payableRiskColor).label, arti: ewsDetail('payableRisk', payableRiskColor).arti },
-    { label: 'Forecast Cash Position (30 hari)', value: money.format(s.forecastCashPosition30 || 0), color: forecastCashPosColor, statusLabel: ewsDetail('forecastCashPosition', forecastCashPosColor).label, arti: ewsDetail('forecastCashPosition', forecastCashPosColor).arti },
+    { label: 'Cash Position', value: money.format(s.cashPosition || 0), color: cashPosColor, statusLabel: cashPosD.label, arti: cashPosD.arti, rumus: cashPosD.rumus },
+    { label: 'Cash Out Ratio', value: pct.format(s.cashOutRatio || 0), color: cashOutRatioColor, statusLabel: cashOutRatioD.label, arti: cashOutRatioD.arti, rumus: cashOutRatioD.rumus },
+    { label: 'Cash Conversion', value: pct.format(s.cashConversion || 0), color: cashConversionColor, statusLabel: cashConversionD.label, arti: cashConversionD.arti, rumus: cashConversionD.rumus },
+    { label: 'Receivable Risk', value: pct.format(s.receivableRisk || 0), color: receivableRiskColor, statusLabel: receivableRiskD.label, arti: receivableRiskD.arti, rumus: receivableRiskD.rumus },
+    { label: 'Payable Risk', value: pct.format(s.payableRisk || 0), color: payableRiskColor, statusLabel: payableRiskD.label, arti: payableRiskD.arti, rumus: payableRiskD.rumus },
+    { label: 'Forecast Cash Position (30 hari)', value: money.format(s.forecastCashPosition30 || 0), color: forecastCashPosColor, statusLabel: forecastCashPosD.label, arti: forecastCashPosD.arti, rumus: forecastCashPosD.rumus },
   ];
 
   const approvalRate = s.approvalRate || 0;

@@ -90,9 +90,36 @@ const EWS_TEXT = {
   },
 };
 
+// Formula shown alongside the arti text — same for every color, so it's kept
+// separate from EWS_TEXT rather than repeated 3x. Mirrors the exact
+// calculation in financeApi.js's summary block.
+const EWS_FORMULA = {
+  cashPosition: 'Saldo Rekening + Cash In (hari ini) − Cash Out (hari ini)',
+  cashOutRatio: 'Cash Out (bulan berjalan) ÷ Cash In (bulan berjalan)',
+  cashConversion: 'Cash In (bulan berjalan) ÷ Omzet Realisasi (bulan berjalan)',
+  omzetAchievement: 'Realisasi Omzet ÷ Target Omzet',
+  receivableRisk: 'Piutang Outstanding ÷ Omzet Realisasi (bulan berjalan)',
+  payableRisk: 'Hutang Outstanding ÷ Cash In (bulan berjalan)',
+  forecastCashPosition: 'Saldo Rekening + Σ Forecast Cash In − Σ Forecast Cash Out (hari ini s/d +30 hari)',
+  cashIn: 'Σ Nominal Cash In',
+  cashOut: 'Σ (Jumlah + Biaya) Cash Out',
+  netCash: 'Cash In − Cash Out',
+  bankBalance: 'Σ (Saldo Awal + Pemasukan − Pengeluaran) tiap rekening',
+  budgetRequested: 'Σ Nominal Pengajuan',
+  pendingApproval: 'Jumlah Budget Request dengan Status ≠ Approved',
+  payableOutstanding: 'Σ (Total Hutang − Total Dibayar)',
+};
+
 // indicator: one of the EWS_TEXT keys above; color: 'green'|'amber'|'rose' from the status functions.
 export function ewsDetail(indicator, color) {
-  return EWS_TEXT[indicator]?.[color] || { label: '', arti: '' };
+  const detail = EWS_TEXT[indicator]?.[color] || { label: '', arti: '' };
+  return { ...detail, rumus: EWS_FORMULA[indicator] || '' };
+}
+
+// For metric cards with no status color (Cash In, Cash Out, Net Cash, dst.) —
+// just the formula, no label/arti since there's no Sehat/Waspada/Kritis state.
+export function ewsFormula(indicator) {
+  return EWS_FORMULA[indicator] || '';
 }
 
 export function addDays(days, from = new Date()) {

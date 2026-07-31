@@ -2,7 +2,7 @@ import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 const STATUS_CLASS = { green: 'ok', amber: 'warn', rose: 'bad' };
 
-export default function MetricCard({ label, value, color = 'teal', note, trend, sparklineData, statusLabel, arti }) {
+export default function MetricCard({ label, value, color = 'teal', note, trend, sparklineData, statusLabel, arti, rumus }) {
   const trendIcon = trend > 0 ? <TrendingUp size={14} /> : trend < 0 ? <TrendingDown size={14} /> : <Minus size={14} />;
   const trendColor = trend > 0 ? 'var(--green)' : trend < 0 ? 'var(--rose)' : 'var(--text-tertiary)';
 
@@ -20,6 +20,7 @@ export default function MetricCard({ label, value, color = 'teal', note, trend, 
         </div>
       )}
       {arti && <div className="ews-arti">{arti}</div>}
+      {rumus && <div className="ews-rumus">Rumus: {rumus}</div>}
       {sparklineData && (
         <div className="sparkline-container">
           <svg viewBox={`0 0 ${sparklineData.length * 10} 30`} className="sparkline-svg">
