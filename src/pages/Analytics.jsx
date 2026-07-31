@@ -38,6 +38,18 @@ export function Analytics() {
     datasets: [{ data: (charts.priority || []).map(x => x.value), backgroundColor: COLORS, borderWidth: 0 }],
   };
 
+  // Controlling — how close Forecast Cash In/Out landed vs what actually happened,
+  // reusing monthlyCashFlow (already aggregates all 4 series per month, no new query).
+  const controllingData = {
+    labels: (charts.monthlyCashFlow || []).map(x => x.label),
+    datasets: [
+      { label: 'Forecast In', data: (charts.monthlyCashFlow || []).map(x => x.forecastIn), backgroundColor: 'rgba(37,99,235,0.35)', borderColor: '#2563eb', borderWidth: 1.5, borderRadius: 4 },
+      { label: 'Realisasi In', data: (charts.monthlyCashFlow || []).map(x => x.cashIn), backgroundColor: '#2563eb', borderRadius: 4 },
+      { label: 'Forecast Out', data: (charts.monthlyCashFlow || []).map(x => x.forecastOut), backgroundColor: 'rgba(249,115,91,0.35)', borderColor: '#f9735b', borderWidth: 1.5, borderRadius: 4 },
+      { label: 'Realisasi Out', data: (charts.monthlyCashFlow || []).map(x => x.cashOut), backgroundColor: '#f9735b', borderRadius: 4 },
+    ],
+  };
+
   return (
     <>
       <div className="grid-2">
@@ -54,6 +66,11 @@ export function Analytics() {
         </Panel>
         <Panel title="Prioritas budget" note="Komposisi urgency">
           <Doughnut data={priorityData} options={{ ...opts, cutout: '62%', scales: undefined }} />
+        </Panel>
+      </div>
+      <div className="grid-2">
+        <Panel title="Controlling — Forecast vs Aktual" note="Seberapa akurat forecast dibanding realisasi Cash In/Out per bulan" size="tall">
+          <Bar data={controllingData} options={opts} />
         </Panel>
       </div>
       <div className="grid-3">

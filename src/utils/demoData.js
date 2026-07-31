@@ -86,10 +86,10 @@ export function demoState(filters = {}, session = null) {
   const visibleKeys = new Set(visibleBrands.map(b => b['Brand Key']));
 
   const monthlyCashFlow = [
-    { label: '2026-04', cashIn: 180000000, cashOut: 128000000, forecastIn: 70000000, netCash: 52000000 },
-    { label: '2026-05', cashIn: 210000000, cashOut: 146000000, forecastIn: 94000000, netCash: 64000000 },
-    { label: '2026-06', cashIn: 244000000, cashOut: 158000000, forecastIn: 110000000, netCash: 86000000 },
-    { label: '2026-07', cashIn: 292349000, cashOut: 87310000, forecastIn: 454220000, netCash: 205039000 },
+    { label: '2026-04', cashIn: 180000000, cashOut: 128000000, forecastIn: 70000000, forecastOut: 120000000, netCash: 52000000 },
+    { label: '2026-05', cashIn: 210000000, cashOut: 146000000, forecastIn: 94000000, forecastOut: 140000000, netCash: 64000000 },
+    { label: '2026-06', cashIn: 244000000, cashOut: 158000000, forecastIn: 110000000, forecastOut: 150000000, netCash: 86000000 },
+    { label: '2026-07', cashIn: 292349000, cashOut: 87310000, forecastIn: 454220000, forecastOut: 95000000, netCash: 205039000 },
   ];
 
   const allPerformance = [
@@ -265,6 +265,7 @@ export function demoState(filters = {}, session = null) {
         cashConversion,
         receivableRisk,
         payableRisk: cashInMonth > 0 ? payableOutstanding / cashInMonth : 0,
+        npm: omzetRealMonth > 0 ? (omzetRealMonth - cashOutMonth) / omzetRealMonth : 0,
         forecastCashPosition30,
       },
       charts: {

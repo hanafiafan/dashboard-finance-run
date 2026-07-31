@@ -102,6 +102,7 @@ async function supabaseGetAppState(filters = {}, auth) {
   const cashConversion = omzetRealMonth > 0 ? cashInMonth / omzetRealMonth : 0;
   const receivableRisk = omzetRealMonth > 0 ? receivableOutstanding / omzetRealMonth : 0;
   const payableRisk = cashInMonth > 0 ? payableOutstanding / cashInMonth : 0;
+  const npm = omzetRealMonth > 0 ? (omzetRealMonth - cashOutMonth) / omzetRealMonth : 0;
   const forecastInRows = (forecast.data || []).map(r => ({ date: r.estimasi_cair, nominal: Number(r.nominal_estimasi || 0) }));
   const forecastOutRows = (forecastOut.data || []).map(r => ({ date: r.estimasi_keluar, nominal: Number(r.nominal_estimasi || 0) }));
   const forecastCashPosition30 = forecastCashPosition(bankBalance, forecastInRows, forecastOutRows, addDays(30));
@@ -112,20 +113,26 @@ async function supabaseGetAppState(filters = {}, auth) {
   incomeRows.forEach(r => {
     const m = (r.tanggal || '').slice(0, 7);
     if (!m) return;
-    if (!monthMap[m]) monthMap[m] = { label: m, cashIn: 0, cashOut: 0, forecastIn: 0, netCash: 0 };
+    if (!monthMap[m]) monthMap[m] = { label: m, cashIn: 0, cashOut: 0, forecastIn: 0, forecastOut: 0, netCash: 0 };
     monthMap[m].cashIn += Number(r.nominal || 0);
   });
   outcomeRows.forEach(r => {
     const m = (r.tanggal || '').slice(0, 7);
     if (!m) return;
-    if (!monthMap[m]) monthMap[m] = { label: m, cashIn: 0, cashOut: 0, forecastIn: 0, netCash: 0 };
+    if (!monthMap[m]) monthMap[m] = { label: m, cashIn: 0, cashOut: 0, forecastIn: 0, forecastOut: 0, netCash: 0 };
     monthMap[m].cashOut += Number(r.jumlah || 0) + Number(r.biaya || 0);
   });
   (forecast.data || []).forEach(r => {
     const m = (r.estimasi_cair || '').slice(0, 7);
     if (!m) return;
-    if (!monthMap[m]) monthMap[m] = { label: m, cashIn: 0, cashOut: 0, forecastIn: 0, netCash: 0 };
+    if (!monthMap[m]) monthMap[m] = { label: m, cashIn: 0, cashOut: 0, forecastIn: 0, forecastOut: 0, netCash: 0 };
     monthMap[m].forecastIn += Number(r.nominal_estimasi || 0);
+  });
+  (forecastOut.data || []).forEach(r => {
+    const m = (r.estimasi_keluar || '').slice(0, 7);
+    if (!m) return;
+    if (!monthMap[m]) monthMap[m] = { label: m, cashIn: 0, cashOut: 0, forecastIn: 0, forecastOut: 0, netCash: 0 };
+    monthMap[m].forecastOut += Number(r.nominal_estimasi || 0);
   });
   const monthlyCashFlow = Object.values(monthMap).sort((a, b) => a.label.localeCompare(b.label));
   monthlyCashFlow.forEach(m => { m.netCash = m.cashIn - m.cashOut; });
@@ -246,6 +253,7 @@ async function supabaseGetAppState(filters = {}, auth) {
         cashConversion,
         receivableRisk,
         payableRisk,
+        npm,
         forecastCashPosition30,
       },
       charts: {

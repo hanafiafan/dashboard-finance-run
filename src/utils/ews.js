@@ -88,6 +88,14 @@ const EWS_TEXT = {
     amber: { label: 'Waspada', arti: 'Kas masih cukup tetapi ruang pengeluaran tambahan sangat terbatas — perlu pengendalian cash out.' },
     rose: { label: 'Kritis', arti: 'Perusahaan diproyeksikan kekurangan kas pada tanggal tersebut — risiko gagal bayar meningkat.' },
   },
+  // ponytail: 15%/5% thresholds are a reasonable starting default, not a
+  // figure from the source doc (NPM wasn't in the original 8 indicators) —
+  // revisit once finance has a real target margin to compare against.
+  npm: {
+    green: { label: 'Sehat', arti: 'Margin laba bersih bulan berjalan tergolong baik.' },
+    amber: { label: 'Waspada', arti: 'Margin laba bersih menipis — pengeluaran mendekati omzet, perlu efisiensi biaya.' },
+    rose: { label: 'Kritis', arti: 'Pengeluaran bulan berjalan mendekati atau melebihi omzet — margin laba bersih sangat tipis atau negatif.' },
+  },
 };
 
 // Formula shown alongside the arti text — same for every color, so it's kept
@@ -108,6 +116,7 @@ const EWS_FORMULA = {
   budgetRequested: 'Σ Nominal Pengajuan',
   pendingApproval: 'Jumlah Budget Request dengan Status ≠ Approved',
   payableOutstanding: 'Σ (Total Hutang − Total Dibayar)',
+  npm: '(Omzet Realisasi − Cash Out) ÷ Omzet Realisasi, bulan berjalan',
 };
 
 // indicator: one of the EWS_TEXT keys above; color: 'green'|'amber'|'rose' from the status functions.
