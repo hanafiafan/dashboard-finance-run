@@ -9,9 +9,9 @@ export function getChartTheme() {
   } catch {}
   return {
     isDark,
-    gridColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-    tickColor: isDark ? '#94a3b8' : '#64748b',
-    labelColor: isDark ? '#cbd5e1' : '#334155',
+    gridColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(20,40,30,0.06)',
+    tickColor: isDark ? '#94a3b8' : '#56685d',
+    labelColor: isDark ? '#cbd5e1' : '#16241c',
     tooltipBg: 'rgba(15,23,42,0.92)',
     tooltipTitleColor: '#f1f5f9',
     tooltipBodyColor: '#cbd5e1',
