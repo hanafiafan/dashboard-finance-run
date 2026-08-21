@@ -43,6 +43,10 @@ export function buildEntities(role) {
     }
   }
 
+  // Forecasting & Controlling Budget — finance-only write (same group as
+  // fin_omzet/fin_bank), everyone else (owner, pic_brand) sees it read-only.
+  entities.forecastBudget = { canEdit: role === 'superadmin' || role === 'finance' };
+
   for (const e of MASTER_ENTITIES) {
     if (role === 'superadmin') {
       entities[e] = { canEdit: true };
@@ -325,4 +329,51 @@ const DEMO_ROWS = {
 
 export function demoRows(entity) {
   return DEMO_ROWS[entity] || [];
+}
+
+// Forecasting & Controlling Budget demo seed — Omzet/COGS figures for LBP/PG/PRP
+// are the real January numbers from the source workbook ("CV LBP - Forecasting &
+// Controlling Budget - 2026.xlsx"); the opex leaf lines below are illustrative
+// ratios of Omzet, not the workbook's actual per-line figures (those vary too
+// much per brand/month to fabricate meaningfully).
+const FORECAST_BRAND_PROFILES = {
+  LBP: { omzet: 8_840_692_902, cogs: 1_957_329_339 },
+  PG: { omzet: 3_383_071_323, cogs: 845_767_831 },
+  PRP: { omzet: 12_475_143, cogs: 3_196_132 },
+  KHEEMA: { omzet: 620_000_000, cogs: 210_000_000 },
+};
+const FORECAST_MONTH_GROWTH = { 1: 1, 2: 1.04, 3: 1.08 };
+const FORECAST_LEAF_RATIOS = {
+  hr_gaji_honorer: 0.06, sga_kantor: 0.025, mkt_iklan_meta: 0.05, mkt_iklan_shopee: 0.03,
+  prod_ongkir: 0.02, prod_packaging: 0.015, sewa_gedung: 0.01, susut_mesin: 0.004,
+  opex_marketplace: 0.02, oprs_lain: 0.008, non_operasional: -0.002, pajak: 0.01,
+};
+
+export function demoForecastBudget(filters = {}) {
+  const tahun = Number(filters.tahun) || 2026;
+  const brandKeys = filters.brandKey ? [filters.brandKey] : Object.keys(FORECAST_BRAND_PROFILES);
+  const rows = [];
+  let id = 1;
+  for (const brandKey of brandKeys) {
+    const profile = FORECAST_BRAND_PROFILES[brandKey];
+    if (!profile) continue;
+    for (const bulan of [1, 2, 3]) {
+      const growth = FORECAST_MONTH_GROWTH[bulan] || 1;
+      const push = (lineKey, anggaran, realisasi) => rows.push({
+        id: id++, brandKey, tahun, bulan, lineKey,
+        nilaiAnggaran: Math.round(anggaran), nilaiRealisasi: Math.round(realisasi), keterangan: '',
+      });
+      const anggaranOmzet = profile.omzet * growth;
+      const realisasiOmzet = anggaranOmzet * (bulan === 1 ? 0.71 : bulan === 2 ? 0.85 : 0.93);
+      const anggaranCogs = profile.cogs * growth;
+      push('omzet', anggaranOmzet, realisasiOmzet);
+      push('cogs', anggaranCogs, anggaranCogs * 0.98);
+      push('ppn', 0, 0);
+      for (const [lineKey, ratio] of Object.entries(FORECAST_LEAF_RATIOS)) {
+        const anggaran = anggaranOmzet * ratio;
+        push(lineKey, anggaran, anggaran * 0.9);
+      }
+    }
+  }
+  return rows;
 }

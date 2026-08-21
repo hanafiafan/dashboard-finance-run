@@ -1,7 +1,7 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
 import {
   LayoutDashboard, ChartNoAxesCombined, Table2, BadgeCheck,
-  Settings2, RefreshCw, LogOut, DownloadCloud, Download, Sun, Moon, BookOpen
+  Settings2, RefreshCw, LogOut, DownloadCloud, Download, Sun, Moon, BookOpen, Target
 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -11,6 +11,7 @@ import { Analytics } from '../pages/Analytics';
 import { Operations } from '../pages/Operations';
 import { Approval } from '../pages/Approval';
 import { Master } from '../pages/Master';
+import { ForecastingControlling } from '../pages/ForecastingControlling';
 import { Documentation } from '../pages/Documentation';
 import { VIEW_TITLES } from '../utils/constants';
 import { formatDateTime } from '../utils/formatters';
@@ -21,6 +22,7 @@ const NAV_ITEMS = [
   { view: 'command', icon: LayoutDashboard, label: 'Dashboard' },
   { view: 'analytics', icon: ChartNoAxesCombined, label: 'Analytics' },
   { view: 'operations', icon: Table2, label: 'Operasional' },
+  { view: 'forecast_controlling', icon: Target, label: 'Forecasting & Controlling' },
   { view: 'approval', icon: BadgeCheck, label: 'Approval' },
   { view: 'master', icon: Settings2, label: 'Master Data' },
   { view: 'documentation', icon: BookOpen, label: 'Dokumentasi' },
@@ -110,6 +112,7 @@ export default function AppShell() {
       case 'command': return <CommandCenter />;
       case 'analytics': return <Analytics />;
       case 'operations': return <Operations />;
+      case 'forecast_controlling': return <ForecastingControlling />;
       case 'approval': return <Approval />;
       case 'master': return <Master />;
       case 'documentation': return <Documentation />;

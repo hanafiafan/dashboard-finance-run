@@ -33,6 +33,8 @@ function visibleFiltersFor(app) {
     case 'command':
     case 'analytics':
       return ['company', 'brand', 'category', 'date', 'year'];
+    case 'forecast_controlling':
+      return ['company', 'brand'];
     case 'approval':
       return ['company', 'brand', 'category', 'date'];
     case 'operations':

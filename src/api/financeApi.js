@@ -1,4 +1,4 @@
-import { demoState, demoRows, buildEntities } from '../utils/demoData';
+import { demoState, demoRows, demoForecastBudget, buildEntities } from '../utils/demoData';
 import { supabase, TABLE_MAP, dbToUi, uiToDb } from './supabaseClient';
 import { isToday, isCurrentMonth, isCurrentOmzetMonth, forecastCashPosition, addDays, localDateStr } from '../utils/ews';
 
@@ -352,6 +352,37 @@ export async function deleteRecord(entity, id, auth) {
 export async function approveBudget(id, status, paid, feedback, auth) {
   if (auth?.isDemo) return { ok: true };
   return supabaseApproveBudget(id, status, paid, feedback);
+}
+
+// ── Forecasting & Controlling Budget ───────────────────────
+// Own read/write pair instead of the generic getRecords/saveRecord flow: this
+// entity is a matrix (brand x month x P&L line) with an upsert-by-natural-key
+// shape, not a flat list of freeform records, so it doesn't fit TABLE_COLUMNS/FORMS.
+
+export async function getForecastBudget(filters = {}, auth) {
+  if (auth?.isDemo) return demoForecastBudget(filters);
+  let query = supabase.from('fin_forecast_budget').select('*').eq('tahun', filters.tahun);
+  if (filters.brandKey) query = query.eq('brand_key', filters.brandKey);
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return (data || []).map(r => ({
+    id: r.id, brandKey: r.brand_key, tahun: r.tahun, bulan: r.bulan,
+    lineKey: r.line_key, nilaiAnggaran: Number(r.nilai_anggaran || 0),
+    nilaiRealisasi: Number(r.nilai_realisasi || 0), keterangan: r.keterangan || '',
+  }));
+}
+
+export async function saveForecastBudgetLine(record, auth) {
+  if (auth?.isDemo) return { ok: true };
+  const { brandKey, tahun, bulan, lineKey, nilaiAnggaran, nilaiRealisasi, keterangan } = record;
+  const { error } = await supabase.from('fin_forecast_budget')
+    .upsert({
+      brand_key: brandKey, tahun, bulan, line_key: lineKey,
+      nilai_anggaran: Number(nilaiAnggaran || 0), nilai_realisasi: Number(nilaiRealisasi || 0),
+      keterangan: keterangan || null, updated_at: new Date().toISOString(),
+    }, { onConflict: 'brand_key,tahun,bulan,line_key' });
+  if (error) throw new Error(error.message);
+  return { ok: true };
 }
 
 export async function importFromSources(auth) {

@@ -22,6 +22,7 @@ export const TABLE_MAP = {
   sources: 'fin_sources',
   vendors: 'fin_vendors',
   customers: 'fin_customers',
+  forecastBudget: 'fin_forecast_budget',
 };
 
 // DB column → UI column mapping per entity
