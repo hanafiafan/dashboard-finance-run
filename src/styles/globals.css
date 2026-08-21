@@ -735,14 +735,19 @@ p, span { color: inherit; }
 .data-table tr:hover td { background: var(--bg-hover); }
 
 /* Forecasting & Controlling P&L table */
+.fc-table-wrap { max-height: 70vh; overflow-y: auto; }
+.fc-table thead th { position: sticky; top: 0; z-index: 1; }
 .fc-table td.fc-keterangan { white-space: normal; min-width: 220px; font-weight: 400; color: var(--text-secondary); }
 .fc-table .fc-indent { padding-left: 1.6rem; }
 .fc-table .fc-negative { color: var(--rose); }
+.fc-table td.fc-num, .fc-table th.fc-num { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; }
+.fc-row-group { cursor: pointer; }
 .fc-row-group td {
   background: var(--bg-elevated); font-weight: 700; font-size: 0.7rem;
   text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);
-  padding: 0.5rem 0.9rem; white-space: nowrap;
+  padding: 0.5rem 0.9rem; white-space: nowrap; display: flex; align-items: center; gap: 0.3rem;
 }
+.fc-row-group:hover td { background: var(--bg-hover); }
 .fc-row-subtotal td { background: var(--bg-hover); font-weight: 700; }
 .fc-row-highlight td { background: var(--card-teal); font-weight: 700; color: var(--brand-teal); border-top: 1.5px solid var(--teal-light); border-bottom: 1.5px solid var(--teal-light); }
 

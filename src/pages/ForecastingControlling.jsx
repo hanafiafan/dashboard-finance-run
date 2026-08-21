@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, Fragment } from 'react';
-import { Pencil, Info } from 'lucide-react';
+import { Pencil, Info, ChevronDown, ChevronRight } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
 import { getForecastBudget, saveForecastBudgetLine } from '../api/financeApi';
@@ -23,6 +23,12 @@ export function ForecastingControlling() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editItem, setEditItem] = useState(null);
+  const [collapsedGroups, setCollapsedGroups] = useState(() => new Set());
+  const toggleGroup = (group) => setCollapsedGroups(prev => {
+    const next = new Set(prev);
+    next.has(group) ? next.delete(group) : next.add(group);
+    return next;
+  });
 
   const canEdit = app.state?.entities?.forecastBudget?.canEdit;
   const brands = app.state?.brands || [];
@@ -140,10 +146,27 @@ export function ForecastingControlling() {
       </div>
 
       <div className="metric-grid">
-        <MetricCard label="Omzet" color="teal" value={money.format(realisasi.omzet)} note={`Anggaran ${money.format(anggaran.omzet)}`} />
-        <MetricCard label="Laba Kotor" color="blue" value={money.format(realisasi.laba_kotor)} note={`Anggaran ${money.format(anggaran.laba_kotor)}`} />
-        <MetricCard label="Beban Operasional" color="amber" value={money.format(realisasi.beban_operasional_total)} note={`Anggaran ${money.format(anggaran.beban_operasional_total)}`} />
-        <MetricCard label="Laba Bersih Setelah Pajak" color={realisasi.laba_setelah_pajak >= 0 ? 'green' : 'rose'} value={money.format(realisasi.laba_setelah_pajak)} note={`Anggaran ${money.format(anggaran.laba_setelah_pajak)}`} />
+        <MetricCard
+          label="Omzet" color="teal" value={money.format(realisasi.omzet)}
+          note={`Anggaran ${money.format(anggaran.omzet)} · Capaian ${pct.format(anggaran.omzet ? realisasi.omzet / anggaran.omzet : 0)}`}
+          arti="Realisasi pendapatan dibanding anggaran pada periode terpilih." rumus="Σ Nilai Realisasi (Omzet)"
+        />
+        <MetricCard
+          label="Laba Kotor" color="blue" value={money.format(realisasi.laba_kotor)}
+          note={`Anggaran ${money.format(anggaran.laba_kotor)}`}
+          arti="Omzet dikurangi COGS dan PPN — margin sebelum beban operasional." rumus="Omzet − COGS − PPN"
+        />
+        <MetricCard
+          label="Beban Operasional" color="amber" value={money.format(realisasi.beban_operasional_total)}
+          note={`Anggaran ${money.format(anggaran.beban_operasional_total)}`}
+          arti="Total realisasi seluruh kategori beban (HR, SGA, Marketing, Produksi, Sewa, Penyusutan, OPEX, Lainnya)."
+          rumus="Σ (HR + SGA + Pemasaran + Produksi + Sewa + Penyusutan + OPEX + Lainnya)"
+        />
+        <MetricCard
+          label="Laba Bersih Setelah Pajak" color={realisasi.laba_setelah_pajak >= 0 ? 'green' : 'rose'} value={money.format(realisasi.laba_setelah_pajak)}
+          note={`Anggaran ${money.format(anggaran.laba_setelah_pajak)}`}
+          arti="Hasil akhir P&L — laba yang benar-benar tersisa setelah semua beban dan pajak." rumus="Laba Sebelum Pajak − Pajak Penghasilan"
+        />
       </div>
 
       <div className="panel tight">
@@ -153,18 +176,18 @@ export function ForecastingControlling() {
             <p>{loading ? 'Memuat...' : `${rows.length} baris data tersimpan untuk tahun ${tahun}`}</p>
           </div>
         </div>
-        <div className="data-table-wrap">
+        <div className="data-table-wrap fc-table-wrap">
           <table className="data-table fc-table">
             <thead>
               <tr>
                 <th>Uraian</th>
                 <th>PIC</th>
-                <th>Nilai Anggaran</th>
-                <th>% thd Omzet</th>
-                <th>Nilai Realisasi</th>
-                <th>% thd Omzet</th>
-                <th>Sisa Anggaran</th>
-                <th>Capaian</th>
+                <th className="fc-num">Nilai Anggaran</th>
+                <th className="fc-num">% thd Omzet</th>
+                <th className="fc-num">Nilai Realisasi</th>
+                <th className="fc-num">% thd Omzet</th>
+                <th className="fc-num">Sisa Anggaran</th>
+                <th className="fc-num">Capaian</th>
                 <th>Keterangan</th>
                 {canEditNow && <th>Aksi</th>}
               </tr>
@@ -173,6 +196,8 @@ export function ForecastingControlling() {
               {LINE_ITEMS.map(item => {
                 const showHeader = item.group && item.group !== lastGroup;
                 if (item.group) lastGroup = item.group;
+                const groupCollapsed = item.group && collapsedGroups.has(item.group);
+                if (groupCollapsed && !showHeader) return null;
                 const a = anggaran[item.key] || 0;
                 const r = realisasi[item.key] || 0;
                 const targetPct = anggaran.omzet ? a / anggaran.omzet : 0;
@@ -184,30 +209,35 @@ export function ForecastingControlling() {
                 return (
                   <Fragment key={item.key}>
                     {showHeader && (
-                      <tr className="fc-row-group">
-                        <td colSpan={canEditNow ? 10 : 9}>{GROUP_LABELS[item.group] || item.group}</td>
+                      <tr className="fc-row-group" onClick={() => toggleGroup(item.group)}>
+                        <td colSpan={canEditNow ? 10 : 9}>
+                          {collapsedGroups.has(item.group) ? <ChevronRight size={13} /> : <ChevronDown size={13} />}
+                          {' '}{GROUP_LABELS[item.group] || item.group}
+                        </td>
                       </tr>
                     )}
-                    <tr className={rowClass}>
-                      <td className={item.group && !item.subtotal && !item.highlight ? 'fc-indent' : ''}>{item.label}</td>
-                      <td>{item.pic || <span className="dim">-</span>}</td>
-                      <td>{money.format(a)}</td>
-                      <td>{pct.format(targetPct)}</td>
-                      <td>{money.format(r)}</td>
-                      <td>{pct.format(realPct)}</td>
-                      <td className={sisa < 0 ? 'fc-negative' : ''}>{money.format(sisa)}</td>
-                      <td>{capaian === null ? '-' : pct.format(capaian)}</td>
-                      <td className="fc-keterangan">{notes.length ? notes.join('; ') : <span className="dim">-</span>}</td>
-                      {canEditNow && (
-                        <td>
-                          {!item.computed && (
-                            <button className="icon-btn" title="Edit" onClick={() => openEdit(item)}>
-                              <Pencil size={15} />
-                            </button>
-                          )}
-                        </td>
-                      )}
-                    </tr>
+                    {!groupCollapsed && (
+                      <tr className={rowClass}>
+                        <td className={item.group && !item.subtotal && !item.highlight ? 'fc-indent' : ''}>{item.label}</td>
+                        <td>{item.pic || <span className="dim">-</span>}</td>
+                        <td className="fc-num">{money.format(a)}</td>
+                        <td className="fc-num">{pct.format(targetPct)}</td>
+                        <td className="fc-num">{money.format(r)}</td>
+                        <td className="fc-num">{pct.format(realPct)}</td>
+                        <td className={`fc-num ${sisa < 0 ? 'fc-negative' : ''}`}>{money.format(sisa)}</td>
+                        <td className="fc-num">{capaian === null ? '-' : pct.format(capaian)}</td>
+                        <td className="fc-keterangan">{notes.length ? notes.join('; ') : <span className="dim">-</span>}</td>
+                        {canEditNow && (
+                          <td>
+                            {!item.computed && (
+                              <button className="icon-btn" title="Edit" onClick={() => openEdit(item)}>
+                                <Pencil size={15} />
+                              </button>
+                            )}
+                          </td>
+                        )}
+                      </tr>
+                    )}
                   </Fragment>
                 );
               })}
