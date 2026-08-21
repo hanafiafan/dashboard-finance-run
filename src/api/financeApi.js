@@ -361,11 +361,20 @@ export async function approveBudget(id, status, paid, feedback, auth) {
 
 export async function getForecastBudget(filters = {}, auth) {
   if (auth?.isDemo) return demoForecastBudget(filters);
-  let query = supabase.from('fin_forecast_budget').select('*').eq('tahun', filters.tahun);
-  if (filters.brandKey) query = query.eq('brand_key', filters.brandKey);
-  const { data, error } = await query;
-  if (error) throw new Error(error.message);
-  return (data || []).map(r => ({
+  // PostgREST caps a single response at 1000 rows — "Semua Brand" for a full
+  // year can exceed that, so page through with .range() until a short page
+  // signals the end, instead of silently truncating the P&L totals.
+  const PAGE_SIZE = 1000;
+  let data = [];
+  for (let from = 0; ; from += PAGE_SIZE) {
+    let query = supabase.from('fin_forecast_budget').select('*').eq('tahun', filters.tahun).range(from, from + PAGE_SIZE - 1);
+    if (filters.brandKey) query = query.eq('brand_key', filters.brandKey);
+    const { data: page, error } = await query;
+    if (error) throw new Error(error.message);
+    data = data.concat(page || []);
+    if (!page || page.length < PAGE_SIZE) break;
+  }
+  return data.map(r => ({
     id: r.id, brandKey: r.brand_key, tahun: r.tahun, bulan: r.bulan,
     lineKey: r.line_key, nilaiAnggaran: Number(r.nilai_anggaran || 0),
     nilaiRealisasi: Number(r.nilai_realisasi || 0), keterangan: r.keterangan || '',
