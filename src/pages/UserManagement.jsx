@@ -33,12 +33,13 @@ export default function UserManagement() {
   const canManageUsers = session?.permissions?.canManageUsers;
   const isDemo = session?.isDemo;
   const brands = app.state?.brands || [];
+  const companies = [...new Set(brands.map(b => b.Company).filter(Boolean))];
 
   const refresh = async () => {
     if (isDemo) { setUsers(getStoredUsers()); return; }
     try {
       const { rows } = await getRecords('users', {}, session);
-      setUsers((rows || []).map(r => ({ email: r.Email, name: r.Name, role: r.Role, active: r.Active, brand_scope: r['Brand Scope'] })));
+      setUsers((rows || []).map(r => ({ email: r.Email, name: r.Name, role: r.Role, active: r.Active, company_scope: r['Company Scope'], brand_scope: r['Brand Scope'] })));
     } catch (err) {
       setError(err.message);
     }
@@ -55,11 +56,16 @@ export default function UserManagement() {
     if (!email) return;
     const role = fd.get('role');
     let brand_scope = null;
+    let company_scope = null;
     if (role === 'pic_brand') {
       brand_scope = fd.get('brand_scope');
       if (!brand_scope) { setError('Pilih brand untuk PIC Brand ini.'); return; }
+    } else if (role === 'owner') {
+      // Brand is more specific than company — if both are picked, brand wins.
+      brand_scope = fd.get('owner_brand') || null;
+      company_scope = brand_scope ? null : (fd.get('owner_company') || null);
     }
-    const payload = { email, name: fd.get('name').trim(), role, password: fd.get('password').trim(), brand_scope };
+    const payload = { email, name: fd.get('name').trim(), role, password: fd.get('password').trim(), brand_scope, company_scope };
     setBusy(true);
     setError('');
     try {
@@ -122,7 +128,7 @@ export default function UserManagement() {
             <th>Email</th>
             <th>Name</th>
             <th>Role</th>
-            <th>Brand</th>
+            <th>Scope</th>
             <th>Active</th>
             <th style={{ width: 140 }}>Actions</th>
           </tr>
@@ -139,6 +145,8 @@ export default function UserManagement() {
               <td style={{ fontSize: '0.75rem' }}>
                 {u.role === 'pic_brand'
                   ? (u.brand_scope || <span style={{ color: 'var(--rose)' }}>belum diatur</span>)
+                  : u.role === 'owner'
+                  ? (u.brand_scope || u.company_scope || <span style={{ color: 'var(--text-tertiary)' }}>Semua Entitas</span>)
                   : <span style={{ color: 'var(--text-tertiary)' }}>—</span>}
               </td>
               <td style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>{u.active === false ? 'Nonaktif' : 'Aktif'}</td>
@@ -192,6 +200,28 @@ export default function UserManagement() {
                   ))}
                 </select>
               </div>
+            )}
+            {newUserRole === 'owner' && (
+              <>
+                <div className="field">
+                  <label>Perusahaan (kosongkan untuk akses semua perusahaan)</label>
+                  <select name="owner_company" defaultValue="">
+                    <option value="">Semua Perusahaan</option>
+                    {companies.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="field">
+                  <label>Atau batasi ke satu entitas/brand saja (opsional)</label>
+                  <select name="owner_brand" defaultValue="">
+                    <option value="">Semua entitas di perusahaan terpilih</option>
+                    {brands.map((b) => (
+                      <option key={b['Brand Key']} value={b['Brand Key']}>{b.Brand} — {b.Company}</option>
+                    ))}
+                  </select>
+                </div>
+              </>
             )}
             <div className="field">
               <label>Password</label>
