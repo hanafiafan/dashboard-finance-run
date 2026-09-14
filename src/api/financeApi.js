@@ -222,7 +222,7 @@ async function supabaseGetAppState(filters = {}, auth) {
     entities: buildEntities(auth?.role),
     options: {
       companies,
-      categories: ['Marketing', 'Operasional', 'Produksi', 'Gaji dan Upah', 'Sewa', 'Aset', 'Hutang', 'Lain-lain'],
+      categories: ['Marketing', 'Operasional', 'Produksi', 'Gaji dan Upah', 'Sewa', 'Aset', 'Hutang', 'Transfer Antar Bank', 'Lain-lain'],
       // Bank Masuk/Bank Keluar pick from ID Bank registered via Saldo Rekening
       // (bankRowsUi already carries 'ID Bank' + 'Bank' from dbToUi) — banks
       // without an ID Bank yet are filtered out in Modal.jsx's picker.
