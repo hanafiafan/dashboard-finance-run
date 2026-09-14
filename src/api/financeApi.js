@@ -60,6 +60,15 @@ async function supabaseGetAppState(filters = {}, auth) {
   const payableRows = payables.data || [];
   const receivableRows = receivables.data || [];
 
+  // Moving cash between your own accounts (see createBankTransfer()) is
+  // recorded as an Income+Outcome pair tagged 'Transfer Antar Bank' so the
+  // existing bank-balance sync triggers pick it up — but it's not real
+  // revenue/expense, so every KPI/chart below excludes it. Bank balances
+  // (bankRows) and the raw recent-activity feed are unaffected — the money
+  // did move between real accounts, that part is true.
+  const incomeRowsReal = incomeRows.filter(r => r.kategori !== 'Transfer Antar Bank');
+  const outcomeRowsReal = outcomeRows.filter(r => r.kategori !== 'Transfer Antar Bank');
+
   // Recent transactions for the Analytics page — sourced from the rows already
   // fetched above, just sorted/sliced, no extra query needed.
   const recentIncome = [...incomeRows].sort((a, b) => (b.tanggal || '').localeCompare(a.tanggal || '')).slice(0, 8).map(r => dbToUi('income', r));
@@ -77,8 +86,8 @@ async function supabaseGetAppState(filters = {}, auth) {
     .map(r => dbToUi('budget', r));
 
   // Summary — matching demo shape (dashboard.summary.*)
-  const cashIn = incomeRows.reduce((s, r) => s + Number(r.nominal || 0), 0);
-  const cashOut = outcomeRows.reduce((s, r) => s + Number(r.jumlah || 0) + Number(r.biaya || 0), 0);
+  const cashIn = incomeRowsReal.reduce((s, r) => s + Number(r.nominal || 0), 0);
+  const cashOut = outcomeRowsReal.reduce((s, r) => s + Number(r.jumlah || 0) + Number(r.biaya || 0), 0);
   const netCash = cashIn - cashOut;
   const bankBalance = bankRows.reduce((s, r) => s + Number(r.saldo_awal || 0) + Number(r.pemasukan || 0) - Number(r.pengeluaran || 0), 0);
   const budgetRequested = budgetRows.reduce((s, r) => s + Number(r.nominal_pengajuan || 0), 0);
@@ -92,11 +101,11 @@ async function supabaseGetAppState(filters = {}, auth) {
 
   // Early Warning System indicators (RAW DATA DASHBOARD FINANCE/Early Warning System.docx)
   const receivableOutstanding = receivableRows.reduce((s, r) => s + Number(r.total_piutang || 0) - Number(r.total_diterima || 0), 0);
-  const cashInToday = incomeRows.filter(r => isToday(r.tanggal)).reduce((s, r) => s + Number(r.nominal || 0), 0);
-  const cashOutToday = outcomeRows.filter(r => isToday(r.tanggal)).reduce((s, r) => s + Number(r.jumlah || 0) + Number(r.biaya || 0), 0);
+  const cashInToday = incomeRowsReal.filter(r => isToday(r.tanggal)).reduce((s, r) => s + Number(r.nominal || 0), 0);
+  const cashOutToday = outcomeRowsReal.filter(r => isToday(r.tanggal)).reduce((s, r) => s + Number(r.jumlah || 0) + Number(r.biaya || 0), 0);
   const cashPosition = bankBalance + cashInToday - cashOutToday;
-  const cashInMonth = incomeRows.filter(r => isCurrentMonth(r.tanggal)).reduce((s, r) => s + Number(r.nominal || 0), 0);
-  const cashOutMonth = outcomeRows.filter(r => isCurrentMonth(r.tanggal)).reduce((s, r) => s + Number(r.jumlah || 0) + Number(r.biaya || 0), 0);
+  const cashInMonth = incomeRowsReal.filter(r => isCurrentMonth(r.tanggal)).reduce((s, r) => s + Number(r.nominal || 0), 0);
+  const cashOutMonth = outcomeRowsReal.filter(r => isCurrentMonth(r.tanggal)).reduce((s, r) => s + Number(r.jumlah || 0) + Number(r.biaya || 0), 0);
   const cashOutRatio = cashInMonth > 0 ? cashOutMonth / cashInMonth : 0;
   const omzetRealMonth = omzetRows.filter(isCurrentOmzetMonth).reduce((s, r) => s + Number(r.realisasi_omzet || 0), 0);
   const cashConversion = omzetRealMonth > 0 ? cashInMonth / omzetRealMonth : 0;
@@ -110,13 +119,13 @@ async function supabaseGetAppState(filters = {}, auth) {
   // Charts — build from real data
   // Monthly cashflow: group income/outcome by month
   const monthMap = {};
-  incomeRows.forEach(r => {
+  incomeRowsReal.forEach(r => {
     const m = (r.tanggal || '').slice(0, 7);
     if (!m) return;
     if (!monthMap[m]) monthMap[m] = { label: m, cashIn: 0, cashOut: 0, forecastIn: 0, forecastOut: 0, netCash: 0 };
     monthMap[m].cashIn += Number(r.nominal || 0);
   });
-  outcomeRows.forEach(r => {
+  outcomeRowsReal.forEach(r => {
     const m = (r.tanggal || '').slice(0, 7);
     if (!m) return;
     if (!monthMap[m]) monthMap[m] = { label: m, cashIn: 0, cashOut: 0, forecastIn: 0, forecastOut: 0, netCash: 0 };
@@ -142,8 +151,8 @@ async function supabaseGetAppState(filters = {}, auth) {
   brandRows.forEach(b => {
     brandPerfMap[b['Brand Key']] = { label: b['Brand Key'], company: b.Company, cashIn: 0, cashOut: 0, budget: 0, netCash: 0, omzetAchievement: 0 };
   });
-  incomeRows.forEach(r => { if (brandPerfMap[r.brand_key]) brandPerfMap[r.brand_key].cashIn += Number(r.nominal || 0); });
-  outcomeRows.forEach(r => { if (brandPerfMap[r.brand_key]) brandPerfMap[r.brand_key].cashOut += Number(r.jumlah || 0) + Number(r.biaya || 0); });
+  incomeRowsReal.forEach(r => { if (brandPerfMap[r.brand_key]) brandPerfMap[r.brand_key].cashIn += Number(r.nominal || 0); });
+  outcomeRowsReal.forEach(r => { if (brandPerfMap[r.brand_key]) brandPerfMap[r.brand_key].cashOut += Number(r.jumlah || 0) + Number(r.biaya || 0); });
   budgetRows.forEach(r => { if (brandPerfMap[r.brand_key]) brandPerfMap[r.brand_key].budget += Number(r.nominal_pengajuan || 0); });
   const brandOmzetMap = {};
   omzetRows.forEach(r => {
@@ -182,7 +191,7 @@ async function supabaseGetAppState(filters = {}, auth) {
 
   // Outcome by category
   const catCounts = {};
-  outcomeRows.forEach(r => {
+  outcomeRowsReal.forEach(r => {
     const c = r.kategori || 'Lain-lain';
     catCounts[c] = (catCounts[c] || 0) + Number(r.jumlah || 0) + Number(r.biaya || 0);
   });
@@ -324,6 +333,26 @@ async function supabaseApproveBudget(id, status, paid, feedback) {
   return { ok: true };
 }
 
+// Moves cash between two Saldo Rekening accounts in one atomic RPC call —
+// writes both the Cash Out (source) and Cash In (destination) legs, tagged
+// 'Transfer Antar Bank' so financeApi.js's KPI calculations exclude them and
+// the existing bank-balance sync triggers (0007/0012) pick them up like any
+// other Cash In/Cash Out row.
+async function supabaseCreateBankTransfer(payload) {
+  const { error } = await supabase.rpc('create_bank_transfer', {
+    p_brand_key: payload.brandKey,
+    p_tanggal: payload.tanggal,
+    p_source_bank: payload.sourceBankName,
+    p_source_bank_id: payload.sourceBankId,
+    p_dest_bank: payload.destBankName,
+    p_dest_bank_id: payload.destBankId,
+    p_nominal: Number(payload.nominal) || 0,
+    p_catatan: payload.catatan || null,
+  });
+  if (error) throw new Error(error.message);
+  return { ok: true };
+}
+
 // ── Public API (demo ↔ supabase switch) ────────────────────
 
 export async function getAppState(filters = {}, auth) {
@@ -352,6 +381,11 @@ export async function deleteRecord(entity, id, auth) {
 export async function approveBudget(id, status, paid, feedback, auth) {
   if (auth?.isDemo) return { ok: true };
   return supabaseApproveBudget(id, status, paid, feedback);
+}
+
+export async function createBankTransfer(payload, auth) {
+  if (auth?.isDemo) return { ok: true };
+  return supabaseCreateBankTransfer(payload);
 }
 
 // ── Forecasting & Controlling Budget ───────────────────────

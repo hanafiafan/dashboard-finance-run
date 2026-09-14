@@ -313,6 +313,7 @@ const DEMO_CUSTOMERS = [
 const DEMO_ROWS = {
   vendors: DEMO_VENDORS,
   customers: DEMO_CUSTOMERS,
+  bank: DEMO_BANK_ROWS,
   budget: [
     { ID: 1, Brand: 'HAN', Kategori: 'Operasional', Keterangan: 'Listrik', 'Nominal Pengajuan (Rp)': 2500000, Prioritas: 'High', Status: 'Diajukan', 'Tgl Pengajuan': '2026-07-01' },
     { ID: 2, Brand: 'LBP', Kategori: 'Marketing', Keterangan: 'Social media ads', 'Nominal Pengajuan (Rp)': 8000000, Prioritas: 'Medium', Status: 'Approved', 'Tgl Pengajuan': '2026-07-02' },
