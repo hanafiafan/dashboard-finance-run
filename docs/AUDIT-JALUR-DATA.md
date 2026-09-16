@@ -24,6 +24,11 @@ Semua angka di dokumen ini diambil dari database produksi saat audit, bukan perk
 | 11 | Forecasting & Controlling | `fin_forecast_budget` | Laporan laba rugi: subtotal & laba dihitung di aplikasi | Halaman Forecasting & Controlling |
 | 12 | Master Vendor / Pelanggan / Brand | `fin_vendors`, `fin_customers`, `fin_brands` | Sumber dropdown | Semua form |
 
+### Diagram versi FigJam
+
+Versi visual dari peta ini (garis penuh = jalur yang jalan, garis putus-putus merah = jalur terputus):
+https://www.figma.com/board/eH508ErfqK8KY4q5TvNl2S
+
 ### Satu-satunya jalur otomatis antarmodul
 
 ```
