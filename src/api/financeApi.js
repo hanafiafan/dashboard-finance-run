@@ -120,7 +120,7 @@ async function supabaseGetAppState(filters = {}, auth) {
   const cashInMonth = incomeRowsReal.filter(r => isCurrentMonth(r.tanggal)).reduce((s, r) => s + Number(r.nominal || 0), 0);
   const cashOutMonth = outcomeRowsReal.filter(r => isCurrentMonth(r.tanggal)).reduce((s, r) => s + Number(r.jumlah || 0) + Number(r.biaya || 0), 0);
   const cashOutRatio = cashInMonth > 0 ? cashOutMonth / cashInMonth : 0;
-  const omzetRealMonth = omzetRows.filter(isCurrentOmzetMonth).reduce((s, r) => s + Number(r.realisasi_omzet || 0), 0);
+  const omzetRealMonth = omzetRows.filter(r => isCurrentOmzetMonth(r)).reduce((s, r) => s + Number(r.realisasi_omzet || 0), 0);
   const cashConversion = omzetRealMonth > 0 ? cashInMonth / omzetRealMonth : 0;
   const receivableRisk = omzetRealMonth > 0 ? receivableOutstanding / omzetRealMonth : 0;
   const payableRisk = cashInMonth > 0 ? payableOutstanding / cashInMonth : 0;

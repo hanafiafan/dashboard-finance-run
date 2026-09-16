@@ -11,16 +11,23 @@ export function localDateStr(d = new Date()) {
   return `${y}-${m}-${day}`;
 }
 
+// Ketiga fungsi di bawah menerima `today` agar bisa diuji dengan tanggal tetap.
+// Bahayanya: dipakai langsung sebagai callback .filter() membuat argumen kedua
+// terisi INDEX array, bukan Date, dan seluruh dashboard mati dengan pesan
+// "getMonth is not a function". Argumen yang bukan Date karena itu diabaikan.
+const asDate = value => (value instanceof Date ? value : new Date());
+
 export function isToday(dateStr, today = new Date()) {
-  return dateStr === localDateStr(today);
+  return dateStr === localDateStr(asDate(today));
 }
 
 export function isCurrentMonth(dateStr, today = new Date()) {
-  return dateStr?.slice(0, 7) === localDateStr(today).slice(0, 7);
+  return dateStr?.slice(0, 7) === localDateStr(asDate(today)).slice(0, 7);
 }
 
 export function isCurrentOmzetMonth(row, today = new Date()) {
-  return row.bulan === MONTHS_ID[today.getMonth()] && Number(row.tahun) === today.getFullYear();
+  const d = asDate(today);
+  return row.bulan === MONTHS_ID[d.getMonth()] && Number(row.tahun) === d.getFullYear();
 }
 
 // Maps a ratio to a MetricCard color name per green/amber/rose thresholds.
