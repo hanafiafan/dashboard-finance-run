@@ -42,8 +42,11 @@ function formatIDR(v) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(v || 0));
 }
 
+// Capaian dan Progress % adalah generated column yang SUDAH dalam satuan persen
+// (realisasi / target * 100), jadi cukup diberi tanda %. Intl style:'percent'
+// mengalikan 100 sekali lagi — capaian 50% pernah tampil sebagai 5.000%.
 function formatPct(v) {
-  return new Intl.NumberFormat('id-ID', { style: 'percent', maximumFractionDigits: 1 }).format(Number(v || 0));
+  return `${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(Number(v || 0))}%`;
 }
 
 function isMoneyColumn(col) {
