@@ -37,9 +37,12 @@ export const TABLE_COLUMNS = {
   customers: ['ID Pelanggan', 'Nama Pelanggan', 'PIC', 'Telepon', 'Alamat', 'Keterangan'],
 };
 
+// required: true dipasang persis di kolom yang NOT NULL di database (brand_key,
+// tanggal, tahun, bulan, estimasi_keluar). Tanpa ini form tetap mengirim baris
+// tak lengkap dan baru ditolak Postgres — lebih lambat, dan dulu pesannya mentah.
 export const FORMS = {
   budget: [
-    { key: 'Brand', label: 'Brand Key', type: 'brand' },
+    { key: 'Brand', label: 'Brand Key', type: 'brand', required: true },
     { key: 'Tgl Pengajuan', label: 'Tgl Pengajuan', type: 'date' },
     { key: 'Tgl Dibutuhkan', label: 'Tgl Dibutuhkan', type: 'date' },
     { key: 'Kategori', label: 'Kategori', type: 'select', optionsKey: 'categories' },
@@ -59,8 +62,8 @@ export const FORMS = {
     { key: 'Feedback Finance', label: 'Form Feedback Finance', type: 'textarea' },
   ],
   income: [
-    { key: 'Brand', label: 'Brand Key', type: 'brand' },
-    { key: 'Tanggal', label: 'Tanggal', type: 'date' },
+    { key: 'Brand', label: 'Brand Key', type: 'brand', required: true },
+    { key: 'Tanggal', label: 'Tanggal', type: 'date', required: true },
     { key: 'Keterangan', label: 'Keterangan', type: 'text' },
     { key: 'Customer', label: 'Customer', type: 'customer' },
     { key: 'Nominal', label: 'Nominal', type: 'number' },
@@ -70,7 +73,7 @@ export const FORMS = {
     { key: 'Catatan', label: 'Catatan', type: 'textarea' },
   ],
   forecast: [
-    { key: 'Brand', label: 'Brand Key', type: 'brand' },
+    { key: 'Brand', label: 'Brand Key', type: 'brand', required: true },
     { key: 'Estimasi Cair', label: 'Estimasi Cair', type: 'date' },
     { key: 'Marketplace', label: 'Marketplace', type: 'text' },
     { key: 'Nominal Estimasi', label: 'Nominal Estimasi', type: 'number' },
@@ -78,16 +81,16 @@ export const FORMS = {
     { key: 'Catatan', label: 'Catatan', type: 'textarea' },
   ],
   forecastOut: [
-    { key: 'Brand', label: 'Brand Key', type: 'brand' },
-    { key: 'Estimasi Keluar', label: 'Estimasi Keluar', type: 'date' },
+    { key: 'Brand', label: 'Brand Key', type: 'brand', required: true },
+    { key: 'Estimasi Keluar', label: 'Estimasi Keluar', type: 'date', required: true },
     { key: 'Kategori', label: 'Kategori', type: 'select', optionsKey: 'categories' },
     { key: 'Nominal Estimasi', label: 'Nominal Estimasi', type: 'number' },
     { key: 'Status', label: 'Status', type: 'text' },
     { key: 'Catatan', label: 'Catatan', type: 'textarea' },
   ],
   outcome: [
-    { key: 'Brand', label: 'Brand Key', type: 'brand' },
-    { key: 'Tanggal', label: 'Tanggal', type: 'date' },
+    { key: 'Brand', label: 'Brand Key', type: 'brand', required: true },
+    { key: 'Tanggal', label: 'Tanggal', type: 'date', required: true },
     { key: 'Keterangan', label: 'Keterangan', type: 'text' },
     { key: 'Kategori', label: 'Kategori', type: 'select', optionsKey: 'categories' },
     { key: 'Jumlah', label: 'Jumlah (Rp)', type: 'number' },
@@ -96,9 +99,9 @@ export const FORMS = {
     { key: 'Catatan', label: 'Catatan', type: 'textarea' },
   ],
   omzet: [
-    { key: 'Brand', label: 'Brand Key', type: 'brand' },
-    { key: 'Tahun', label: 'Tahun', type: 'number' },
-    { key: 'Bulan', label: 'Bulan', type: 'select', optionsKey: 'months' },
+    { key: 'Brand', label: 'Brand Key', type: 'brand', required: true },
+    { key: 'Tahun', label: 'Tahun', type: 'number', required: true },
+    { key: 'Bulan', label: 'Bulan', type: 'select', optionsKey: 'months', required: true },
     { key: 'Target Omzet', label: 'Target Omzet', type: 'number' },
     { key: 'Realisasi Omzet', label: 'Realisasi Omzet', type: 'number' },
   ],
@@ -114,8 +117,8 @@ export const FORMS = {
     { key: 'Saldo Awal', label: 'Saldo Awal (Saldo Pembukaan)', type: 'number' },
   ],
   service: [
-    { key: 'Brand', label: 'Brand Key', type: 'brand' },
-    { key: 'Tanggal', label: 'Tanggal', type: 'date' },
+    { key: 'Brand', label: 'Brand Key', type: 'brand', required: true },
+    { key: 'Tanggal', label: 'Tanggal', type: 'date', required: true },
     { key: 'Keterangan', label: 'Keterangan', type: 'text' },
     { key: 'Vendor', label: 'Vendor', type: 'vendor' },
     { key: 'Nominal', label: 'Nominal', type: 'number' },
@@ -123,7 +126,7 @@ export const FORMS = {
     { key: 'Catatan', label: 'Catatan', type: 'textarea' },
   ],
   payables: [
-    { key: 'Brand', label: 'Brand Key', type: 'brand' },
+    { key: 'Brand', label: 'Brand Key', type: 'brand', required: true },
     // 'Nama Pemasok' otomatis terisi dari ID Pemasok yang dipilih, tidak diketik.
     { key: 'ID Pemasok', label: 'ID Pemasok', type: 'vendor', required: true },
     { key: 'Total Hutang', label: 'Total Hutang', type: 'number' },
@@ -133,7 +136,7 @@ export const FORMS = {
     { key: 'Source', label: 'Source', type: 'text' },
   ],
   receivables: [
-    { key: 'Brand', label: 'Brand Key', type: 'brand' },
+    { key: 'Brand', label: 'Brand Key', type: 'brand', required: true },
     // 'Nama Pelanggan' otomatis terisi dari ID Pelanggan yang dipilih, tidak diketik.
     { key: 'ID Pelanggan', label: 'ID Pelanggan', type: 'customer', required: true },
     { key: 'Total Piutang', label: 'Total Piutang', type: 'number' },
