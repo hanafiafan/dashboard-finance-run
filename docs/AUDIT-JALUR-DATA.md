@@ -26,27 +26,30 @@ Semua angka di dokumen ini diambil dari database produksi saat audit, bukan perk
 
 ### Diagram versi FigJam
 
-**Papan rumus per angka** — https://www.figma.com/board/wB3ql2VwRe8gwh8iQ3vDiL
+**https://www.figma.com/board/eZna7yj2GeXFEW9xSVUE2z**
 
-Delapan diagram, satu diagram menjelaskan satu angka. Tiap panah diberi tanda operasinya:
-`+` menambah, `-` mengurangi, `pembagi` untuk penyebut sebuah rasio.
+Tiga belas diagram, satu diagram menjelaskan satu angka. Semuanya dibaca kiri ke kanan
+seperti langkah hitung: kotak pertama nilai awal, kotak berikutnya operasinya, kotak
+terakhir hasilnya.
 
-| # | Diagram | Menjawab pertanyaan |
+Tanda operasi ditulis di dalam kotak, bukan di garis: `( + )` menambah, `( − )` mengurangi,
+`( ÷ )` membagi, `( × )` mengalikan, dan `=` menandai hasil akhir.
+
+| # | Diagram | Menjawab |
 |---|---|---|
-| 1 | Saldo Rekening | Apa yang menambah dan mengurangi saldo, dan kolom mana yang tidak boleh diketik manual |
-| 2 | Cash In, Cash Out, Net Cash | Kolom apa saja yang dijumlahkan, dan baris apa yang sengaja dikeluarkan |
-| 3 | Omzet | Bagaimana Selisih dan Capaian terbentuk, dan kenapa Capaian tersimpan dalam satuan persen |
-| 4 | Budget Request sampai kartu Hutang | Status mana yang ikut dihitung sebagai hutang dan mana yang tidak |
-| 5 | Proyeksi kas dan rekomendasi Approval | Dari mana angka Hold, Review, dan Approve berasal |
-| 6 | Enam indikator rasio | Apa dibagi apa, arah baiknya ke mana, dan ambang tiap warna |
-| 7 | Laba Rugi | Urutan tambah kurang dari Pendapatan sampai Laba Bersih Setelah Pajak |
-| 8 | Transfer Antar Bank | Kenapa satu tombol menulis dua baris dan kenapa keduanya tidak masuk KPI |
-
-Warna sama di semua diagram: kuning = diketik manusia, hijau = dihitung sistem,
-biru = yang tampil di layar, merah = hal yang mudah salah dipahami.
-
-**Papan peta jalur antarmodul** — https://www.figma.com/board/yK84E1T8UJhfStZaSjGqK4
-(jalur yang nyambung dan yang terputus antar menu)
+| 01 | Saldo Rekening | Apa yang menambah dan mengurangi saldo, kolom mana yang tidak boleh diketik manual |
+| 02 | Cash In | Kolom apa yang dijumlahkan dan baris apa yang dikeluarkan |
+| 03 | Cash Out | Kenapa Jumlah dan Biaya dijumlahkan dulu |
+| 04 | Net Cash | Selisih Cash In dan Cash Out |
+| 05 | Omzet | Selisih dan Capaian, dan kenapa Capaian bersatuan persen |
+| 06 | Hutang | Status mana yang jadi hutang dan mana yang tidak |
+| 07 | Proyeksi Kas dan Approval | Dari mana Hold, Review, dan Approve berasal |
+| 08 | Empat indikator rasio | Apa dibagi apa, arah baiknya ke mana, ambang tiap warna |
+| 09 | NPM dan Cash Position | Termasuk pengaman tanggal 1 dan 2 |
+| 10 | Laba Rugi | Urutan dari Pendapatan sampai Laba Bersih Setelah Pajak |
+| 11 | Jumlah Beban Operasional | Delapan kelompok biaya yang dijumlahkan |
+| 12 | Transfer Antar Bank | Kenapa satu tombol menulis dua baris dan keduanya tidak masuk KPI |
+| 13 | Jalur antar menu | Mana yang otomatis dan mana yang masih diketik ulang |
 
 ### Satu-satunya jalur otomatis antarmodul
 
