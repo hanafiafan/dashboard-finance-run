@@ -33,7 +33,7 @@ export const TABLE_COLUMNS = {
   users: ['Email', 'Name', 'Role', 'Company Scope', 'Brand Scope', 'Active'],
   brands: ['Company', 'Brand', 'Brand Key', 'Active', 'PIC Email'],
   sources: ['Company', 'Brand', 'Brand Key', 'Spreadsheet ID', 'Active', 'Last Imported At', 'Notes'],
-  vendors: ['ID Vendor', 'Nama Vendor', 'PIC', 'Telepon', 'Alamat', 'Keterangan'],
+  vendors: ['ID Vendor', 'Nama Vendor', 'Brand', 'PIC', 'Telepon', 'Alamat', 'Keterangan'],
   customers: ['ID Pelanggan', 'Nama Pelanggan', 'PIC', 'Telepon', 'Alamat', 'Keterangan'],
 };
 
@@ -167,6 +167,8 @@ export const FORMS = {
   vendors: [
     { key: 'ID Vendor', label: 'ID Vendor (kode unik)', type: 'text', required: true },
     { key: 'Nama Vendor', label: 'Nama Vendor / Perusahaan', type: 'text', required: true },
+    // Dikosongkan = vendor umum, muncul di dropdown semua brand (lihat 0016).
+    { key: 'Brand', label: 'Brand (kosongkan = semua brand)', type: 'brand' },
     { key: 'PIC', label: 'PIC (Person in Charge)', type: 'text' },
     { key: 'Telepon', label: 'No. Telepon', type: 'text' },
     { key: 'Alamat', label: 'Alamat', type: 'textarea' },

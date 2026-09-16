@@ -94,7 +94,7 @@ const COL_MAP = {
     notes: 'Notes',
   },
   vendors: {
-    vendor_id: 'ID Vendor', nama: 'Nama Vendor', pic: 'PIC',
+    vendor_id: 'ID Vendor', nama: 'Nama Vendor', brand_key: 'Brand', pic: 'PIC',
     telepon: 'Telepon', alamat: 'Alamat', keterangan: 'Keterangan',
   },
   customers: {
@@ -155,7 +155,10 @@ export function uiToDb(entity, formData) {
     // 'Total' (fin_bank) is a database GENERATED column — never writable, only readable via dbToUi.
     if (key === 'Total') continue;
     const dbCol = aliases[key] || reverse[key] || key;
-    out[dbCol] = val;
+    // Dropdown/date yang tidak dipilih mengirim '' — simpan sebagai NULL, karena
+    // '' ditolak Postgres untuk kolom date/numeric, dan untuk kolom opsional
+    // seperti fin_vendors.brand_key NULL-lah yang berarti "berlaku umum".
+    out[dbCol] = val === '' ? null : val;
   }
   return out;
 }

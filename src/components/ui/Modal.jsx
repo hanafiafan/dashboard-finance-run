@@ -115,10 +115,25 @@ function renderField(field, formData, options, onChange) {
       return <textarea id={id} value={value} onChange={e => onChange(field.key, e.target.value)} />;
     case 'vendor':
     case 'customer': {
-      const dataList = field.type === 'vendor' ? (options?.vendorList || []) : (options?.customerList || []);
+      const isVendor = field.type === 'vendor';
+      const all = isVendor ? (options?.vendorList || []) : (options?.customerList || []);
+      // Filter ketat: begitu Brand dipilih, HANYA vendor milik brand itu yang
+      // muncul — vendor tanpa brand ikut disembunyikan. Pengecualian satu-satunya
+      // adalah vendor yang sudah tersimpan di baris yang sedang diedit, supaya
+      // data lama tidak berubah diam-diam waktu formnya dibuka.
+      // Pelanggan tidak ikut difilter: fin_customers belum punya kolom brand,
+      // jadi menyaringnya akan mengosongkan dropdown Cash In sepenuhnya.
+      const brand = formData['Brand'];
+      const dataList = (!isVendor || !brand) ? all : all.filter(item =>
+        item.Brand === brand || item['ID Vendor'] === value,
+      );
       return (
         <select id={id} value={value} onChange={e => onChange(field.key, e.target.value)}>
-          <option value="">Pilih {field.type === 'vendor' ? 'Vendor' : 'Pelanggan'}</option>
+          <option value="">
+            {dataList.length
+              ? `Pilih ${field.type === 'vendor' ? 'Vendor' : 'Pelanggan'}`
+              : `Belum ada ${field.type === 'vendor' ? 'vendor' : 'pelanggan'} untuk brand ini — daftarkan dulu di Master Data`}
+          </option>
           {dataList.map(item => (
             <option key={item['ID Vendor'] || item['ID Pelanggan']} value={item['ID Vendor'] || item['ID Pelanggan']}>
               {item['ID Vendor'] || item['ID Pelanggan']} — {item['Nama Vendor'] || item['Nama Pelanggan']}

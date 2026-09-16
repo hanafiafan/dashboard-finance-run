@@ -291,6 +291,12 @@ async function supabaseGetRecords(entity, filters = {}) {
   if (filters.brandKey && entity !== 'vendors' && entity !== 'customers' && entity !== 'users') {
     query = query.eq('brand_key', filters.brandKey);
   }
+  // Vendor dibagi dua: milik brand tertentu, atau umum (brand_key NULL) yang
+  // selalu ikut tampil — jadi filter brand tidak pernah menyembunyikan vendor
+  // bersama seperti kantor pajak atau jasa ekspedisi.
+  if (filters.brandKey && entity === 'vendors') {
+    query = query.or(`brand_key.is.null,brand_key.eq."${filters.brandKey}"`);
+  }
   const dateCol = ENTITY_DATE_COL[entity];
   if (dateCol && filters.startDate) query = query.gte(dateCol, filters.startDate);
   if (dateCol && filters.endDate) query = query.lte(dateCol, filters.endDate);
