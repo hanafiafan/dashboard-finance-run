@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, Fragment } from 'react';
 import { Pencil, Info, ChevronDown, ChevronRight, Plus } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
+import { notify } from '../components/ui/Toast';
 import { useAuth } from '../contexts/AuthContext';
 import { getForecastBudget, saveForecastBudgetLine } from '../api/financeApi';
 import { Modal } from '../components/ui/Modal';
@@ -44,7 +45,7 @@ export function ForecastingControlling() {
     setLoading(true);
     getForecastBudget({ tahun, brandKey: filters.brandKey }, session)
       .then(setRows)
-      .catch(err => { console.error(err); alert(`Gagal memuat data budget: ${err.message || err}`); })
+      .catch(err => { console.error(err); notify.error(err.message || 'Gagal memuat data budget.'); })
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tahun, filters.brandKey, session]);
@@ -109,10 +110,12 @@ export function ForecastingControlling() {
         nilaiAnggaran: form.nilaiAnggaran, nilaiRealisasi: form.nilaiRealisasi, keterangan: form.keterangan,
       }, session);
       setEntryModal(null);
+      notify.success('Baris anggaran tersimpan.\nAnggaran & realisasi untuk periode ini sudah diperbarui.');
       const fresh = await getForecastBudget({ tahun, brandKey: filters.brandKey }, session);
       setRows(fresh);
     } catch (err) {
-      alert(err.message || 'Gagal menyimpan');
+      console.error(err);
+      notify.error(err.message || 'Gagal menyimpan.');
     }
   };
 

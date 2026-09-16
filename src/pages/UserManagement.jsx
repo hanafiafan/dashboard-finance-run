@@ -4,6 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { getStoredUsers, addUser, removeUser, resetUserPassword } from '../contexts/AuthContext';
 import { useApp } from '../contexts/AppContext';
 import { getRecords } from '../api/financeApi';
+import { notify } from '../components/ui/Toast';
+import { humanizeError } from '../utils/errorMessage';
 
 // Privileged actions (create/reset/delete) need the service_role key, which
 // only api/manage-user.js holds — this just forwards the caller's own Supabase
@@ -15,7 +17,7 @@ async function callManageUser(session, body) {
     body: JSON.stringify(body),
   });
   const data = await res.json();
-  if (!data.ok) throw new Error(data.error || 'Gagal.');
+  if (!data.ok) throw new Error(humanizeError(data.error || `Permintaan ${body.action} ditolak server.`));
   return data;
 }
 
@@ -42,6 +44,7 @@ export default function UserManagement() {
       setUsers((rows || []).map(r => ({ email: r.Email, name: r.Name, role: r.Role, active: r.Active, company_scope: r['Company Scope'], brand_scope: r['Brand Scope'] })));
     } catch (err) {
       setError(err.message);
+      notify.error(err.message);
     }
   };
 
@@ -73,8 +76,10 @@ export default function UserManagement() {
       else await callManageUser(session, { action: 'create', ...payload });
       await refresh();
       setShowAdd(false);
+      notify.success(`User dibuat.\n${email} sekarang bisa login dengan role ${role}.`);
     } catch (err) {
       setError(err.message);
+      notify.error(err.message);
     }
     setBusy(false);
   };
@@ -87,8 +92,10 @@ export default function UserManagement() {
       if (isDemo) removeUser(email);
       else await callManageUser(session, { action: 'delete', targetEmail: email });
       await refresh();
+      notify.success(`User dihapus.\n${email} tidak bisa login lagi.`);
     } catch (err) {
       setError(err.message);
+      notify.error(err.message);
     }
     setBusy(false);
   };
@@ -103,8 +110,10 @@ export default function UserManagement() {
       if (isDemo) resetUserPassword(resetTarget.email, newPw);
       else await callManageUser(session, { action: 'reset-password', targetEmail: resetTarget.email, password: newPw });
       setResetTarget(null);
+      notify.success('Password direset.\nSampaikan password baru ke user yang bersangkutan.');
     } catch (err) {
       setError(err.message);
+      notify.error(err.message);
     }
     setBusy(false);
   };

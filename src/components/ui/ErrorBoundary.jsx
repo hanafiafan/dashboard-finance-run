@@ -37,9 +37,9 @@ export default class ErrorBoundary extends Component {
             width: '100%',
           }}>
             <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⚠️</div>
-            <h2 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: '#f97316' }}>Dashboard Error</h2>
+            <h2 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: '#f97316' }}>Dashboard gagal ditampilkan</h2>
             <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '1rem' }}>
-              Terjadi kesalahan saat merender dashboard. Coba refresh halaman.
+              Ada komponen yang error saat digambar, jadi halaman dihentikan supaya angka yang salah tidak tampil. Klik "Muat Ulang Halaman" di bawah. Kalau terus berulang, kirim pesan teknis di kotak merah ini ke tim IT.
             </p>
             <pre style={{
               background: '#0f172a',
@@ -69,7 +69,7 @@ export default class ErrorBoundary extends Component {
                 fontFamily: 'inherit',
               }}
             >
-              Refresh Page
+              Muat Ulang Halaman
             </button>
           </div>
         </div>

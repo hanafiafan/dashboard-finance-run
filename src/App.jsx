@@ -5,6 +5,7 @@ import { Login } from './pages/Login';
 import AppShell from './layouts/AppShell';
 import { RefreshCw } from 'lucide-react';
 import ErrorBoundary from './components/ui/ErrorBoundary';
+import { ToastHost } from './components/ui/Toast';
 import { getAppState } from './api/financeApi';
 
 // Chart.js — MUST register ALL controllers + elements before any chart renders
@@ -156,6 +157,7 @@ export default function App() {
     <AuthProvider>
       <AppProvider>
         <AppRoot />
+        <ToastHost />
       </AppProvider>
     </AuthProvider>
   );

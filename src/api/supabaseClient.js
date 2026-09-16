@@ -159,3 +159,15 @@ export function uiToDb(entity, formData) {
   }
   return out;
 }
+
+// Nama tabel DB → entitas UI, dan kolom DB → label persis seperti di form.
+// Dipakai humanizeError() supaya pesan error menyebut "Tahun", bukan "tahun".
+export function entityOfTable(table) {
+  return Object.keys(TABLE_MAP).find(k => TABLE_MAP[k] === table);
+}
+
+export function columnLabel(dbCol, entity) {
+  const maps = entity && COL_MAP[entity] ? [COL_MAP[entity]] : Object.values(COL_MAP);
+  for (const map of maps) if (map[dbCol]) return map[dbCol];
+  return dbCol.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}

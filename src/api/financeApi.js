@@ -1,5 +1,6 @@
 import { demoState, demoRows, demoForecastBudget, buildEntities } from '../utils/demoData';
 import { supabase, TABLE_MAP, dbToUi, uiToDb } from './supabaseClient';
+import { humanizeError } from '../utils/errorMessage';
 import { isToday, isCurrentMonth, isCurrentOmzetMonth, forecastCashPosition, addDays, localDateStr } from '../utils/ews';
 
 // Which DB column each entity's From/To date filter and Kategori filter should
@@ -298,7 +299,7 @@ async function supabaseGetRecords(entity, filters = {}) {
   if (entity === 'omzet' && filters.year) query = query.eq('tahun', filters.year);
 
   const { data, error } = await query.order('created_at', { ascending: false });
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(humanizeError(error));
   return { rows: (data || []).map(r => dbToUi(entity, r)) };
 }
 
@@ -309,11 +310,11 @@ async function supabaseSaveRecord(entity, record) {
 
   if (record.ID) {
     const { error } = await supabase.from(table).update(dbRow).eq('id', record.ID);
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(humanizeError(error));
     return { ok: true, created: false };
   }
   const { error } = await supabase.from(table).insert(dbRow);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(humanizeError(error));
   return { ok: true, created: true };
 }
 
@@ -321,7 +322,7 @@ async function supabaseDeleteRecord(entity, id) {
   const table = TABLE_MAP[entity];
   if (!table) throw new Error('Unknown entity');
   const { error } = await supabase.from(table).delete().eq('id', id);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(humanizeError(error));
   return { ok: true };
 }
 
@@ -329,7 +330,7 @@ async function supabaseApproveBudget(id, status, paid, feedback) {
   const update = { status, feedback_finance: feedback };
   if (paid) update.nominal_dibayar = Number(paid) || 0;
   const { error } = await supabase.from('fin_budget').update(update).eq('id', id);
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(humanizeError(error));
   return { ok: true };
 }
 
@@ -349,7 +350,7 @@ async function supabaseCreateBankTransfer(payload) {
     p_nominal: Number(payload.nominal) || 0,
     p_catatan: payload.catatan || null,
   });
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(humanizeError(error));
   return { ok: true };
 }
 
@@ -404,7 +405,7 @@ export async function getForecastBudget(filters = {}, auth) {
     let query = supabase.from('fin_forecast_budget').select('*').eq('tahun', filters.tahun).range(from, from + PAGE_SIZE - 1);
     if (filters.brandKey) query = query.eq('brand_key', filters.brandKey);
     const { data: page, error } = await query;
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(humanizeError(error));
     data = data.concat(page || []);
     if (!page || page.length < PAGE_SIZE) break;
   }
@@ -424,7 +425,7 @@ export async function saveForecastBudgetLine(record, auth) {
       nilai_anggaran: Number(nilaiAnggaran || 0), nilai_realisasi: Number(nilaiRealisasi || 0),
       keterangan: keterangan || null, updated_at: new Date().toISOString(),
     }, { onConflict: 'brand_key,tahun,bulan,line_key' });
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(humanizeError(error));
   return { ok: true };
 }
 

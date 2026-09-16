@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { notify } from './Toast';
 
 export function Modal({ isOpen, onClose, title, children }) {
   useEffect(() => {
@@ -75,7 +76,12 @@ export function DynamicForm({ fields, values, options, onChange, onSubmit, onCan
     const newErrors = {};
     fields.forEach(f => { if (f.required && !formData[f.key]) newErrors[f.key] = 'Wajib diisi'; });
     setErrors(newErrors);
-    if (Object.keys(newErrors).length === 0 && onSubmit) onSubmit(formData);
+    const missing = Object.keys(newErrors);
+    if (missing.length) {
+      notify.warning(`Ada ${missing.length} kolom wajib yang belum diisi.\nLengkapi dulu: ${missing.join(', ')}. Kolom bertanda * tidak boleh kosong.`);
+      return;
+    }
+    if (onSubmit) onSubmit(formData);
   };
 
   return (

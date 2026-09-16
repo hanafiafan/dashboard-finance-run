@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getRecords, saveRecord, deleteRecord } from '../api/financeApi';
 import { ENTITY_LABELS, TABLE_COLUMNS, FORMS } from '../utils/constants';
 import { number } from '../utils/formatters';
+import { notify } from '../components/ui/Toast';
 import UserManagement from './UserManagement';
 
 const MASTERS = ['users', 'brands', 'sources', 'vendors', 'customers'];
@@ -39,7 +40,7 @@ export function Master() {
       setRows(entity, rows);
     } catch (err) {
       console.error(err);
-      alert(`Gagal memuat data: ${err.message || err}`);
+      notify.error(err.message || 'Gagal memuat data.');
     }
   };
 
@@ -54,9 +55,11 @@ export function Master() {
       const record = { ...(editRow || {}), ...formData };
       await saveRecord(entity, record, session);
       setModalOpen(false);
+      notify.success(`${record.ID ? 'Perubahan tersimpan' : 'Data baru tersimpan'}.\n${ENTITY_LABELS[entity]} berhasil disimpan ke database.`);
       await loadRecords();
     } catch (err) {
-      alert(err.message || 'Gagal menyimpan');
+      console.error(err);
+      notify.error(err.message || 'Gagal menyimpan.');
     }
   };
 
@@ -64,9 +67,11 @@ export function Master() {
     if (!window.confirm('Hapus data ini?')) return;
     try {
       await deleteRecord(entity, id, session);
+      notify.success(`Data dihapus.\nSatu baris ${ENTITY_LABELS[entity]} dihapus permanen.`);
       await loadRecords();
     } catch (err) {
-      alert(err.message || 'Gagal menghapus');
+      console.error(err);
+      notify.error(err.message || 'Gagal menghapus.');
     }
   };
 

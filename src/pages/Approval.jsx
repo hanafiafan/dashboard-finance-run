@@ -7,6 +7,7 @@ import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
 import { approveBudget } from '../api/financeApi';
 import { number } from '../utils/formatters';
+import { notify } from '../components/ui/Toast';
 import { CHART_COLORS } from '../utils/constants';
 import { forecastCashPosition, projectedCashRecommendation } from '../utils/ews';
 
@@ -38,10 +39,11 @@ export function Approval() {
     setLoading((prev) => ({ ...prev, [id]: true }));
     try {
       await approveBudget(id, status, paid, feedback, session);
-      alert(`Status: ${status}`);
-      window.location.reload();
+      notify.success(`Pengajuan di-${status}.\nHalaman akan dimuat ulang agar saldo dan status ikut ter-update.`);
+      setTimeout(() => window.location.reload(), 1200);
     } catch (err) {
-      alert(err.message);
+      console.error(err);
+      notify.error(err.message || 'Gagal memproses approval.');
     }
     setLoading((prev) => ({ ...prev, [id]: false }));
   };

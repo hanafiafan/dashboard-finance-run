@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getRecords, saveRecord, deleteRecord, createBankTransfer } from '../api/financeApi';
 import { ENTITY_LABELS, TABLE_COLUMNS, FORMS } from '../utils/constants';
 import { number } from '../utils/formatters';
+import { notify } from '../components/ui/Toast';
 
 const ENTITIES = ['budget', 'income', 'forecast', 'forecastOut', 'outcome', 'omzet', 'bank', 'service', 'payables', 'receivables'];
 
@@ -61,8 +62,10 @@ function BankTransferModal({ isOpen, onClose, brands, session, onDone }) {
       }, session);
       reset();
       onDone();
+      notify.success(`Transfer tercatat.\nRp ${number.format(Number(nominal) || 0)} dipindahkan dari ${source?.Bank || sourceId} ke ${dest?.Bank || destId}. Saldo kedua rekening sudah menyesuaikan.`);
     } catch (err) {
       setError(err.message || 'Gagal transfer.');
+      notify.error(err.message || 'Gagal transfer.');
     }
     setBusy(false);
   };
@@ -149,7 +152,7 @@ export function Operations() {
       setRows(entity, rows);
     } catch (err) {
       console.error(err);
-      alert(`Gagal memuat data: ${err.message || err}`);
+      notify.error(err.message || 'Gagal memuat data.');
     }
   };
 
@@ -168,9 +171,11 @@ export function Operations() {
       const record = { ...(editRow || {}), ...formData };
       await saveRecord(entity, record, session);
       setModalOpen(false);
+      notify.success(`${record.ID ? 'Perubahan tersimpan' : 'Data baru tersimpan'}.\n${ENTITY_LABELS[entity]} berhasil disimpan ke database.`);
       await loadRecords();
     } catch (err) {
-      alert(err.message || 'Gagal menyimpan');
+      console.error(err);
+      notify.error(err.message || 'Gagal menyimpan.');
     }
   };
 
@@ -178,14 +183,16 @@ export function Operations() {
     if (!window.confirm('Hapus data ini?')) return;
     try {
       await deleteRecord(entity, id, session);
+      notify.success(`Data dihapus.\nSatu baris ${ENTITY_LABELS[entity]} dihapus permanen.`);
       await loadRecords();
     } catch (err) {
-      alert(err.message || 'Gagal menghapus');
+      console.error(err);
+      notify.error(err.message || 'Gagal menghapus.');
     }
   };
 
   const exportCsv = () => {
-    if (!records.length) return alert('Tidak ada data untuk export.');
+    if (!records.length) return notify.warning('Tidak ada data untuk diexport.\nTabel ini masih kosong, atau filter yang aktif menyaring semua baris.');
     const cols = TABLE_COLUMNS[entity] || Object.keys(records[0]);
     const csv = [
       cols.join(','),

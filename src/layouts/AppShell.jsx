@@ -6,6 +6,7 @@ import {
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
 import { getAppState, importFromSources } from '../api/financeApi';
+import { notify } from '../components/ui/Toast';
 import CommandCenter from '../pages/CommandCenter';
 import { Analytics } from '../pages/Analytics';
 import { Operations } from '../pages/Operations';
@@ -55,7 +56,7 @@ export default function AppShell() {
     setRefreshing(true);
     getAppState(filters, session)
       .then(newState => { setState(newState); setLastSyncAt(newState?.generatedAt || new Date().toISOString()); })
-      .catch(err => { console.error(err); alert(`Gagal memuat ulang data: ${err.message || err}`); })
+      .catch(err => { console.error(err); notify.error(err.message || 'Gagal memuat ulang data.'); })
       .finally(() => setRefreshing(false));
   }, [filters.company, filters.brandKey, filters.startDate, filters.endDate, filters.year, filters.category]);
 
@@ -65,7 +66,7 @@ export default function AppShell() {
       const newState = await getAppState(filters, session);
       setState(newState);
       setLastSyncAt(newState?.generatedAt || new Date().toISOString());
-    } catch (err) { console.error(err); alert(`Gagal memuat ulang data: ${err.message || err}`); }
+    } catch (err) { console.error(err); notify.error(err.message || 'Gagal memuat ulang data.'); }
     setRefreshing(false);
   }, [filters, session, setState]);
 
@@ -74,15 +75,15 @@ export default function AppShell() {
     try {
       const result = await importFromSources(session);
       const total = (result.results || []).reduce((sum, item) => sum + Number(item.imported || 0), 0);
-      alert(`${total} baris diproses.`);
+      notify.success(`Import selesai.\n${total} baris diproses dari Source Workbooks.`);
       await handleRefresh();
-    } catch (err) { alert(err.message); }
+    } catch (err) { console.error(err); notify.error(err.message); }
   }, [session, handleRefresh]);
 
   const exportCurrentCsv = useCallback(() => {
     const entity = app.view === 'master' ? app.master : app.entity;
     const rows = app.rows[entity] || [];
-    if (!rows.length) return alert('Tidak ada data.');
+    if (!rows.length) return notify.warning('Tidak ada data untuk diexport.\nTabel yang sedang dibuka masih kosong, atau filter aktif menyaring semua baris.');
     const cols = Object.keys(rows[0]);
     const csv = [cols.join(','), ...rows.map(row => cols.map(col => `"${String(row[col] ?? '').replace(/"/g, '""')}"`).join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
@@ -90,6 +91,7 @@ export default function AppShell() {
     const a = document.createElement('a');
     a.href = url; a.download = `finance-${entity}.csv`;
     a.click(); URL.revokeObjectURL(url);
+    notify.success(`CSV terunduh.\n${rows.length} baris diexport ke finance-${entity}.csv.`);
   }, [app.view, app.master, app.entity, app.rows]);
 
   if (!state) {
