@@ -26,14 +26,27 @@ Semua angka di dokumen ini diambil dari database produksi saat audit, bukan perk
 
 ### Diagram versi FigJam
 
-https://www.figma.com/board/yK84E1T8UJhfStZaSjGqK4 — enam diagram dalam satu papan:
+**Papan rumus per angka** — https://www.figma.com/board/wB3ql2VwRe8gwh8iQ3vDiL
 
-1. Peta jalur data antarmodul (garis penuh = jalur jalan, putus-putus = terputus)
-2. Dashboard: rumus 8 kartu ringkasan
-3. Dashboard: rumus dan ambang warna 7 indikator Early Warning
-4. Operasional dan Approval: kolom yang dihitung otomatis per tab
-5. Forecasting & Controlling: susunan laba rugi, mana yang manual dan mana yang dihitung sistem
-6. Analytics dan Master Data: sumber tiap grafik
+Delapan diagram, satu diagram menjelaskan satu angka. Tiap panah diberi tanda operasinya:
+`+` menambah, `-` mengurangi, `pembagi` untuk penyebut sebuah rasio.
+
+| # | Diagram | Menjawab pertanyaan |
+|---|---|---|
+| 1 | Saldo Rekening | Apa yang menambah dan mengurangi saldo, dan kolom mana yang tidak boleh diketik manual |
+| 2 | Cash In, Cash Out, Net Cash | Kolom apa saja yang dijumlahkan, dan baris apa yang sengaja dikeluarkan |
+| 3 | Omzet | Bagaimana Selisih dan Capaian terbentuk, dan kenapa Capaian tersimpan dalam satuan persen |
+| 4 | Budget Request sampai kartu Hutang | Status mana yang ikut dihitung sebagai hutang dan mana yang tidak |
+| 5 | Proyeksi kas dan rekomendasi Approval | Dari mana angka Hold, Review, dan Approve berasal |
+| 6 | Enam indikator rasio | Apa dibagi apa, arah baiknya ke mana, dan ambang tiap warna |
+| 7 | Laba Rugi | Urutan tambah kurang dari Pendapatan sampai Laba Bersih Setelah Pajak |
+| 8 | Transfer Antar Bank | Kenapa satu tombol menulis dua baris dan kenapa keduanya tidak masuk KPI |
+
+Warna sama di semua diagram: kuning = diketik manusia, hijau = dihitung sistem,
+biru = yang tampil di layar, merah = hal yang mudah salah dipahami.
+
+**Papan peta jalur antarmodul** — https://www.figma.com/board/yK84E1T8UJhfStZaSjGqK4
+(jalur yang nyambung dan yang terputus antar menu)
 
 ### Satu-satunya jalur otomatis antarmodul
 
