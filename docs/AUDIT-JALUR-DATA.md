@@ -26,8 +26,14 @@ Semua angka di dokumen ini diambil dari database produksi saat audit, bukan perk
 
 ### Diagram versi FigJam
 
-Versi visual dari peta ini (garis penuh = jalur yang jalan, garis putus-putus merah = jalur terputus):
-https://www.figma.com/board/eH508ErfqK8KY4q5TvNl2S
+https://www.figma.com/board/yK84E1T8UJhfStZaSjGqK4 — enam diagram dalam satu papan:
+
+1. Peta jalur data antarmodul (garis penuh = jalur jalan, putus-putus = terputus)
+2. Dashboard: rumus 8 kartu ringkasan
+3. Dashboard: rumus dan ambang warna 7 indikator Early Warning
+4. Operasional dan Approval: kolom yang dihitung otomatis per tab
+5. Forecasting & Controlling: susunan laba rugi, mana yang manual dan mana yang dihitung sistem
+6. Analytics dan Master Data: sumber tiap grafik
 
 ### Satu-satunya jalur otomatis antarmodul
 
