@@ -23,10 +23,21 @@ export function Modal({ isOpen, onClose, title, children }) {
 }
 
 export function DynamicForm({ fields, values, options, onChange, onSubmit, onCancel }) {
-  const [formData, setFormData] = useState(values || {});
+  // renderField() falls back to defaultValue() for display, so a field the user
+  // never touches LOOKS filled (e.g. Tahun = tahun berjalan) but is absent from
+  // formData and never reaches the DB. Seed those defaults into state instead.
+  const seed = vals => {
+    const out = { ...(vals || {}) };
+    fields.forEach(f => {
+      const d = defaultValue(f);
+      if (d !== '' && out[f.key] === undefined) out[f.key] = d;
+    });
+    return out;
+  };
+  const [formData, setFormData] = useState(() => seed(values));
   const [errors, setErrors] = useState({});
 
-  useEffect(() => { setFormData(values || {}); }, [values]);
+  useEffect(() => { setFormData(seed(values)); }, [values, fields]);
 
   const handleChange = (key, value) => {
     const updated = { ...formData, [key]: value };
