@@ -151,15 +151,27 @@ Piutang (0 baris), Biaya Layanan (0 baris), Omzet (1 baris) → Cash Conversion,
 
 ---
 
-## 6. Urutan perbaikan yang disarankan
+## 6. Sudah dikerjakan setelah audit (16 Sep 2026)
+
+| Temuan | Tindakan | Bukti |
+|---|---|---|
+| #1 Migrasi tertinggal | 0014 & 0015 dijalankan di produksi | `create_bank_transfer()` diuji: Rp 500.000 pindah dari Bank Sentral ke Kas Kecil, total brand tetap. `owner@ptmbn.com` kini melihat 5 brand PT MBN saja (dari sebelumnya 8 lintas perusahaan), sedangkan owner tanpa scope tetap melihat semuanya |
+| #2 Kartu Hutang Rp 0 | Kartu Hutang kini menjumlahkan modul Hutang + sisa Budget Request yang sudah Approved/Paid | Menampilkan Rp 6.164.303 (modul Rp 0 + Budget Rp 6.164.303). Pending Rp 1.999.008 sengaja tidak ikut: belum disetujui, belum kewajiban |
+| #3 Cash Position ganda | Rumus jadi saldo rekening apa adanya; mutasi hari ini ditampilkan sebagai catatan di kartu, bukan ditambahkan lagi | Cash Position = Rp 487.760.619 |
+| #6 Rumus menyesatkan | Tooltip "Menunggu Approval", "Cash Position", dan "Hutang" disamakan dengan kode | — |
+| #7 Tombol Import | Disembunyikan sampai fiturnya benar-benar ada | — |
+| #10 ID Bank bentrok | Unique index parsial pada `fin_bank.id_bank` | Migrasi 0019 |
+
+Masih terbuka: #4 (5 vendor yatim), #5 (Forecasting & Controlling terpisah), #8 (modul kosong), #9 (basis NPM).
+
+---
+
+## 7. Urutan perbaikan yang disarankan
 
 | Prioritas | Tindakan | Dampak |
 |---|---|---|
-| 1 | Jalankan migrasi 0014 & 0015 | Transfer antar bank berfungsi; owner benar-benar terbatas pada perusahaannya |
-| 2 | Perbaiki Cash Position (buang penambahan ganda) | Angka likuiditas harian jadi benar |
-| 3 | Sambungkan Budget Request → Hutang | Kartu Hutang menampilkan Rp 8.163.311 yang selama ini tak terlihat |
-| 4 | Daftarkan 5 vendor yatim, atau petakan ke ID yang sudah ada | 27 transaksi tertelusur kembali ke master |
-| 5 | Samakan rumus tampilan dengan kode (Menunggu Approval) | Tooltip berhenti menyesatkan |
-| 6 | Sembunyikan tombol Import sampai fiturnya ada | Berhenti menjanjikan yang tidak bisa ditepati |
-| 7 | Tarik realisasi Forecasting & Controlling dari Cash Out, atau tegaskan ia laporan terpisah | Menghapus satu dari dua versi kebenaran |
-| 8 | Tambah unique constraint pada `id_bank` | Mencegah saldo antar brand tercampur |
+| 1 | Daftarkan 5 vendor yatim, atau petakan ke ID yang sudah ada | 27 transaksi senilai Rp 92.272.225 tertelusur kembali ke master |
+| 2 | Tarik realisasi Forecasting & Controlling dari Cash Out, atau tegaskan ia laporan terpisah | Menghapus satu dari dua versi kebenaran |
+| 3 | Isi modul Piutang, Biaya Layanan, dan Omzet — atau sembunyikan indikator yang bergantung padanya | Lima indikator berhenti menampilkan nol yang menyesatkan |
+| 4 | Sepakati definisi NPM (kas atau akrual), lalu samakan rumusnya | Margin laba bersih jadi angka yang bisa dipertanggungjawabkan |
+| 5 | Sambungkan Budget Request yang dibayar → Cash Out otomatis | Berhenti mengetik pembayaran dua kali |

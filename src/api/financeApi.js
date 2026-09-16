@@ -93,7 +93,15 @@ async function supabaseGetAppState(filters = {}, auth) {
   const bankBalance = bankRows.reduce((s, r) => s + Number(r.saldo_awal || 0) + Number(r.pemasukan || 0) - Number(r.pengeluaran || 0), 0);
   const budgetRequested = budgetRows.reduce((s, r) => s + Number(r.nominal_pengajuan || 0), 0);
   const pendingApproval = pendingBudget.length;
-  const payableOutstanding = payableRows.reduce((s, r) => s + Number(r.total_hutang || 0) - Number(r.total_dibayar || 0), 0);
+  const payableFromLedger = payableRows.reduce((s, r) => s + Number(r.total_hutang || 0) - Number(r.total_dibayar || 0), 0);
+  // Budget Request yang sudah disetujui tapi belum lunas adalah kewajiban nyata,
+  // dan selama ini tidak terhitung di mana pun: modul Hutang berdiri sendiri tanpa
+  // jalur dari Budget Request, sehingga kartu Hutang menampilkan Rp 0 padahal ada
+  // sisa tagihan berjalan. Pending sengaja tidak ikut — belum disetujui, belum utang.
+  const payableFromBudget = budgetRows
+    .filter(r => r.status === 'Approved' || r.status === 'Paid')
+    .reduce((s, r) => s + Math.max(0, Number(r.nominal_pengajuan || 0) - Number(r.nominal_dibayar || 0)), 0);
+  const payableOutstanding = payableFromLedger + payableFromBudget;
   const totalTarget = omzetRows.reduce((s, r) => s + Number(r.target_omzet || 0), 0);
   const totalRealisasi = omzetRows.reduce((s, r) => s + Number(r.realisasi_omzet || 0), 0);
   const omzetAchievement = totalTarget > 0 ? totalRealisasi / totalTarget : 0;
@@ -104,7 +112,11 @@ async function supabaseGetAppState(filters = {}, auth) {
   const receivableOutstanding = receivableRows.reduce((s, r) => s + Number(r.total_piutang || 0) - Number(r.total_diterima || 0), 0);
   const cashInToday = incomeRowsReal.filter(r => isToday(r.tanggal)).reduce((s, r) => s + Number(r.nominal || 0), 0);
   const cashOutToday = outcomeRowsReal.filter(r => isToday(r.tanggal)).reduce((s, r) => s + Number(r.jumlah || 0) + Number(r.biaya || 0), 0);
-  const cashPosition = bankBalance + cashInToday - cashOutToday;
+  // Saldo rekening disinkronkan trigger dari SELURUH Cash In/Cash Out tanpa batas
+  // tanggal, jadi mutasi hari ini sudah ada di dalamnya. Menambahkan cash in/out
+  // hari ini sekali lagi (seperti sebelumnya) menghitungnya dua kali. Nilai harian
+  // tetap dikirim terpisah supaya kartunya bisa menampilkan mutasi hari ini.
+  const cashPosition = bankBalance;
   const cashInMonth = incomeRowsReal.filter(r => isCurrentMonth(r.tanggal)).reduce((s, r) => s + Number(r.nominal || 0), 0);
   const cashOutMonth = outcomeRowsReal.filter(r => isCurrentMonth(r.tanggal)).reduce((s, r) => s + Number(r.jumlah || 0) + Number(r.biaya || 0), 0);
   const cashOutRatio = cashInMonth > 0 ? cashOutMonth / cashInMonth : 0;
@@ -259,6 +271,10 @@ async function supabaseGetAppState(filters = {}, auth) {
         omzetTarget: totalTarget,
         approvalRate,
         cashPosition,
+        cashInToday,
+        cashOutToday,
+        payableFromLedger,
+        payableFromBudget,
         cashOutRatio,
         cashConversion,
         receivableRisk,

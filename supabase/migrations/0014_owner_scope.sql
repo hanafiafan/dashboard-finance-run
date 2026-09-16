@@ -23,8 +23,11 @@ $$;
 create or replace function auth_owner_scope_ok(p_brand_key text) returns boolean
 language sql stable security definer set search_path = public as $$
   select case
-    when auth_brand_scope() is not null then p_brand_key = auth_brand_scope()
-    when auth_company_scope() is not null then exists (
+    -- Sebagian profil menyimpan scope sebagai string kosong, bukan NULL. Tanpa
+    -- cek <> '' akun itu akan dibandingkan dengan brand_key = '' dan kehilangan
+    -- akses ke seluruh data.
+    when auth_brand_scope() is not null and auth_brand_scope() <> '' then p_brand_key = auth_brand_scope()
+    when auth_company_scope() is not null and auth_company_scope() <> '' then exists (
       select 1 from fin_brands b where b.brand_key = p_brand_key and b.company = auth_company_scope()
     )
     else true

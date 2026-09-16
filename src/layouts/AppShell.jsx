@@ -107,7 +107,10 @@ export default function AppShell() {
     );
   }
 
-  const canImport = session?.role === 'superadmin' || session?.role === 'finance';
+  // importFromSources() masih melempar 'belum tersedia' dan fin_sources kosong,
+  // jadi tombol ini hanya menjanjikan sesuatu yang pasti gagal. Nyalakan lagi
+  // begitu importnya benar-benar ada.
+  const canImport = false;
 
   const renderView = () => {
     switch (app.view) {

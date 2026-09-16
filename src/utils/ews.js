@@ -102,7 +102,7 @@ const EWS_TEXT = {
 // separate from EWS_TEXT rather than repeated 3x. Mirrors the exact
 // calculation in financeApi.js's summary block.
 const EWS_FORMULA = {
-  cashPosition: 'Saldo Rekening + Cash In (hari ini) − Cash Out (hari ini)',
+  cashPosition: 'Saldo Rekening seluruh akun (mutasi hari ini sudah termasuk di dalamnya)',
   cashOutRatio: 'Cash Out (bulan berjalan) ÷ Cash In (bulan berjalan)',
   cashConversion: 'Cash In (bulan berjalan) ÷ Omzet Realisasi (bulan berjalan)',
   omzetAchievement: 'Realisasi Omzet ÷ Target Omzet',
@@ -114,8 +114,8 @@ const EWS_FORMULA = {
   netCash: 'Cash In − Cash Out',
   bankBalance: 'Σ (Saldo Awal + Pemasukan − Pengeluaran) tiap rekening',
   budgetRequested: 'Σ Nominal Pengajuan',
-  pendingApproval: 'Jumlah Budget Request dengan Status ≠ Approved',
-  payableOutstanding: 'Σ (Total Hutang − Total Dibayar)',
+  pendingApproval: 'Jumlah Budget Request dengan Status = Pending',
+  payableOutstanding: 'Σ (Total Hutang − Dibayar) di modul Hutang + Σ sisa Budget Request yang sudah Approved/Paid',
   npm: '(Omzet Realisasi − Cash Out) ÷ Omzet Realisasi, bulan berjalan',
 };
 
