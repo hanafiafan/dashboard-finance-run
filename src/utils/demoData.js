@@ -239,7 +239,7 @@ export function demoState(filters = {}, session = null) {
     brands: visibleBrands,
     options: {
       companies: [...new Set(allBrands.map(b => b.Company))],
-      categories: ['Operasional', 'Marketing', 'Aset', 'Persediaan', 'Hutang', 'Gaji dan Upah', 'Sewa', 'Saving', 'Transfer Antar Bank', 'Jasa Konsultasi & Manajemen RUN'],
+      categories: ['Operasional', 'Marketing', 'Aset', 'Persediaan', 'Hutang', 'Hutang Eksternal', 'Hutang Internal', 'Biaya Layanan', 'Gaji dan Upah', 'Sewa', 'Saving', 'Transfer Antar Bank', 'Jasa Konsultasi & Manajemen RUN'],
       bankList: DEMO_BANK_ROWS,
       priorities: ['High', 'Medium', 'Low'],
       budgetStatuses: ['Diajukan', 'Approved', 'Need Revision', 'Rejected', 'DP', 'Termin', 'Lunas'],

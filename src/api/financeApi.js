@@ -93,11 +93,13 @@ async function supabaseGetAppState(filters = {}, auth) {
   const bankBalance = bankRows.reduce((s, r) => s + Number(r.saldo_awal || 0) + Number(r.pemasukan || 0) - Number(r.pengeluaran || 0), 0);
   const budgetRequested = budgetRows.reduce((s, r) => s + Number(r.nominal_pengajuan || 0), 0);
   const pendingApproval = pendingBudget.length;
-  const payableFromLedger = payableRows.reduce((s, r) => s + Number(r.total_hutang || 0) - Number(r.total_dibayar || 0), 0);
-  // Budget Request yang sudah disetujui tapi belum lunas adalah kewajiban nyata,
-  // dan selama ini tidak terhitung di mana pun: modul Hutang berdiri sendiri tanpa
-  // jalur dari Budget Request, sehingga kartu Hutang menampilkan Rp 0 padahal ada
-  // sisa tagihan berjalan. Pending sengaja tidak ikut — belum disetujui, belum utang.
+  // Budget Request yang disetujui juga ditulis sebagai baris fin_payables sendiri
+  // (lihat syncPayableFromBudget, ditandai budget_id) supaya kelihatan sebagai baris
+  // nyata di tabel Hutang, bukan cuma angka KPI. payableRows jadi berisi keduanya —
+  // hutang yang diketik manual DAN hasil sinkron dari budget — jadi "Modul Hutang"
+  // di kartu Dashboard cuma menjumlahkan yang bukan hasil sinkron itu, supaya
+  // payableFromBudget di bawah tidak terhitung dua kali.
+  const payableFromLedger = payableRows.filter(r => !r.budget_id).reduce((s, r) => s + Number(r.total_hutang || 0) - Number(r.total_dibayar || 0), 0);
   const payableFromBudget = budgetRows
     .filter(r => r.status === 'Approved' || r.status === 'Paid')
     .reduce((s, r) => s + Math.max(0, Number(r.nominal_pengajuan || 0) - Number(r.nominal_dibayar || 0)), 0);
@@ -244,7 +246,7 @@ async function supabaseGetAppState(filters = {}, auth) {
     entities: buildEntities(auth?.role),
     options: {
       companies,
-      categories: ['Marketing', 'Operasional', 'Produksi', 'Gaji dan Upah', 'Sewa', 'Aset', 'Hutang', 'Transfer Antar Bank', 'Lain-lain'],
+      categories: ['Marketing', 'Operasional', 'Produksi', 'Gaji dan Upah', 'Sewa', 'Aset', 'Hutang', 'Hutang Eksternal', 'Hutang Internal', 'Biaya Layanan', 'Persediaan', 'Transfer Antar Bank', 'Lain-lain'],
       // Bank Masuk/Bank Keluar pick from ID Bank registered via Saldo Rekening
       // (bankRowsUi already carries 'ID Bank' + 'Bank' from dbToUi) — banks
       // without an ID Bank yet are filtered out in Modal.jsx's picker.
@@ -351,9 +353,35 @@ async function supabaseDeleteRecord(entity, id) {
 async function supabaseApproveBudget(id, status, paid, feedback) {
   const update = { status, feedback_finance: feedback };
   if (paid) update.nominal_dibayar = Number(paid) || 0;
-  const { error } = await supabase.from('fin_budget').update(update).eq('id', id);
+  const { data: budget, error } = await supabase.from('fin_budget').update(update).eq('id', id).select().single();
   if (error) throw new Error(humanizeError(error));
+  await syncPayableFromBudget(budget);
   return { ok: true };
+}
+
+// Approved (or Paid) Budget Requests are a real payable, so mirror them into
+// fin_payables — tagged via budget_id — instead of leaving them invisible in
+// the Hutang table and only counted in the Dashboard's payableFromBudget KPI.
+// Reverting to Pending/Need Revision/Rejected removes the mirrored row again,
+// since it's no longer a confirmed obligation.
+async function syncPayableFromBudget(budget) {
+  if (budget.status !== 'Approved' && budget.status !== 'Paid') {
+    const { error } = await supabase.from('fin_payables').delete().eq('budget_id', budget.id);
+    if (error) throw new Error(humanizeError(error));
+    return;
+  }
+  const { error } = await supabase.from('fin_payables').upsert({
+    budget_id: budget.id,
+    brand_key: budget.brand_key,
+    nama_pemasok: budget.vendor_name || '',
+    id_pemasok: budget.vendor_id || '',
+    total_hutang: Number(budget.nominal_pengajuan || 0),
+    total_dibayar: Number(budget.nominal_dibayar || 0),
+    status: budget.status,
+    source: 'Budget Request',
+    tgl_jatuh_tempo: budget.tgl_pembayaran_selanjutnya || budget.tgl_pelunasan || null,
+  }, { onConflict: 'budget_id' });
+  if (error) throw new Error(humanizeError(error));
 }
 
 // Moves cash between two Saldo Rekening accounts in one atomic RPC call —
