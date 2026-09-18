@@ -31,7 +31,7 @@ export default function CommandCenter() {
     { label: 'Piutang berjalan', value: s.receivableOutstanding, icon: Clock3, entity: 'receivables' },
   ];
   return <div className="overview">
-    <section className="overview-welcome flame-art"><div><span className="overline">YOUR BUSINESS, AT A GLANCE</span><h2>Ruang untuk keputusan<br/>yang lebih terarah.</h2><p>Mulai dari transaksi hari ini, lihat gambaran besarnya.</p><button className="welcome-action" onClick={() => open('income')}>Catat pemasukan <ArrowUpRight size={16}/></button></div><span className="welcome-edition">RUN FINANCE / WORKSPACE</span></section>
+    <section className="overview-welcome"><img src="/art/flame-liquid.jpg" alt=""/><div><span className="overline">YOUR BUSINESS, AT A GLANCE</span><h2>Ruang untuk keputusan<br/>yang lebih terarah.</h2><p>Mulai dari transaksi hari ini, lihat gambaran besarnya.</p><button className="welcome-action" onClick={() => open('income')}>Catat pemasukan <ArrowUpRight size={16}/></button></div><span className="welcome-edition">RUN FINANCE / WORKSPACE</span></section>
     <div className="section-eyebrow"><span>Ringkasan keuangan</span><span>Sesuai filter aktif · IDR</span></div>
     <div className="overview-top">
       <section className="finance-card cashflow-card">
