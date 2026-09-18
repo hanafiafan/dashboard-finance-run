@@ -371,7 +371,10 @@ p, span { color: inherit; }
   color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em;
   padding-left: 0.3rem;
 }
-.filter-band select, .filter-band input {
+/* Shared with .panel-head so ad-hoc period/year pickers (e.g. Forecasting &
+   Controlling) match the filter band instead of falling back to the browser's
+   native <select> chrome next to a styled .segmented control. */
+.filter-band select, .filter-band input, .panel-head select {
   padding: 0.5rem 1rem;
   border: 1.5px solid transparent;
   border-radius: 100px;
@@ -382,8 +385,8 @@ p, span { color: inherit; }
   outline: none; cursor: pointer;
   font-weight: 600;
 }
-.filter-band select:hover, .filter-band input:hover { background: var(--bg-hover); border-color: var(--border-glow); }
-.filter-band select:focus, .filter-band input:focus {
+.filter-band select:hover, .filter-band input:hover, .panel-head select:hover { background: var(--bg-hover); border-color: var(--border-glow); }
+.filter-band select:focus, .filter-band input:focus, .panel-head select:focus {
   border-color: var(--brand-teal);
   background: var(--bg-card);
   box-shadow: 0 0 0 4px rgba(13,148,136,0.1);

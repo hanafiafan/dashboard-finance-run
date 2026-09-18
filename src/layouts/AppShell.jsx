@@ -17,7 +17,6 @@ const Documentation = lazy(() => import('../pages/Documentation').then(m => ({ d
 import { VIEW_TITLES } from '../utils/constants';
 import { formatDateTime } from '../utils/formatters';
 import FilterBar from '../components/filters/FilterBar';
-import StatusBar from '../components/ui/StatusBar';
 
 const NAV_ITEMS = [
   { view: 'command', icon: LayoutDashboard, label: 'Dashboard' },
@@ -35,7 +34,6 @@ export default function AppShell() {
   const [refreshing, setRefreshing] = useState(false);
   const [syncError, setSyncError] = useState('');
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
-  const [lastSyncAt, setLastSyncAt] = useState(null);
   const requestId = useRef(0);
 
   useEffect(() => {
@@ -59,7 +57,7 @@ export default function AppShell() {
     setRefreshing(true);
     setSyncError('');
     getAppState(filters, session)
-      .then(newState => { if (!disposed && id === requestId.current) { setState(newState); setLastSyncAt(newState?.generatedAt || newState?.dashboard?.generatedAt); } })
+      .then(newState => { if (!disposed && id === requestId.current) setState(newState); })
       .catch(err => { if (!disposed && id === requestId.current) { setSyncError(err.message || 'Gagal memuat ulang data.'); notify.error(err.message || 'Gagal memuat ulang data.'); } })
       .finally(() => { if (!disposed && id === requestId.current) setRefreshing(false); });
     return () => { disposed = true; };
@@ -71,7 +69,7 @@ export default function AppShell() {
     setSyncError('');
     try {
       const newState = await getAppState(filters, session);
-      if (id === requestId.current) { setState(newState); setLastSyncAt(newState?.generatedAt || newState?.dashboard?.generatedAt); }
+      if (id === requestId.current) setState(newState);
     } catch (err) { if (id === requestId.current) { setSyncError(err.message || 'Gagal memuat ulang data.'); notify.error(err.message || 'Gagal memuat ulang data.'); } }
     finally { if (id === requestId.current) setRefreshing(false); }
   }, [filters, session, setState]);
@@ -155,8 +153,6 @@ export default function AppShell() {
         </div>
 
         <FilterBar />
-
-        <StatusBar app={app} demo={demo} lastSyncAt={lastSyncAt || state?.generatedAt} />
 
         {syncError && <div className="sync-error" role="alert">Pembaruan gagal. Data di bawah adalah data terakhir yang berhasil dimuat dan mungkin belum sesuai filter. {syncError}</div>}
         <section id="view-content" className="view active" aria-busy={refreshing}><Suspense fallback={<div className="empty">Memuat modul...</div>}>{renderView()}</Suspense></section>
