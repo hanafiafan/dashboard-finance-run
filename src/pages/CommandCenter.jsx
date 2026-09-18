@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import RiskOverview from '../components/ui/RiskOverview';
+import ProgressRing from '../components/charts/ProgressRing';
 import { Bar } from 'react-chartjs-2';
 import { ArrowDownLeft, ArrowUpRight, Wallet, ArrowRight, Search, Landmark, Clock3 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
-import { money, pct, shortMoney, formatDate } from '../utils/formatters';
+import { money, shortMoney, formatDate } from '../utils/formatters';
 import { getChartTheme } from '../utils/chartTheme';
 
 import { finiteAmount as amount, recentTransactions } from '../utils/dashboardModel';
@@ -47,7 +48,7 @@ export default function CommandCenter() {
       ] }} options={{ responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: 'index', intersect: false }, scales: { x: { grid: { display: false }, border: { display: false }, ticks: { color: theme.tickColor, font: { size: 10 } } }, y: { beginAtZero: true, border: { display: false }, grid: { color: theme.gridColor }, ticks: { color: theme.tickColor, callback: shortMoney, maxTicksLimit: 5, font: { size: 10 } } } }, plugins: { legend: { position: 'top', align: 'end', labels: { color: theme.labelColor, usePointStyle: true, pointStyle: 'circle', boxWidth: 6, boxHeight: 6, font: { size: 10 } } }, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${money.format(ctx.parsed.y)}` } } } }} /> : <div className="empty">Belum ada data arus kas.</div>}</div></section>
     </div>
     <div className="overview-bottom"><div className="overview-side">
-      <section className="finance-card target-card"><div className="section-heading"><h3>Capaian omzet</h3><span>{pct.format(achievement)}</span></div><div className="target-track" role="progressbar" aria-label="Capaian omzet" aria-valuenow={Math.round(Math.max(0, Math.min(1, achievement)) * 100)} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${Math.max(0, Math.min(1, achievement)) * 100}%` }}/></div><div className="target-numbers"><span>{money.format(amount(s.omzetReal))}<small>Realisasi</small></span><span>{money.format(amount(s.omzetTarget))}<small>Target</small></span></div><button className="text-action" onClick={() => open('omzet')}>Lihat detail omzet <ArrowRight size={14}/></button></section>
+      <section className="finance-card target-card gauge-card"><div className="section-heading"><h3>Capaian omzet</h3></div><div className="gauge-wrap"><ProgressRing value={achievement} color="#E85002" size={168} glow bare/></div><div className="target-numbers"><span>{money.format(amount(s.omzetReal))}<small>Realisasi</small></span><span>{money.format(amount(s.omzetTarget))}<small>Target</small></span></div><button className="text-action" onClick={() => open('omzet')}>Lihat detail omzet <ArrowRight size={14}/></button></section>
       <section className="finance-card action-card"><div className="section-heading"><h3>Perlu ditinjau</h3><Clock3 size={17}/></div><strong className="pending-number">{amount(s.pendingApproval)}<span>pengajuan menunggu</span></strong><div className="review-row"><span>Pengajuan dana</span><strong>{money.format(amount(s.budgetRequested))}</strong></div><div className="review-row"><span>Hutang berjalan</span><strong>{money.format(amount(s.payableOutstanding))}</strong></div><button className="btn primary" onClick={() => setView('approval')}>Buka approval <ArrowRight size={14}/></button></section>
     </div>
     <section className="finance-card transactions-card"><div className="section-heading transaction-heading"><div><h3>Transaksi terbaru</h3><p>Aktivitas uang masuk dan keluar</p></div><div className="transaction-tools"><label className="transaction-search"><Search size={14}/><input aria-label="Cari transaksi" placeholder="Cari transaksi..." value={query} onChange={e => setQuery(e.target.value)}/></label><select aria-label="Jenis transaksi" value={kind} onChange={e => setKind(e.target.value)}><option value="all">Semua jenis</option><option value="income">Pemasukan</option><option value="outcome">Pengeluaran</option></select></div></div>
