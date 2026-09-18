@@ -24,7 +24,6 @@
   --radius-sm:9px;--radius-md:14px;--radius-lg:20px;--radius-xl:26px;
   --glass-bg:rgba(249,249,249,.5);--glass-strong:rgba(249,249,249,.78);--glass-blur:30px;
   --glass-highlight:rgba(255,255,255,.5);--grid-dot:rgba(100,100,100,.14);
-  --ambient-a:rgba(232,80,2,.2);--ambient-b:rgba(167,167,167,.22);
   --flame-1:#E85002;--flame-2:#F16001;--flame-3:#D9C3AB;
   --hero-base:#F9F9F9;--hero-overlay-1:rgba(249,249,249,.85);--hero-overlay-2:rgba(249,249,249,.3);
 }
@@ -37,7 +36,6 @@
   --gradient-teal:linear-gradient(130deg,#F16001,#E85002);--gradient-blue:linear-gradient(130deg,#F16001,#E85002);
   --glass-bg:rgba(30,30,30,.4);--glass-strong:rgba(30,30,30,.72);--glass-blur:30px;
   --glass-highlight:rgba(249,249,249,.09);--grid-dot:rgba(249,249,249,.06);
-  --ambient-a:rgba(241,96,1,.4);--ambient-b:rgba(193,8,1,.28);
   --flame-1:#F16001;--flame-2:#C10801;--flame-3:#000000;
   --hero-base:#000000;--hero-overlay-1:rgba(0,0,0,.65);--hero-overlay-2:rgba(0,0,0,.15);
   --green:#22C55E;--green-bg:rgba(34,197,94,.16);--green-light:rgba(34,197,94,.32);
@@ -51,9 +49,10 @@
   --cyan:#A7A7A7;--cyan-bg:rgba(167,167,167,.12);--cyan-light:rgba(167,167,167,.25);
 }
 body{background:var(--bg-body);background-image:radial-gradient(var(--grid-dot) 1px,transparent 1px);background-size:24px 24px;font-size:13px;line-height:1.5;color:var(--text-primary);position:relative;overflow-x:hidden}
-body:before,body:after{content:'';position:fixed;z-index:0;pointer-events:none;border-radius:50%;filter:blur(100px)}
-body:before{width:52vw;height:52vw;max-width:760px;max-height:760px;top:-18vw;left:-14vw;background:var(--ambient-a)}
-body:after{width:46vw;height:46vw;max-width:680px;max-height:680px;bottom:-16vw;right:-12vw;background:var(--ambient-b)}
+.velaris{position:relative;width:100%;overflow:hidden}
+.velaris-canvas{pointer-events:none;position:absolute;inset:0;width:100%;height:100%}
+.velaris-content{position:relative;z-index:1;width:100%;height:100%}
+.app-bg{position:fixed;inset:0;z-index:0;opacity:.55}
 button,input,select,textarea{font-family:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5}
 button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid #E85002;outline-offset:3px}
 input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #E85002;outline-offset:1px}

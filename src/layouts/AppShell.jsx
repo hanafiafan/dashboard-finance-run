@@ -17,6 +17,7 @@ const Documentation = lazy(() => import('../pages/Documentation').then(m => ({ d
 import { VIEW_TITLES } from '../utils/constants';
 import { formatDateTime } from '../utils/formatters';
 import FilterBar from '../components/filters/FilterBar';
+import Velaris from '../components/ui/Velaris';
 
 const NAV_ITEMS = [
   { view: 'command', icon: LayoutDashboard, label: 'Dashboard' },
@@ -89,6 +90,8 @@ export default function AppShell() {
   };
 
   return (
+    <>
+    <Velaris className="app-bg" height="100vh" bg="#000000" colors={['#F16001', '#E85002', '#C10801', '#000000']} speed={0.5} grain={0.15} />
     <div className={`app-shell view-${app.view}`}>
       <header className="workspace-header">
         <div className="workspace-brand"><div className="brand-mark">R</div><strong>RUN<span>finance</span></strong></div>
@@ -143,5 +146,6 @@ export default function AppShell() {
       </main>
       <div id="toast" className="toast" aria-live="polite"></div>
     </div>
+    </>
   );
 }
