@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useState, useEffect, useRef } from 'react';
 import {
   LayoutDashboard, ChartNoAxesCombined, Table2, BadgeCheck,
-  Settings2, RefreshCw, LogOut, Sun, Moon, BookOpen, Target
+  Settings2, RefreshCw, LogOut, BookOpen, Target
 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -33,19 +33,7 @@ export default function AppShell() {
   const { session, demo, logout } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [syncError, setSyncError] = useState('');
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   const requestId = useRef(0);
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    const next = theme === 'light' ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', next);
-    setTheme(next);
-  };
 
   const state = app.state;
   const filters = app.filters;
@@ -142,10 +130,6 @@ export default function AppShell() {
             <h2 className="page-title">{app.view === 'command' ? `Ringkasan keuangan` : VIEW_TITLES[app.view] || 'Dashboard'}</h2><p className="page-description">{({command:'Satu pandangan untuk saldo, aktivitas, dan kesehatan keuangan Anda.',analytics:'Temukan pola arus kas dan bandingkan kinerja setiap brand.',operations:'Catat transaksi, kelola rekening, dan temukan data dengan cepat.',forecast_controlling:'Rencanakan anggaran dan pantau realisasi dalam satu laporan.',approval:'Tinjau kebutuhan dana dan ambil keputusan dengan konteks yang lengkap.',master:'Kelola data referensi yang digunakan di seluruh workspace.',documentation:'Panduan praktis untuk alur kerja keuangan sehari-hari.'})[app.view]}</p>
           </div>
           <div className="top-actions">
-            <button className="theme-toggle" aria-label="Ganti tema" onClick={toggleTheme} title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}>
-              <span className={theme === 'light' ? 'active' : ''}><Sun size={14} /> Light</span>
-              <span className={theme === 'dark' ? 'active' : ''}><Moon size={14} /> Dark</span>
-            </button>
             <button className="btn blue" onClick={handleRefresh} disabled={refreshing}>
               <RefreshCw size={16} className={refreshing ? 'spin' : ''} /> Refresh
             </button>
