@@ -4,7 +4,6 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, join } from 'node:path';
-import financeApi from './api/finance-api.js';
 import manageUser from './api/manage-user.js';
 
 const PORT = process.env.PORT || 3000;
@@ -50,7 +49,6 @@ async function readJsonBody(req) {
 }
 
 const routes = {
-  '/api/finance-api': financeApi,
   '/api/manage-user': manageUser,
 };
 
