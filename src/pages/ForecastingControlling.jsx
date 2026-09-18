@@ -184,6 +184,7 @@ export function ForecastingControlling() {
           label="Laba Bersih Setelah Pajak" color={realisasi.laba_setelah_pajak >= 0 ? 'green' : 'rose'} value={money.format(realisasi.laba_setelah_pajak)}
           note={`Anggaran ${money.format(anggaran.laba_setelah_pajak)}`}
           arti="Hasil akhir P&L — laba yang benar-benar tersisa setelah semua beban dan pajak." rumus="Laba Sebelum Pajak − Pajak Penghasilan"
+          glow
         />
       </div>
 

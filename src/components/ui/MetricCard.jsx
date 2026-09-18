@@ -2,12 +2,12 @@ import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 const STATUS_CLASS = { green: 'ok', amber: 'warn', rose: 'bad' };
 
-export default function MetricCard({ label, value, color = 'teal', note, trend, sparklineData, statusLabel, arti, rumus }) {
+export default function MetricCard({ label, value, color = 'teal', note, trend, sparklineData, statusLabel, arti, rumus, glow = false }) {
   const trendIcon = trend > 0 ? <TrendingUp size={14} /> : trend < 0 ? <TrendingDown size={14} /> : <Minus size={14} />;
   const trendColor = trend > 0 ? 'var(--green)' : trend < 0 ? 'var(--rose)' : 'var(--text-tertiary)';
 
   return (
-    <div className={`metric-card ${color}`}>
+    <div className={`metric-card ${color}${glow ? ' corner-glow' : ''}`}>
       <div className="label">
         {label}
         {trend !== undefined && <span className={`trend ${trend > 0 ? 'up' : trend < 0 ? 'down' : ''}`} style={{ color: trendColor, display: 'inline-flex', alignItems: 'center', gap: 2, marginLeft: 6 }}>{trendIcon}{Math.abs(trend)}%</span>}

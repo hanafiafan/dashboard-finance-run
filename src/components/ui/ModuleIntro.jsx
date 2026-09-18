@@ -18,5 +18,5 @@ const META = {
 };
 export default function ModuleIntro({entity,count,loading}) {
   const {icon:Icon=Layers3,label,note,tone='sage'}=META[entity] || {};
-  return <div className={`module-intro tone-${tone}`}><span className="module-icon"><Icon size={25}/></span><div><span className="overline">OPERASIONAL / {entity?.toUpperCase()}</span><h3>{label}</h3><p>{note}</p></div><div className="module-count"><strong>{loading?'…':count}</strong><span>data ditemukan</span></div></div>;
+  return <div className={`module-intro tone-${tone} corner-glow`}><span className="module-icon"><Icon size={25}/></span><div><span className="overline">OPERASIONAL / {entity?.toUpperCase()}</span><h3>{label}</h3><p>{note}</p></div><div className="module-count"><strong>{loading?'…':count}</strong><span>data ditemukan</span></div></div>;
 }

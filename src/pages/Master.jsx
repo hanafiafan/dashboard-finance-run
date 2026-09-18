@@ -77,7 +77,7 @@ export function Master() {
 
   return (
     <>
-      <div className="master-intro"><div><span className="overline">DATA FOUNDATION</span><h3>Data yang terhubung. Kerja yang lebih rapi.</h3><p>Perbarui brand, mitra, dan akses pengguna dari satu tempat.</p></div><span className="master-monogram">R<span>+</span></span></div>
+      <div className="master-intro corner-glow"><div><span className="overline">DATA FOUNDATION</span><h3>Data yang terhubung. Kerja yang lebih rapi.</h3><p>Perbarui brand, mitra, dan akses pengguna dari satu tempat.</p></div><span className="master-monogram">R<span>+</span></span></div>
       <div className="tabs master-tabs">
         {available.map((name) => (
           <button
