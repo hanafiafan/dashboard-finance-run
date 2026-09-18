@@ -71,11 +71,9 @@ export function Analytics() {
           <Doughnut data={priorityData} options={{ ...opts, cutout: '62%', scales: undefined }} />
         </Panel>
       </div>
-      <div className="grid-2">
-        <Panel title="Controlling — Forecast vs Aktual" note="Seberapa akurat forecast dibanding realisasi Cash In/Out per bulan" size="tall">
-          <Bar data={controllingData} options={opts} />
-        </Panel>
-      </div>
+      <Panel title="Controlling — Forecast vs Aktual" note="Seberapa akurat forecast dibanding realisasi Cash In/Out per bulan" size="tall">
+        <Bar data={controllingData} options={opts} />
+      </Panel>
       <div className="grid-3">
         <QuickTable title="Cash in terbaru" rows={d.tables.recentIncome} columns={['Brand', 'Tanggal', 'Keterangan', 'Customer', 'Nominal', 'Bank Masuk']} />
         <QuickTable title="Cash out terbaru" rows={d.tables.recentOutcome} columns={['Brand', 'Tanggal', 'Keterangan', 'Kategori', 'Total Pengeluaran (Rp)', 'Bank Keluar']} />
