@@ -54,7 +54,7 @@ export function Approval() {
   };
 
   return (
-    <div className="grid-2">
+    <div className="grid-2 approval-grid">
       <div className="panel tight">
         <div className="panel-head">
           <div>
@@ -100,7 +100,9 @@ export function Approval() {
         />
       </div>
       <Panel title="Prioritas request" note="High, medium, low">
-        <Doughnut data={priorityData} options={{ cutout: '62%', responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: undefined }} />
+        <div className="chart-box">
+          <Doughnut data={priorityData} options={{ cutout: '62%', responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: undefined }} />
+        </div>
       </Panel>
     </div>
   );
