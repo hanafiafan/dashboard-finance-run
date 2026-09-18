@@ -113,8 +113,6 @@ export default function CommandCenter() {
   ];
 
   const approvalRate = s.approvalRate || 0;
-  const collectionRate = s.cashIn > 0 ? Math.min(1, (s.cashIn - s.cashOut) / s.cashIn) : 0;
-  const solvencyRate = s.payableOutstanding > 0 ? Math.min(1, s.bankBalance / s.payableOutstanding) : 1;
 
   return (
     <>
@@ -126,12 +124,11 @@ export default function CommandCenter() {
         <div className="metric-grid">{ewsMetrics.map(m => <MetricCard key={m.label} {...m} />)}</div>
       </Panel>
 
-      {/* Row 2: Key Ratio Rings */}
-      <div className="grid-4">
+      {/* Row 2: Key Ratio Ring — Collection Margin/Omzet Attain/Solvency dropped,
+          they just restated Net Cash margin, Capaian Omzet, and the Financial
+          Health Gauges' Solvency Ratio below in a different format. */}
+      <div className="metric-grid">
         <ProgressRing value={approvalRate} label="Approval Rate" color="#10b981" />
-        <ProgressRing value={collectionRate} label="Collection Margin" color="#2563eb" />
-        <ProgressRing value={s.omzetAchievement || 0} label="Omzet Attain" color="#7c3aed" />
-        <ProgressRing value={solvencyRate} label="Solvency" color="#f59e0b" />
       </div>
 
       {/* Row 3: Brand Health Cards */}
