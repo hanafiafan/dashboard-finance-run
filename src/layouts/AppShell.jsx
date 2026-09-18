@@ -1,19 +1,19 @@
-import { useCallback, useState, useEffect, useRef } from 'react';
+import { lazy, Suspense, useCallback, useState, useEffect, useRef } from 'react';
 import {
   LayoutDashboard, ChartNoAxesCombined, Table2, BadgeCheck,
-  Settings2, RefreshCw, LogOut, DownloadCloud, Download, Sun, Moon, BookOpen, Target
+  Settings2, RefreshCw, LogOut, Sun, Moon, BookOpen, Target
 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
-import { getAppState, importFromSources } from '../api/financeApi';
+import { getAppState } from '../api/financeApi';
 import { notify } from '../components/ui/Toast';
 import CommandCenter from '../pages/CommandCenter';
-import { Analytics } from '../pages/Analytics';
-import { Operations } from '../pages/Operations';
-import { Approval } from '../pages/Approval';
-import { Master } from '../pages/Master';
-import { ForecastingControlling } from '../pages/ForecastingControlling';
-import { Documentation } from '../pages/Documentation';
+const Analytics = lazy(() => import('../pages/Analytics').then(m => ({ default: m.Analytics })));
+const Operations = lazy(() => import('../pages/Operations').then(m => ({ default: m.Operations })));
+const Approval = lazy(() => import('../pages/Approval').then(m => ({ default: m.Approval })));
+const Master = lazy(() => import('../pages/Master').then(m => ({ default: m.Master })));
+const ForecastingControlling = lazy(() => import('../pages/ForecastingControlling').then(m => ({ default: m.ForecastingControlling })));
+const Documentation = lazy(() => import('../pages/Documentation').then(m => ({ default: m.Documentation })));
 import { VIEW_TITLES } from '../utils/constants';
 import { formatDateTime } from '../utils/formatters';
 import FilterBar from '../components/filters/FilterBar';
@@ -33,66 +33,48 @@ export default function AppShell() {
   const { app, setView, setState } = useApp();
   const { session, demo, logout } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
+  const [syncError, setSyncError] = useState('');
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   const [lastSyncAt, setLastSyncAt] = useState(null);
-  const prevFiltersRef = useRef(null);
+  const requestId = useRef(0);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  const toggleTheme = () => {
+    const next = theme === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    setTheme(next);
+  };
 
   const state = app.state;
   const filters = app.filters;
 
-  // Re-fetch on filter change
+  // Only the latest request may update the dashboard after quick filter changes.
   useEffect(() => {
-    const fKey = JSON.stringify(filters);
-    if (prevFiltersRef.current === fKey) return;
-    prevFiltersRef.current = fKey;
-    if (!state) return;
+    const id = ++requestId.current;
+    let disposed = false;
     setRefreshing(true);
+    setSyncError('');
     getAppState(filters, session)
-      .then(newState => { setState(newState); setLastSyncAt(newState?.generatedAt || new Date().toISOString()); })
-      .catch(err => { console.error(err); notify.error(err.message || 'Gagal memuat ulang data.'); })
-      .finally(() => setRefreshing(false));
-  }, [filters.company, filters.brandKey, filters.startDate, filters.endDate, filters.year, filters.category]);
-
-  const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      const newState = await getAppState(filters, session);
-      setState(newState);
-      setLastSyncAt(newState?.generatedAt || new Date().toISOString());
-    } catch (err) { console.error(err); notify.error(err.message || 'Gagal memuat ulang data.'); }
-    setRefreshing(false);
+      .then(newState => { if (!disposed && id === requestId.current) { setState(newState); setLastSyncAt(newState?.generatedAt || newState?.dashboard?.generatedAt); } })
+      .catch(err => { if (!disposed && id === requestId.current) { setSyncError(err.message || 'Gagal memuat ulang data.'); notify.error(err.message || 'Gagal memuat ulang data.'); } })
+      .finally(() => { if (!disposed && id === requestId.current) setRefreshing(false); });
+    return () => { disposed = true; };
   }, [filters, session, setState]);
 
-  const handleImport = useCallback(async () => {
-    if (!window.confirm('Import data dari Source_Workbooks sekarang?')) return;
+  const handleRefresh = useCallback(async () => {
+    const id = ++requestId.current;
+    setRefreshing(true);
+    setSyncError('');
     try {
-      const result = await importFromSources(session);
-      const total = (result.results || []).reduce((sum, item) => sum + Number(item.imported || 0), 0);
-      notify.success(`Import selesai.\n${total} baris diproses dari Source Workbooks.`);
-      await handleRefresh();
-    } catch (err) { console.error(err); notify.error(err.message); }
-  }, [session, handleRefresh]);
-
-  const exportCurrentCsv = useCallback(() => {
-    const entity = app.view === 'master' ? app.master : app.entity;
-    const rows = app.rows[entity] || [];
-    if (!rows.length) return notify.warning('Tidak ada data untuk diexport.\nTabel yang sedang dibuka masih kosong, atau filter aktif menyaring semua baris.');
-    const cols = Object.keys(rows[0]);
-    const csv = [cols.join(','), ...rows.map(row => cols.map(col => `"${String(row[col] ?? '').replace(/"/g, '""')}"`).join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `finance-${entity}.csv`;
-    a.click(); URL.revokeObjectURL(url);
-    notify.success(`CSV terunduh.\n${rows.length} baris diexport ke finance-${entity}.csv.`);
-  }, [app.view, app.master, app.entity, app.rows]);
+      const newState = await getAppState(filters, session);
+      if (id === requestId.current) { setState(newState); setLastSyncAt(newState?.generatedAt || newState?.dashboard?.generatedAt); }
+    } catch (err) { if (id === requestId.current) { setSyncError(err.message || 'Gagal memuat ulang data.'); notify.error(err.message || 'Gagal memuat ulang data.'); } }
+    finally { if (id === requestId.current) setRefreshing(false); }
+  }, [filters, session, setState]);
 
   if (!state) {
     return (
@@ -106,11 +88,6 @@ export default function AppShell() {
       </div>
     );
   }
-
-  // importFromSources() masih melempar 'belum tersedia' dan fin_sources kosong,
-  // jadi tombol ini hanya menjanjikan sesuatu yang pasti gagal. Nyalakan lagi
-  // begitu importnya benar-benar ada.
-  const canImport = false;
 
   const renderView = () => {
     switch (app.view) {
@@ -126,7 +103,12 @@ export default function AppShell() {
   };
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell view-${app.view}`}>
+      <header className="workspace-header">
+        <div className="workspace-brand"><div className="brand-mark">R</div><strong>RUN<span>finance</span></strong></div>
+        <nav className="workspace-tabs" aria-label="Navigasi utama">{NAV_ITEMS.slice(0, 5).map(({ view, label }) => <button key={view} onClick={() => setView(view)} aria-current={app.view === view ? 'page' : undefined} className={app.view === view ? 'active' : ''}>{view === 'forecast_controlling' ? 'Forecast' : label}</button>)}</nav>
+        <div className="workspace-user"><span className="user-avatar">{(session?.name || 'U').slice(0, 1)}</span><div><strong>{session?.name || 'User'}</strong><small>{demo ? 'Mode demo · data contoh' : session?.role}</small></div></div>
+      </header>
       <aside className="sidebar">
         <div className="brand-lockup">
           <div className="brand-mark">RN</div>
@@ -139,10 +121,10 @@ export default function AppShell() {
           <strong>{session?.name || session?.email || 'User'}</strong>
           <span className="role-pill"><BadgeCheck size={14} />{session?.role || (demo ? 'demo' : 'guest')}</span>
         </div>
-        <nav className="nav">
+        <nav className="nav" aria-label="Semua menu">
           {NAV_ITEMS.map(({ view, icon: Icon, label }) => (
-            <button key={view} className={app.view === view ? 'active' : ''} onClick={() => setView(view)}>
-              <Icon size={18} /> {label}
+            <button key={view} title={label} aria-label={label} aria-current={app.view === view ? 'page' : undefined} className={app.view === view ? 'active' : ''} onClick={() => setView(view)}>
+              <Icon size={18} /><span>{view === 'forecast_controlling' ? 'Forecast' : view === 'documentation' ? 'Panduan' : view === 'master' ? 'Master' : label}</span>
             </button>
           ))}
         </nav>
@@ -150,7 +132,7 @@ export default function AppShell() {
           <button className="btn ghost" onClick={handleRefresh} disabled={refreshing}>
             <RefreshCw size={16} className={refreshing ? 'spin' : ''} /> Refresh
           </button>
-          {!demo && <button className="btn ghost" onClick={logout}><LogOut size={16} /> Keluar</button>}
+          <button className="btn ghost" title="Keluar" aria-label="Keluar" onClick={logout}><LogOut size={16} /></button>
           <div className="side-note">Updated: {formatDateTime(state?.dashboard?.generatedAt)}</div>
         </div>
       </aside>
@@ -158,16 +140,14 @@ export default function AppShell() {
       <main className="main">
         <div className="topbar">
           <div>
-            <p className="eyebrow">Finance operating system</p>
-            <h2 className="page-title">{VIEW_TITLES[app.view] || 'Dashboard'}</h2>
+            <p className="eyebrow">WORKSPACE / {VIEW_TITLES[app.view] || 'Dashboard'}</p>
+            <h2 className="page-title">{app.view === 'command' ? `Ringkasan keuangan` : VIEW_TITLES[app.view] || 'Dashboard'}</h2><p className="page-description">{({command:'Satu pandangan untuk saldo, aktivitas, dan kesehatan keuangan Anda.',analytics:'Temukan pola arus kas dan bandingkan kinerja setiap brand.',operations:'Catat transaksi, kelola rekening, dan temukan data dengan cepat.',forecast_controlling:'Rencanakan anggaran dan pantau realisasi dalam satu laporan.',approval:'Tinjau kebutuhan dana dan ambil keputusan dengan konteks yang lengkap.',master:'Kelola data referensi yang digunakan di seluruh workspace.',documentation:'Panduan praktis untuk alur kerja keuangan sehari-hari.'})[app.view]}</p>
           </div>
           <div className="top-actions">
-            <div className="theme-toggle" onClick={toggleTheme} title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}>
+            <button className="theme-toggle" aria-label="Ganti tema" onClick={toggleTheme} title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}>
               <span className={theme === 'light' ? 'active' : ''}><Sun size={14} /> Light</span>
               <span className={theme === 'dark' ? 'active' : ''}><Moon size={14} /> Dark</span>
-            </div>
-            {canImport && <button className="btn amber" onClick={handleImport}><DownloadCloud size={16} /> Import</button>}
-            {(app.view === 'operations' || app.view === 'master') && <button className="btn ghost" onClick={exportCurrentCsv}><Download size={16} /> CSV</button>}
+            </button>
             <button className="btn blue" onClick={handleRefresh} disabled={refreshing}>
               <RefreshCw size={16} className={refreshing ? 'spin' : ''} /> Refresh
             </button>
@@ -178,7 +158,8 @@ export default function AppShell() {
 
         <StatusBar app={app} demo={demo} lastSyncAt={lastSyncAt || state?.generatedAt} />
 
-        <section id="view-content" className="view active">{renderView()}</section>
+        {syncError && <div className="sync-error" role="alert">Pembaruan gagal. Data di bawah adalah data terakhir yang berhasil dimuat dan mungkin belum sesuai filter. {syncError}</div>}
+        <section id="view-content" className="view active" aria-busy={refreshing}><Suspense fallback={<div className="empty">Memuat modul...</div>}>{renderView()}</Suspense></section>
       </main>
       <div id="toast" className="toast" aria-live="polite"></div>
     </div>

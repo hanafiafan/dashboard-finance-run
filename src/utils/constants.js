@@ -187,7 +187,7 @@ export const FORMS = {
   ],
 };
 
-export const CHART_COLORS = ['#0f766e', '#2563eb', '#f9735b', '#f59e0b', '#7c3aed', '#16a34a', '#e11d48', '#0891b2', '#84cc16', '#d946ef'];
+export const CHART_COLORS = ['#ff774c', '#727665', '#b6a991', '#c5c9b8', '#d89a76', '#8d9f94', '#aa745f', '#9da5ab', '#d8bb87', '#a99a9f'];
 
 export const VIEWS = ['command', 'analytics', 'operations', 'forecast_controlling', 'approval', 'master', 'documentation'];
 export const VIEW_TITLES = {

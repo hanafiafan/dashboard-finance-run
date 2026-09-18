@@ -1,5 +1,8 @@
+import ExportButton from '../components/ui/ExportButton';
+import ModuleIntro, { OPERATION_GROUPS } from '../components/ui/ModuleIntro';
+import { useRecords } from '../hooks/useRecords';
 import { useState, useEffect } from 'react';
-import { Plus, Download, Search, Pencil, Trash2, ArrowLeftRight } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, ArrowLeftRight } from 'lucide-react';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal, DynamicForm } from '../components/ui/Modal';
 import { useApp } from '../contexts/AppContext';
@@ -49,6 +52,7 @@ function BankTransferModal({ isOpen, onClose, brands, session, onDone }) {
     e.preventDefault();
     if (!brandKey || !sourceId || !destId || !nominal) { setError('Semua field wajib diisi.'); return; }
     if (sourceId === destId) { setError('Bank asal dan tujuan tidak boleh sama.'); return; }
+    if (!Number.isFinite(Number(nominal)) || Number(nominal) <= 0) { setError('Nominal harus lebih besar dari nol.'); return; }
     const source = banksInBrand.find(b => b['ID Bank'] === sourceId);
     const dest = banksInBrand.find(b => b['ID Bank'] === destId);
     setBusy(true);
@@ -119,9 +123,9 @@ function BankTransferModal({ isOpen, onClose, brands, session, onDone }) {
 }
 
 export function Operations() {
-  const { app, setEntity, setRows } = useApp();
+  const { app, setEntity } = useApp();
   const { session } = useAuth();
-  const [records, setRecords] = useState([]);
+
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editRow, setEditRow] = useState(null);
@@ -140,21 +144,7 @@ export function Operations() {
   // for their own brand and should be able to transfer between them too).
   const canTransfer = Boolean(app.state?.entities?.income?.canEdit && app.state?.entities?.outcome?.canEdit);
 
-  useEffect(() => {
-    if (entity) loadRecords();
-  }, [entity, app.state]);
-
-  const loadRecords = async () => {
-    try {
-      const result = await getRecords(entity, app.filters, session);
-      const rows = result.rows || [];
-      setRecords(rows);
-      setRows(entity, rows);
-    } catch (err) {
-      console.error(err);
-      notify.error(err.message || 'Gagal memuat data.');
-    }
-  };
+  const {records,loading:recordsLoading,error:recordsError,loadRecords}=useRecords(entity);
 
   const openAdd = () => {
     setEditRow(null);
@@ -191,24 +181,6 @@ export function Operations() {
     }
   };
 
-  const exportCsv = () => {
-    if (!records.length) return notify.warning('Tidak ada data untuk diexport.\nTabel ini masih kosong, atau filter yang aktif menyaring semua baris.');
-    const cols = TABLE_COLUMNS[entity] || Object.keys(records[0]);
-    const csv = [
-      cols.join(','),
-      ...records.map((row) =>
-        cols.map((col) => `"${String(row[col] ?? '').replace(/"/g, '""')}"`).join(',')
-      ),
-    ].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `finance-${entity}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   const filtered = records.filter((row) => {
     if (!search) return true;
     const q = search.toLowerCase();
@@ -217,17 +189,9 @@ export function Operations() {
 
   return (
     <>
-      <div className="tabs">
-        {ENTITIES.filter((name) => app.state?.entities?.[name]).map((name) => (
-          <button
-            key={name}
-            className={entity === name ? 'active' : ''}
-            onClick={() => setEntity(name)}
-          >
-            {ENTITY_LABELS[name]}
-          </button>
-        ))}
-      </div>
+      <div className="operation-groups">{OPERATION_GROUPS.map(group => {const Icon=group.icon;const available=group.entities.filter(name=>app.state?.entities?.[name]);return available.length ? <button key={group.id} className={group.entities.includes(entity)?'active':''} onClick={()=>{setEntity(available[0]);setSearch('');}} aria-pressed={group.entities.includes(entity)}><Icon size={21}/><span><strong>{group.label}</strong><small>{group.description}</small></span></button> : null;})}</div>
+      <div className="tabs module-tabs" aria-label="Jenis data">{(OPERATION_GROUPS.find(g=>g.entities.includes(entity))?.entities || ENTITIES).filter(name=>app.state?.entities?.[name]).map(name=><button key={name} className={entity===name?'active':''} onClick={()=>{setEntity(name);setSearch('');}} aria-pressed={entity===name}>{ENTITY_LABELS[name]}</button>)}</div>
+      <ModuleIntro entity={entity} count={filtered.length} loading={recordsLoading}/>
 
       <div className="panel tight">
         <div className="panel-head">
@@ -253,17 +217,15 @@ export function Operations() {
           <div className="search-box">
             <Search size={16} />
             <input
-              placeholder="Cari data..."
+              aria-label="Cari data operasional" placeholder="Cari keterangan, brand, atau nominal..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <button className="btn ghost" onClick={exportCsv}>
-            <Download size={16} /> Export
-          </button>
+          <ExportButton title={ENTITY_LABELS[entity]} columns={TABLE_COLUMNS[entity]} rows={filtered} filters={{...app.filters,search}} disabled={recordsLoading || !!recordsError}/>
         </div>
 
-        <DataTable
+        {recordsLoading ? <div className="table-loading">Memuat data terbaru...</div> : recordsError ? <div className="table-empty" role="alert"><strong>{recordsError}</strong><button className="btn ghost" onClick={loadRecords}>Coba lagi</button></div> : <DataTable
           columns={TABLE_COLUMNS[entity]}
           rows={filtered}
           renderActions={
@@ -288,7 +250,7 @@ export function Operations() {
                 )
               : null
           }
-        />
+        />}
       </div>
 
       <Modal

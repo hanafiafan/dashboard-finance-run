@@ -1,3 +1,4 @@
+import { readAllRows } from './readAllRows';
 import { demoState, demoRows, demoForecastBudget, buildEntities } from '../utils/demoData';
 import { supabase, TABLE_MAP, dbToUi, uiToDb } from './supabaseClient';
 import { humanizeError } from '../utils/errorMessage';
@@ -16,11 +17,14 @@ const ENTITY_CATEGORY_COL = { budget: 'kategori', outcome: 'kategori', forecastO
 
 async function supabaseGetAppState(filters = {}, auth) {
   const brandFilter = filters.brandKey;
+  const brands = await readAllRows(supabase.from('fin_brands').select('*').eq('active', true).order('id'));
+  const companyKeys = filters.company ? brands.data.filter(b => b.company === filters.company).map(b => b.brand_key) : null;
 
   // Each entity's own date/category column, if it has one — used to actually apply
   // the From/To/Kategori filters the FilterBar exposes (previously only Brand worked).
   const apply = (query, entity) => {
     if (brandFilter) query = query.eq('brand_key', brandFilter);
+    if (companyKeys) query = query.in('brand_key', companyKeys);
     const dateCol = ENTITY_DATE_COL[entity];
     if (dateCol && filters.startDate) query = query.gte(dateCol, filters.startDate);
     if (dateCol && filters.endDate) query = query.lte(dateCol, filters.endDate);
@@ -29,8 +33,7 @@ async function supabaseGetAppState(filters = {}, auth) {
     return query;
   };
 
-  const [brands, budget, income, outcome, omzet, bank, payables, receivables, forecast, forecastOut, , vendors, customers] = await Promise.all([
-    supabase.from('fin_brands').select('*').eq('active', true),
+  const [budget, income, outcome, omzet, bank, payables, receivables, forecast, forecastOut, , vendors, customers] = await Promise.all([
     apply(supabase.from('fin_budget').select('*'), 'budget'),
     apply(supabase.from('fin_income').select('*'), 'income'),
     apply(supabase.from('fin_outcome').select('*'), 'outcome'),
@@ -43,7 +46,7 @@ async function supabaseGetAppState(filters = {}, auth) {
     apply(supabase.from('fin_service').select('*'), 'service'),
     supabase.from('fin_vendors').select('*'),
     supabase.from('fin_customers').select('*'),
-  ]);
+  ].map(query => readAllRows(query.order('id'))));
 
   const vendorList = (vendors.data || []).map(r => dbToUi('vendors', r));
   const customerList = (customers.data || []).map(r => dbToUi('customers', r));
@@ -306,6 +309,10 @@ async function supabaseGetRecords(entity, filters = {}) {
   if (!table) return { rows: [] };
 
   let query = supabase.from(table).select('*');
+  if (filters.company && !['vendors', 'customers', 'users'].includes(entity)) {
+    const scoped = await readAllRows(supabase.from('fin_brands').select('brand_key').eq('company', filters.company).order('id'));
+    query = query.in('brand_key', scoped.data.map(b => b.brand_key));
+  }
   if (filters.brandKey && entity !== 'vendors' && entity !== 'customers' && entity !== 'users') {
     query = query.eq('brand_key', filters.brandKey);
   }
@@ -322,7 +329,7 @@ async function supabaseGetRecords(entity, filters = {}) {
   if (catCol && filters.category) query = query.eq(catCol, filters.category);
   if (entity === 'omzet' && filters.year) query = query.eq('tahun', filters.year);
 
-  const { data, error } = await query.order('created_at', { ascending: false });
+  const { data, error } = await readAllRows(query.order('created_at', { ascending: false }).order('id'));
   if (error) throw new Error(humanizeError(error));
   return { rows: (data || []).map(r => dbToUi(entity, r)) };
 }

@@ -3,6 +3,7 @@ import { DataTable } from '../components/ui/DataTable';
 import { Panel } from '../components/ui/MetricCard';
 import { CHART_COLORS as COLORS } from '../utils/constants';
 import { useApp } from '../contexts/AppContext';
+import { getChartTheme } from '../utils/chartTheme';
 import { shortMoney } from '../utils/formatters';
 
 export function Analytics() {
@@ -10,13 +11,15 @@ export function Analytics() {
   const d = app.state?.dashboard;
   if (!d) return null;
   const charts = d.charts;
+  const theme = getChartTheme();
+  const opts = chartOptions(theme);
 
   const brandPerfData = {
     labels: (charts.brandPerformance || []).map(x => x.label),
     datasets: [
-      { label: 'Cash In', data: (charts.brandPerformance || []).map(x => x.cashIn), backgroundColor: '#2563eb', borderRadius: 4 },
-      { label: 'Cash Out', data: (charts.brandPerformance || []).map(x => x.cashOut), backgroundColor: '#f9735b', borderRadius: 4 },
-      { label: 'Budget', data: (charts.brandPerformance || []).map(x => x.budget), backgroundColor: '#7c3aed', borderRadius: 4 },
+      { label: 'Cash In', data: (charts.brandPerformance || []).map(x => x.cashIn), backgroundColor: '#ff774c', borderRadius: 4 },
+      { label: 'Cash Out', data: (charts.brandPerformance || []).map(x => x.cashOut), backgroundColor: '#727665', borderRadius: 4 },
+      { label: 'Budget', data: (charts.brandPerformance || []).map(x => x.budget), backgroundColor: '#c5baa5', borderRadius: 4 },
     ],
   };
 
@@ -28,8 +31,8 @@ export function Analytics() {
   const omzetData = {
     labels: (charts.omzetByMonth || []).map(x => x.label),
     datasets: [
-      { label: 'Target', data: (charts.omzetByMonth || []).map(x => x.target), backgroundColor: 'rgba(15,118,110,0.3)', borderColor: '#0f766e', borderWidth: 2, borderRadius: 4 },
-      { label: 'Realisasi', data: (charts.omzetByMonth || []).map(x => x.real), backgroundColor: '#2563eb', borderRadius: 4 },
+      { label: 'Target', data: (charts.omzetByMonth || []).map(x => x.target), backgroundColor: 'rgba(114,118,101,0.18)', borderColor: '#727665', borderWidth: 2, borderRadius: 4 },
+      { label: 'Realisasi', data: (charts.omzetByMonth || []).map(x => x.real), backgroundColor: '#ff774c', borderRadius: 4 },
     ],
   };
 
@@ -43,10 +46,10 @@ export function Analytics() {
   const controllingData = {
     labels: (charts.monthlyCashFlow || []).map(x => x.label),
     datasets: [
-      { label: 'Forecast In', data: (charts.monthlyCashFlow || []).map(x => x.forecastIn), backgroundColor: 'rgba(37,99,235,0.35)', borderColor: '#2563eb', borderWidth: 1.5, borderRadius: 4 },
-      { label: 'Realisasi In', data: (charts.monthlyCashFlow || []).map(x => x.cashIn), backgroundColor: '#2563eb', borderRadius: 4 },
-      { label: 'Forecast Out', data: (charts.monthlyCashFlow || []).map(x => x.forecastOut), backgroundColor: 'rgba(249,115,91,0.35)', borderColor: '#f9735b', borderWidth: 1.5, borderRadius: 4 },
-      { label: 'Realisasi Out', data: (charts.monthlyCashFlow || []).map(x => x.cashOut), backgroundColor: '#f9735b', borderRadius: 4 },
+      { label: 'Forecast In', data: (charts.monthlyCashFlow || []).map(x => x.forecastIn), backgroundColor: 'rgba(255,119,76,0.3)', borderColor: '#ff774c', borderWidth: 1.5, borderRadius: 4 },
+      { label: 'Realisasi In', data: (charts.monthlyCashFlow || []).map(x => x.cashIn), backgroundColor: '#ff774c', borderRadius: 4 },
+      { label: 'Forecast Out', data: (charts.monthlyCashFlow || []).map(x => x.forecastOut), backgroundColor: 'rgba(114,118,101,0.3)', borderColor: '#727665', borderWidth: 1.5, borderRadius: 4 },
+      { label: 'Realisasi Out', data: (charts.monthlyCashFlow || []).map(x => x.cashOut), backgroundColor: '#727665', borderRadius: 4 },
     ],
   };
 
@@ -96,12 +99,12 @@ function QuickTable({ title, rows, columns }) {
   );
 }
 
-const opts = {
+const chartOptions = theme => ({
   responsive: true,
   maintainAspectRatio: false,
-  plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16 } } },
+  plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16, color: theme.labelColor } } },
   scales: {
-    y: { beginAtZero: true, ticks: { callback: (v) => shortMoney(v) } },
-    x: { grid: { display: false } },
+    y: { beginAtZero: true, grid: { color: theme.gridColor }, ticks: { color: theme.tickColor, callback: (v) => shortMoney(v) } },
+    x: { grid: { display: false }, ticks: { color: theme.tickColor } },
   },
-};
+});

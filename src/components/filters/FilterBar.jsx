@@ -164,7 +164,8 @@ export default function FilterBar() {
       {activePills.length > 0 && (
         <>
           {activePills.map(pill => (
-            <span
+            <button
+              type="button"
               key={pill.key}
               className="filter-pill"
               onClick={() => {
@@ -175,12 +176,12 @@ export default function FilterBar() {
             >
               {pill.label}
               <X size={12} />
-            </span>
+            </button>
           ))}
-          <span className="filter-pill clear" onClick={clearFilters}>
+          <button type="button" className="filter-pill clear" onClick={clearFilters}>
             <SlidersHorizontal size={12} />
             Clear ({activePills.length})
-          </span>
+          </button>
         </>
       )}
     </section>

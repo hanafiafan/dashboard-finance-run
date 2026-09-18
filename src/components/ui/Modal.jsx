@@ -1,26 +1,39 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useId } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { notify } from './Toast';
 
 export function Modal({ isOpen, onClose, title, children }) {
+  const dialogRef = useRef(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  const titleId = useId();
   useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
+    if (!isOpen) return;
+    const previousFocus = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const focusable = () => [...(dialogRef.current?.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]') || [])];
+    (focusable()[0] || dialogRef.current)?.focus();
+    const onKeyDown = event => {
+      if (event.key === 'Escape') { event.preventDefault(); closeRef.current(); }
+      if (event.key === 'Tab') {
+        const nodes = focusable(), first = nodes[0], last = nodes[nodes.length - 1];
+        if (!nodes.length) { event.preventDefault(); return; }
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => { document.body.style.overflow = previousOverflow; document.removeEventListener('keydown', onKeyDown); previousFocus?.focus(); };
   }, [isOpen]);
-
   if (!isOpen) return null;
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>{title}</h2>
-          <button className="btn ghost" onClick={onClose}><X size={18} /></button>
-        </div>
-        <div className="modal-body">{children}</div>
-      </div>
+  return createPortal(<div className="modal-overlay" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
+    <div className="modal-content" ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1}>
+      <div className="modal-header"><div><span className="overline">RUN FINANCE</span><h2 id={titleId}>{title}</h2></div><button type="button" className="icon-btn" aria-label="Tutup dialog" onClick={onClose}><X size={18}/></button></div>
+      <div className="modal-body">{children}</div>
     </div>
-  );
+  </div>, document.body);
 }
 
 export function DynamicForm({ fields, values, options, onChange, onSubmit, onCancel }) {
@@ -30,7 +43,7 @@ export function DynamicForm({ fields, values, options, onChange, onSubmit, onCan
   const seed = vals => {
     const out = { ...(vals || {}) };
     fields.forEach(f => {
-      const d = defaultValue(f);
+      const d = defaultValue(f, options);
       if (d !== '' && out[f.key] === undefined) out[f.key] = d;
     });
     return out;
@@ -38,7 +51,7 @@ export function DynamicForm({ fields, values, options, onChange, onSubmit, onCan
   const [formData, setFormData] = useState(() => seed(values));
   const [errors, setErrors] = useState({});
 
-  useEffect(() => { setFormData(seed(values)); }, [values, fields]);
+  const [saving, setSaving] = useState(false);
 
   const handleChange = (key, value) => {
     const updated = { ...formData, [key]: value };
@@ -71,22 +84,25 @@ export function DynamicForm({ fields, values, options, onChange, onSubmit, onCan
     if (onChange) onChange(updated);
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
     const newErrors = {};
-    fields.forEach(f => { if (f.required && !formData[f.key]) newErrors[f.key] = 'Wajib diisi'; });
+    fields.forEach(f => { if (f.required && (formData[f.key] == null || String(formData[f.key]).trim() === '')) newErrors[f.key] = 'Wajib diisi'; });
     setErrors(newErrors);
     const missing = Object.keys(newErrors);
     if (missing.length) {
       notify.warning(`Ada ${missing.length} kolom wajib yang belum diisi.\nLengkapi dulu: ${missing.join(', ')}. Kolom bertanda * tidak boleh kosong.`);
       return;
     }
-    if (onSubmit) onSubmit(formData);
+    if (saving) return;
+    setSaving(true);
+    try { if (onSubmit) await onSubmit(formData); } finally { setSaving(false); }
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="modal-form">
+      <p className="form-intro">Lengkapi informasi berikut. Kolom bertanda * wajib diisi.</p>
+      <fieldset disabled={saving} className="modal-form">
         {fields.map(field => (
           <div key={field.key} className={`form-group ${field.type === 'textarea' || field.type === 'url' ? 'full-width' : ''}`}>
             <label htmlFor={`field-${field.key}`}>
@@ -97,17 +113,17 @@ export function DynamicForm({ fields, values, options, onChange, onSubmit, onCan
             {errors[field.key] && <small style={{ color: 'var(--rose)' }}>{errors[field.key]}</small>}
           </div>
         ))}
-      </div>
+      </fieldset>
       <div className="modal-actions">
-        <button type="button" className="btn ghost" onClick={onCancel}>Batal</button>
-        <button type="submit" className="btn blue">Simpan</button>
+        <button type="button" className="btn ghost" disabled={saving} onClick={onCancel}>Batal</button>
+        <button type="submit" className="btn blue" disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan data'}</button>
       </div>
     </form>
   );
 }
 
 function renderField(field, formData, options, onChange) {
-  const value = formData[field.key] ?? defaultValue(field);
+  const value = formData[field.key] ?? defaultValue(field, options);
   const id = `field-${field.key}`;
 
   switch (field.type) {
@@ -177,11 +193,11 @@ function renderField(field, formData, options, onChange) {
   }
 }
 
-function defaultValue(field) {
+function defaultValue(field, options) {
   if (field.key === 'Tahun') return new Date().getFullYear();
-  if (field.key === 'Status' && field.optionsKey === 'budgetStatuses') return 'Diajukan';
+  if (field.key === 'Status' && field.optionsKey === 'budgetStatuses') return options?.budgetStatuses?.[0] || 'Pending';
   if (field.key === 'Active') return true;
   if (field.key === 'Kontrol Pengajuan') return 'OK';
-  if (field.key === 'Jenis Bayar') return 'Belum Dibayar';
+  if (field.key === 'Jenis Bayar') return options?.paymentTypes?.[0] || '';
   return '';
 }

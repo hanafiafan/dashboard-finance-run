@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import ExportButton from '../components/ui/ExportButton';
+import { useRecords } from '../hooks/useRecords';
+import { useState } from 'react';
 import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
 import { DataTable } from '../components/ui/DataTable';
 import { Modal, DynamicForm } from '../components/ui/Modal';
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
-import { getRecords, saveRecord, deleteRecord } from '../api/financeApi';
+import { saveRecord, deleteRecord } from '../api/financeApi';
 import { ENTITY_LABELS, TABLE_COLUMNS, FORMS } from '../utils/constants';
 import { number } from '../utils/formatters';
 import { notify } from '../components/ui/Toast';
@@ -13,9 +15,8 @@ import UserManagement from './UserManagement';
 const MASTERS = ['users', 'brands', 'sources', 'vendors', 'customers'];
 
 export function Master() {
-  const { app, setMaster, setRows } = useApp();
+  const { app, setMaster } = useApp();
   const { session } = useAuth();
-  const [records, setRecords] = useState([]);
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editRow, setEditRow] = useState(null);
@@ -28,21 +29,7 @@ export function Master() {
   const options = app.state?.options || {};
   const brands = app.state?.brands || [];
 
-  useEffect(() => {
-    if (entity) loadRecords();
-  }, [entity, app.state]);
-
-  const loadRecords = async () => {
-    try {
-      const result = await getRecords(entity, app.filters, session);
-      const rows = result.rows || [];
-      setRecords(rows);
-      setRows(entity, rows);
-    } catch (err) {
-      console.error(err);
-      notify.error(err.message || 'Gagal memuat data.');
-    }
-  };
+  const {records,loading:recordsLoading,error:recordsError,loadRecords}=useRecords(entity,entity !== 'users');
 
   const filtered = records.filter((row) => {
     if (!search) return true;
@@ -90,12 +77,13 @@ export function Master() {
 
   return (
     <>
-      <div className="tabs">
+      <div className="master-intro"><div><span className="overline">DATA FOUNDATION</span><h3>Data yang terhubung. Kerja yang lebih rapi.</h3><p>Perbarui brand, mitra, dan akses pengguna dari satu tempat.</p></div><span className="master-monogram">R<span>+</span></span></div>
+      <div className="tabs master-tabs">
         {available.map((name) => (
           <button
             key={name}
             className={entity === name ? 'active' : ''}
-            onClick={() => setMaster(name)}
+            onClick={() => {setMaster(name);setSearch('');}}
           >
             {ENTITY_LABELS[name]}
           </button>
@@ -123,10 +111,11 @@ export function Master() {
             <div className="table-toolbar">
               <div className="search-box">
                 <Search size={16} />
-                <input placeholder="Cari..." value={search} onChange={(e) => setSearch(e.target.value)} />
+                <input aria-label="Cari master data" placeholder="Cari master data..." value={search} onChange={(e) => setSearch(e.target.value)} />
               </div>
+              <ExportButton title={ENTITY_LABELS[entity]} columns={TABLE_COLUMNS[entity]} rows={filtered} filters={{...app.filters,search}} disabled={recordsLoading || !!recordsError}/>
             </div>
-            <DataTable
+            {recordsLoading ? <div className="table-loading">Memuat master data...</div> : recordsError ? <div className="table-empty" role="alert"><strong>{recordsError}</strong><button className="btn ghost" onClick={loadRecords}>Coba lagi</button></div> : <DataTable
               columns={TABLE_COLUMNS[entity]}
               rows={filtered}
               renderActions={(canEdit || canDelete) ? (row) => (
@@ -143,7 +132,7 @@ export function Master() {
                   )}
                 </>
               ) : null}
-            />
+            />}
           </div>
           <Modal
             isOpen={modalOpen}

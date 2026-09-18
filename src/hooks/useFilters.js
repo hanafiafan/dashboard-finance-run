@@ -8,13 +8,16 @@ import { useApp } from '../contexts/AppContext';
  * - Date range and year filter
  * - URL synchronization
  */
+const EMPTY_BRANDS = [];
+const EMPTY_FILTERS = {};
+
 export function useFilters() {
   const { app, setFilters } = useApp();
   const state = app.state;
-  const filters = app.filters || {};
+  const filters = app.filters || EMPTY_FILTERS;
 
   // Extract brand → company mapping
-  const allBrands = state?.brands || [];
+  const allBrands = state?.brands || EMPTY_BRANDS;
   
   const companies = useMemo(() => {
     const set = new Set(allBrands.map(b => b.Company).filter(Boolean));
@@ -41,7 +44,8 @@ export function useFilters() {
   }, [state]);
 
   const setFilter = useCallback((key, value) => {
-    const newFilters = { ...filters, [key]: value };
+    setFilters(current => {
+    const newFilters = { ...current, [key]: value };
     
     // If company changes, reset brand if current brand not in new company
     if (key === 'company' && value) {
@@ -50,8 +54,9 @@ export function useFilters() {
       if (!currentBrandStillValid) newFilters.brandKey = '';
     }
     
-    setFilters(newFilters);
-  }, [filters, setFilters, allBrands]);
+    return newFilters;
+    });
+  }, [setFilters, allBrands]);
 
   const clearFilters = useCallback(() => {
     setFilters({ company: '', brandKey: '', startDate: '', endDate: '', year: '', category: '' });

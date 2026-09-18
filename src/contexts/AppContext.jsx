@@ -23,7 +23,7 @@ export function AppProvider({ children }) {
   const setView = useCallback((view) => update({ view }), [update]);
   const setEntity = useCallback((entity) => update({ entity }), [update]);
   const setMaster = useCallback((master) => update({ master }), [update]);
-  const setFilters = useCallback((filters) => update({ filters }), [update]);
+  const setFilters = useCallback((filters) => setApp(prev => ({ ...prev, filters: typeof filters === 'function' ? filters(prev.filters) : filters })), []);
   const setRows = useCallback((entity, rows) => {
     setApp((prev) => ({ ...prev, rows: { ...prev.rows, [entity]: rows } }));
   }, []);

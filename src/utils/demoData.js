@@ -200,23 +200,23 @@ export function demoState(filters = {}, session = null) {
   const forecastCashPosition30 = forecastCashPosition(totalBank, forecastIn, forecastOut, addDays(30));
 
   // Filtered table data
-  const makeRow = (brand) => ({
+  const makeRow = (brand, index) => ({
     Brand: brand,
-    Kategori: ['Operasional', 'Marketing', 'Gaji & Upah'][Math.floor(Math.random() * 3)],
+    Kategori: ['Operasional', 'Marketing', 'Gaji & Upah'][index % 3],
     Keterangan: `Kebutuhan ${brand} - Q3 ${new Date().getFullYear()}`,
-    'Nominal Pengajuan (Rp)': Math.floor(Math.random() * 15000000) + 5000000,
-    Prioritas: ['High', 'Medium', 'Low'][Math.floor(Math.random() * 3)],
-    Status: ['Diajukan', 'Approved', 'Need Revision'][Math.floor(Math.random() * 3)],
-    'Tgl Dibutuhkan': addDays(3 + Math.floor(Math.random() * 30)),
+    'Nominal Pengajuan (Rp)': 5000000 + index * 1250000,
+    Prioritas: ['High', 'Medium', 'Low'][index % 3],
+    Status: ['Diajukan', 'Approved', 'Need Revision'][index % 3],
+    'Tgl Dibutuhkan': addDays(3 + index * 3),
   });
 
-  const pendingBudget = visibleBrands.map(b => makeRow(b.Brand)).slice(0, 8);
-  const dueSoon = visibleBrands.map(b => ({
+  const pendingBudget = visibleBrands.map((b, index) => makeRow(b.Brand, index)).slice(0, 8);
+  const dueSoon = visibleBrands.map((b, index) => ({
     Brand: b.Brand,
-    'Tgl Dibutuhkan': `2026-0${7 + Math.floor(Math.random() * 5)}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`,
-    Vendor: ['PT Supplier Indo', 'CV Distribusi Jaya', 'UD Sumber Makmur'][Math.floor(Math.random() * 3)],
-    'Sisa Hutang (Rp)': Math.floor(Math.random() * 20000000) + 3000000,
-    Status: ['DP', 'Termin', 'Belum Dibayar'][Math.floor(Math.random() * 3)],
+    'Tgl Dibutuhkan': `2026-${String(7 + index % 5).padStart(2, '0')}-${String(index + 1).padStart(2, '0')}`,
+    Vendor: ['PT Supplier Indo', 'CV Distribusi Jaya', 'UD Sumber Makmur'][index % 3],
+    'Sisa Hutang (Rp)': 3000000 + index * 2000000,
+    Status: ['DP', 'Termin', 'Belum Dibayar'][index % 3],
   })).slice(0, 6);
 
   const payableOutstanding = dueSoon.reduce((s, r) => s + (r['Sisa Hutang (Rp)'] || 0), 0);
