@@ -71,7 +71,7 @@ export default function BudgetTreemap({ data, title = 'Budget Allocation', note 
                   x={x} y={y} width={w} height={h}
                   fill={color} rx={1}
                   className="treemap-cell"
-                  stroke={ct.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.18)'}
+                  stroke={ct.isDark ? 'rgba(249,249,249,0.04)' : 'rgba(249,249,249,0.18)'}
                   strokeWidth={0.4}
                 >
                   <title>{name}: {money.format(leaf.value || 0)} ({pct}%)</title>
@@ -84,7 +84,7 @@ export default function BudgetTreemap({ data, title = 'Budget Allocation', note 
                       y={cy - 3}
                       textAnchor="middle"
                       dominantBaseline="auto"
-                      fill="rgba(255,255,255,0.92)"
+                      fill="rgba(249,249,249,0.92)"
                       fontFamily="Inter, sans-serif"
                       fontWeight={700}
                       fontSize={fs}
@@ -96,7 +96,7 @@ export default function BudgetTreemap({ data, title = 'Budget Allocation', note 
                       y={cy + fs + 1}
                       textAnchor="middle"
                       dominantBaseline="auto"
-                      fill="rgba(255,255,255,0.72)"
+                      fill="rgba(249,249,249,0.72)"
                       fontFamily="JetBrains Mono, monospace"
                       fontWeight={500}
                       fontSize={Math.max(4, fs - 1.5)}

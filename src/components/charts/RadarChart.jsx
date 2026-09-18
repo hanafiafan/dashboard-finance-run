@@ -1,18 +1,17 @@
 import { Radar as RadarChartJS } from 'react-chartjs-2';
 import { getChartTheme } from '../../utils/chartTheme';
 
+// Brand palette only, cycled per series.
 const COLORS = [
-  'rgba(13,148,136,0.95)', 'rgba(37,99,235,0.95)', 'rgba(249,115,91,0.95)',
-  'rgba(124,58,237,0.95)', 'rgba(245,158,11,0.95)', 'rgba(6,182,212,0.95)',
-  'rgba(16,185,129,0.95)', 'rgba(239,68,68,0.95)', 'rgba(168,85,247,0.95)',
-  'rgba(251,146,60,0.95)',
+  'rgba(232,80,2,0.95)', 'rgba(51,51,51,0.95)', 'rgba(193,8,1,0.95)',
+  'rgba(167,167,167,0.95)', 'rgba(241,96,1,0.95)', 'rgba(100,100,100,0.95)',
+  'rgba(217,195,171,0.95)', 'rgba(0,0,0,0.95)',
 ];
 
 const FILLS = [
-  'rgba(13,148,136,0.08)', 'rgba(37,99,235,0.07)', 'rgba(249,115,91,0.07)',
-  'rgba(124,58,237,0.07)', 'rgba(245,158,11,0.07)', 'rgba(6,182,212,0.07)',
-  'rgba(16,185,129,0.07)', 'rgba(239,68,68,0.07)', 'rgba(168,85,247,0.07)',
-  'rgba(251,146,60,0.07)',
+  'rgba(232,80,2,0.08)', 'rgba(51,51,51,0.07)', 'rgba(193,8,1,0.07)',
+  'rgba(167,167,167,0.07)', 'rgba(241,96,1,0.07)', 'rgba(100,100,100,0.07)',
+  'rgba(217,195,171,0.07)', 'rgba(0,0,0,0.07)',
 ];
 
 const METRICS = ['cashIn', 'cashOut', 'budget', 'netCash', 'omzetAchievement'];
@@ -28,10 +27,10 @@ export default function RadarChartCore({ data }) {
     datasets: data.slice(0, 10).map((item, i) => ({
       label: item.label,
       data: METRICS.map(m => item[m] || 0),
-      backgroundColor: FILLS[i % 10],
-      borderColor: COLORS[i % 10],
+      backgroundColor: FILLS[i % FILLS.length],
+      borderColor: COLORS[i % COLORS.length],
       borderWidth: 2,
-      pointBackgroundColor: COLORS[i % 10],
+      pointBackgroundColor: COLORS[i % COLORS.length],
       pointBorderColor: '#F9F9F9',
       pointBorderWidth: 2,
       pointRadius: 4,
