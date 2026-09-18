@@ -38,9 +38,9 @@ export default function MetricCard({ label, value, color = 'teal', note, trend, 
   );
 }
 
-export function Panel({ title, note, children }) {
+export function Panel({ title, note, children, glow = false }) {
   return (
-    <div className="panel">
+    <div className={`panel${glow ? ' corner-glow' : ''}`}>
       <div className="panel-head">
         <div>
           <h3>{title}</h3>

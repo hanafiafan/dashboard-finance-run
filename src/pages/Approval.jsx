@@ -99,7 +99,7 @@ export function Approval() {
           }
         />
       </div>
-      <Panel title="Prioritas request" note="High, medium, low">
+      <Panel title="Prioritas request" note="High, medium, low" glow>
         <div className="chart-box">
           <Doughnut data={priorityData} options={{ cutout: '62%', responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: undefined }} />
         </div>

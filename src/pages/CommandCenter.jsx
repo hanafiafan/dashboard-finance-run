@@ -25,9 +25,9 @@ export default function CommandCenter() {
   const visible = transactions.filter(r => (kind === 'all' || r.kind === kind) && `${r.Keterangan || ''} ${r.Brand || ''} ${r.ID || ''}`.toLowerCase().includes(query.toLowerCase()));
   const achievement = amount(s.omzetAchievement);
   const metrics = [
-    { label: 'Total pemasukan', value: s.cashIn, icon: ArrowDownLeft, entity: 'income' },
+    { label: 'Total pemasukan', value: s.cashIn, icon: ArrowDownLeft, entity: 'income', positive: true },
     { label: 'Total pengeluaran', value: s.cashOut, icon: ArrowUpRight, entity: 'outcome' },
-    { label: 'Arus kas bersih', value: s.netCash, icon: Wallet, entity: 'income' },
+    { label: 'Arus kas bersih', value: s.netCash, icon: Wallet, entity: 'income', positive: amount(s.netCash) >= 0 },
     { label: 'Piutang berjalan', value: s.receivableOutstanding, icon: Clock3, entity: 'receivables' },
   ];
   return <div className="overview">
@@ -37,11 +37,11 @@ export default function CommandCenter() {
       <section className="finance-card cashflow-card">
         <div className="section-heading">
           <div><h3>Arus kas</h3><p>Pemasukan dan pengeluaran per bulan</p></div>
-          <div className="chart-pills">{metrics.map(({ label, value, icon: Icon, entity }) => <button key={label} className="chart-pill" title={`${label}: ${money.format(amount(value))}`} onClick={() => open(entity)}><Icon size={12}/><span>{shortMoney(amount(value))}</span></button>)}</div>
+          <div className="chart-pills">{metrics.map(({ label, value, icon: Icon, entity, positive }) => <button key={label} className={`chart-pill ${positive ? 'positive' : ''}`} title={`${label}: ${money.format(amount(value))}`} onClick={() => open(entity)}><Icon size={12}/><span>{shortMoney(amount(value))}</span></button>)}</div>
         </div>
         <div className="overview-chart">{months.length ? <Bar role="img" aria-label="Grafik perbandingan pemasukan dan pengeluaran bulanan dalam rupiah" data={{ labels: months.map(m => m.label), datasets: [
-        { label: 'Pemasukan', data: months.map(m => amount(m.cashIn)), backgroundColor: '#E85002', borderRadius: 5, maxBarThickness: 18 },
-        { label: 'Pengeluaran', data: months.map(m => amount(m.cashOut)), backgroundColor: theme.isDark ? '#A7A7A7' : '#333333', borderRadius: 5, maxBarThickness: 18 },
+        { label: 'Pemasukan', data: months.map(m => amount(m.cashIn)), backgroundColor: '#22C55E', borderRadius: 5, maxBarThickness: 18 },
+        { label: 'Pengeluaran', data: months.map(m => amount(m.cashOut)), backgroundColor: '#F16001', borderRadius: 5, maxBarThickness: 18 },
       ] }} options={{ responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: 'index', intersect: false }, scales: { x: { grid: { display: false }, border: { display: false }, ticks: { color: theme.tickColor, font: { size: 10 } } }, y: { beginAtZero: true, border: { display: false }, grid: { color: theme.gridColor }, ticks: { color: theme.tickColor, callback: shortMoney, maxTicksLimit: 5, font: { size: 10 } } } }, plugins: { legend: { position: 'top', align: 'end', labels: { color: theme.labelColor, usePointStyle: true, pointStyle: 'circle', boxWidth: 6, boxHeight: 6, font: { size: 10 } } }, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${money.format(ctx.parsed.y)}` } } } }} /> : <div className="empty">Belum ada data arus kas.</div>}</div>
         <div className="chart-footnote"><span>Diperbarui otomatis dari transaksi tercatat</span><span>{months.length} bulan data</span></div>
       </section>
