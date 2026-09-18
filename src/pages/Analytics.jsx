@@ -17,9 +17,9 @@ export function Analytics() {
   const brandPerfData = {
     labels: (charts.brandPerformance || []).map(x => x.label),
     datasets: [
-      { label: 'Cash In', data: (charts.brandPerformance || []).map(x => x.cashIn), backgroundColor: '#ff774c', borderRadius: 4 },
-      { label: 'Cash Out', data: (charts.brandPerformance || []).map(x => x.cashOut), backgroundColor: '#727665', borderRadius: 4 },
-      { label: 'Budget', data: (charts.brandPerformance || []).map(x => x.budget), backgroundColor: '#c5baa5', borderRadius: 4 },
+      { label: 'Cash In', data: (charts.brandPerformance || []).map(x => x.cashIn), backgroundColor: '#E85002', borderRadius: 4 },
+      { label: 'Cash Out', data: (charts.brandPerformance || []).map(x => x.cashOut), backgroundColor: '#333333', borderRadius: 4 },
+      { label: 'Budget', data: (charts.brandPerformance || []).map(x => x.budget), backgroundColor: '#D9C3AB', borderRadius: 4 },
     ],
   };
 
@@ -31,8 +31,8 @@ export function Analytics() {
   const omzetData = {
     labels: (charts.omzetByMonth || []).map(x => x.label),
     datasets: [
-      { label: 'Target', data: (charts.omzetByMonth || []).map(x => x.target), backgroundColor: 'rgba(114,118,101,0.18)', borderColor: '#727665', borderWidth: 2, borderRadius: 4 },
-      { label: 'Realisasi', data: (charts.omzetByMonth || []).map(x => x.real), backgroundColor: '#ff774c', borderRadius: 4 },
+      { label: 'Target', data: (charts.omzetByMonth || []).map(x => x.target), backgroundColor: 'rgba(51,51,51,0.18)', borderColor: '#333333', borderWidth: 2, borderRadius: 4 },
+      { label: 'Realisasi', data: (charts.omzetByMonth || []).map(x => x.real), backgroundColor: '#E85002', borderRadius: 4 },
     ],
   };
 
@@ -46,10 +46,10 @@ export function Analytics() {
   const controllingData = {
     labels: (charts.monthlyCashFlow || []).map(x => x.label),
     datasets: [
-      { label: 'Forecast In', data: (charts.monthlyCashFlow || []).map(x => x.forecastIn), backgroundColor: 'rgba(255,119,76,0.3)', borderColor: '#ff774c', borderWidth: 1.5, borderRadius: 4 },
-      { label: 'Realisasi In', data: (charts.monthlyCashFlow || []).map(x => x.cashIn), backgroundColor: '#ff774c', borderRadius: 4 },
-      { label: 'Forecast Out', data: (charts.monthlyCashFlow || []).map(x => x.forecastOut), backgroundColor: 'rgba(114,118,101,0.3)', borderColor: '#727665', borderWidth: 1.5, borderRadius: 4 },
-      { label: 'Realisasi Out', data: (charts.monthlyCashFlow || []).map(x => x.cashOut), backgroundColor: '#727665', borderRadius: 4 },
+      { label: 'Forecast In', data: (charts.monthlyCashFlow || []).map(x => x.forecastIn), backgroundColor: 'rgba(232,80,2,0.3)', borderColor: '#E85002', borderWidth: 1.5, borderRadius: 4 },
+      { label: 'Realisasi In', data: (charts.monthlyCashFlow || []).map(x => x.cashIn), backgroundColor: '#E85002', borderRadius: 4 },
+      { label: 'Forecast Out', data: (charts.monthlyCashFlow || []).map(x => x.forecastOut), backgroundColor: 'rgba(51,51,51,0.3)', borderColor: '#333333', borderWidth: 1.5, borderRadius: 4 },
+      { label: 'Realisasi Out', data: (charts.monthlyCashFlow || []).map(x => x.cashOut), backgroundColor: '#333333', borderRadius: 4 },
     ],
   };
 

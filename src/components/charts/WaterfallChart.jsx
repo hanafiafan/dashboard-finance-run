@@ -39,7 +39,7 @@ export default function WaterfallChart({ data, title, note }) {
         .attr('y', y(value))
         .attr('width', x.bandwidth())
         .attr('height', barHeight)
-        .attr('fill', isIncome ? '#10b981' : '#e11d48')
+        .attr('fill', isIncome ? '#333333' : '#C10801')
         .attr('rx', 3)
         .on('mouseenter', (event) => {
           tooltip
@@ -56,9 +56,9 @@ export default function WaterfallChart({ data, title, note }) {
 
     // Axes
     g.append('g').call(d3.axisLeft(y).ticks(5).tickFormat(d => `Rp${(d/1000000).toFixed(0)}jt`))
-      .selectAll('text').attr('font-size', '9px').attr('fill', '#94a3b8');
-    g.selectAll('.domain').attr('stroke', '#e2e8f0');
-    g.selectAll('.tick line').attr('stroke', '#e2e8f0');
+      .selectAll('text').attr('font-size', '9px').attr('fill', '#A7A7A7');
+    g.selectAll('.domain').attr('stroke', '#A7A7A7');
+    g.selectAll('.tick line').attr('stroke', '#A7A7A7');
 
     g.append('g')
       .attr('transform', `translate(0,${innerH})`)
@@ -67,8 +67,8 @@ export default function WaterfallChart({ data, title, note }) {
       .attr('transform', 'rotate(-25)')
       .attr('text-anchor', 'end')
       .attr('font-size', '8px')
-      .attr('fill', '#94a3b8');
-    g.selectAll('.domain').attr('stroke', '#e2e8f0');
+      .attr('fill', '#A7A7A7');
+    g.selectAll('.domain').attr('stroke', '#A7A7A7');
 
   }, [data]);
 

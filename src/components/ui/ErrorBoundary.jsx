@@ -23,30 +23,30 @@ export default class ErrorBoundary extends Component {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#0f172a',
-          color: '#f1f5f9',
+          background: '#000000',
+          color: '#F9F9F9',
           fontFamily: "'JetBrains Mono', monospace",
           padding: '2rem',
         }}>
           <div style={{
-            background: '#1e293b',
-            border: '1px solid #334155',
+            background: '#333333',
+            border: '1px solid #646464',
             borderRadius: '16px',
             padding: '2rem 2.5rem',
             maxWidth: 600,
             width: '100%',
           }}>
             <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⚠️</div>
-            <h2 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: '#f97316' }}>Dashboard gagal ditampilkan</h2>
-            <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '1rem' }}>
+            <h2 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: '#F16001' }}>Dashboard gagal ditampilkan</h2>
+            <p style={{ fontSize: '0.8rem', color: '#A7A7A7', marginBottom: '1rem' }}>
               Ada komponen yang error saat digambar, jadi halaman dihentikan supaya angka yang salah tidak tampil. Klik "Muat Ulang Halaman" di bawah. Kalau terus berulang, kirim pesan teknis di kotak merah ini ke tim IT.
             </p>
             <pre style={{
-              background: '#0f172a',
+              background: '#000000',
               padding: '1rem',
               borderRadius: '8px',
               fontSize: '0.7rem',
-              color: '#fb7185',
+              color: '#F16001',
               overflow: 'auto',
               maxHeight: 200,
               whiteSpace: 'pre-wrap',
@@ -59,7 +59,7 @@ export default class ErrorBoundary extends Component {
               style={{
                 marginTop: '1rem',
                 padding: '0.6rem 1.5rem',
-                background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                background: 'linear-gradient(135deg, #F16001, #E85002)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',

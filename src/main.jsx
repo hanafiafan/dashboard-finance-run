@@ -11,13 +11,13 @@ window.addEventListener('error', (e) => {
   const root = document.getElementById('app');
   if (root && e.error) {
     root.innerHTML = `
-      <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0f172a;color:#f1f5f9;font-family:monospace;padding:2rem;">
-        <div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:2rem;max-width:600px;">
-          <h2 style="color:#f97316;margin-bottom:8px;">⚠️ Aplikasi berhenti tak terduga</h2>
-          <p style="color:#94a3b8;font-size:14px;">Halaman gagal dijalankan. Klik Refresh untuk memuat ulang; kalau tetap muncul, kirim pesan teknis di bawah ini ke tim IT.</p>
-          <p style="color:#e2e8f0;font-size:13px;margin-top:8px;">${e.error.message}</p>
-          <pre style="background:#0f172a;padding:1rem;border-radius:8px;font-size:11px;color:#fb7185;overflow:auto;max-height:150px;margin-top:12px;">${e.error.stack?.slice(0,500) || ''}</pre>
-          <button onclick="location.reload()" style="margin-top:12px;padding:8px 20px;background:#2563eb;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;">Refresh</button>
+      <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#000000;color:#F9F9F9;font-family:monospace;padding:2rem;">
+        <div style="background:#333333;border:1px solid #646464;border-radius:16px;padding:2rem;max-width:600px;">
+          <h2 style="color:#F16001;margin-bottom:8px;">⚠️ Aplikasi berhenti tak terduga</h2>
+          <p style="color:#A7A7A7;font-size:14px;">Halaman gagal dijalankan. Klik Refresh untuk memuat ulang; kalau tetap muncul, kirim pesan teknis di bawah ini ke tim IT.</p>
+          <p style="color:#F9F9F9;font-size:13px;margin-top:8px;">${e.error.message}</p>
+          <pre style="background:#000000;padding:1rem;border-radius:8px;font-size:11px;color:#F16001;overflow:auto;max-height:150px;margin-top:12px;">${e.error.stack?.slice(0,500) || ''}</pre>
+          <button onclick="location.reload()" style="margin-top:12px;padding:8px 20px;background:#E85002;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;">Refresh</button>
         </div>
       </div>`;
   }

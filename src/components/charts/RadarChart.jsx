@@ -32,7 +32,7 @@ export default function RadarChartCore({ data }) {
       borderColor: COLORS[i % 10],
       borderWidth: 2,
       pointBackgroundColor: COLORS[i % 10],
-      pointBorderColor: '#fff',
+      pointBorderColor: '#F9F9F9',
       pointBorderWidth: 2,
       pointRadius: 4,
       pointHoverRadius: 6,

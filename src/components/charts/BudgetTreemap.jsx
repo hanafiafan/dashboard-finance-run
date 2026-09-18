@@ -3,11 +3,8 @@ import * as d3 from 'd3';
 import { getChartTheme } from '../../utils/chartTheme';
 import { money } from '../../utils/formatters';
 
-const COLORS = [
-  '#0d9488', '#0891b2', '#2563eb', '#7c3aed', '#9333ea',
-  '#db2777', '#e11d48', '#ea580c', '#f59e0b', '#10b981',
-  '#06b6d4', '#6366f1',
-];
+// Brand palette only, cycled for however many treemap segments there are.
+const COLORS = ['#E85002', '#333333', '#C10801', '#A7A7A7', '#F16001', '#646464', '#D9C3AB', '#000000'];
 
 export default function BudgetTreemap({ data, title = 'Budget Allocation', note = 'Treemap by category' }) {
   const sorted = useMemo(() => {
