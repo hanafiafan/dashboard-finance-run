@@ -95,7 +95,6 @@ export default function AppShell() {
     <div className={`app-shell view-${app.view}`}>
       <header className="workspace-header">
         <div className="workspace-brand"><div className="brand-mark">R</div><strong>RUN<span>finance</span></strong></div>
-        <nav className="workspace-tabs" aria-label="Navigasi utama">{NAV_ITEMS.slice(0, 5).map(({ view, label }) => <button key={view} onClick={() => setView(view)} aria-current={app.view === view ? 'page' : undefined} className={app.view === view ? 'active' : ''}>{view === 'forecast_controlling' ? 'Forecast' : label}</button>)}</nav>
         <div className="workspace-user"><span className="user-avatar">{(session?.name || 'U').slice(0, 1)}</span><div><strong>{session?.name || 'User'}</strong><small>{demo ? 'Mode demo · data contoh' : session?.role}</small></div></div>
       </header>
       <aside className="sidebar">
