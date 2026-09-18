@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { logError } from '../../api/auditLog';
 
 export default class ErrorBoundary extends Component {
   constructor(props) {
@@ -12,6 +13,7 @@ export default class ErrorBoundary extends Component {
 
   componentDidCatch(error, info) {
     console.error('Dashboard crashed:', error, info);
+    logError({ message: error?.message, stack: `${error?.stack || ''}\n${info?.componentStack || ''}`, source: 'error-boundary' });
     this.setState({ info });
   }
 

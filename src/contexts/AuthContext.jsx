@@ -91,6 +91,10 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [demo, setDemo] = useState(false);
   const [loginError, setLoginError] = useState('');
+  // Set only when a password sign-in succeeded but the account has TOTP
+  // enrolled and needs the second factor before we finish loading the
+  // profile/session — see verifyMfaCode() below.
+  const [mfaPending, setMfaPending] = useState(null);
 
   useEffect(() => {
     if (!isProduction) { setLoading(false); return; }
@@ -127,6 +131,21 @@ export function AuthProvider({ children }) {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  // Shared by the direct-login success path and the post-MFA-verify path —
+  // loads the profile row and finishes establishing the app session.
+  const finishLogin = useCallback(async (accessToken, userId) => {
+    const { data: profile, error: profileErr } = await loadProfile(userId);
+    if (!profile?.active) {
+      await supabase.auth.signOut();
+      setLoginError(profileErr ? 'Gagal memuat profil, coba lagi.' : 'Akun tidak aktif atau tidak ditemukan.');
+      return;
+    }
+    setSession(buildSession(profile, false, accessToken));
+    setDemo(false);
+    setLoginError('');
+    setMfaPending(null);
+  }, []);
+
   const login = useCallback(async (email, password) => {
     if (isProduction) {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -134,15 +153,21 @@ export function AuthProvider({ children }) {
         setLoginError('Email atau password salah.');
         return;
       }
-      const { data: profile, error: profileErr } = await loadProfile(data.session.user.id);
-      if (!profile?.active) {
-        await supabase.auth.signOut();
-        setLoginError(profileErr ? 'Gagal memuat profil, coba lagi.' : 'Akun tidak aktif atau tidak ditemukan.');
-        return;
+      // Password was correct — check if this account also has TOTP enrolled
+      // and the session still needs a second factor before it's fully trusted.
+      const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aal && aal.nextLevel === 'aal2' && aal.nextLevel !== aal.currentLevel) {
+        const { data: factors } = await supabase.auth.mfa.listFactors();
+        const factor = factors?.totp?.find(f => f.status === 'verified');
+        if (factor) {
+          const { data: challenge, error: challengeErr } = await supabase.auth.mfa.challenge({ factorId: factor.id });
+          if (challengeErr) { setLoginError('Gagal memulai verifikasi 2FA, coba lagi.'); return; }
+          setMfaPending({ factorId: factor.id, challengeId: challenge.id, userId: data.session.user.id, accessToken: data.session.access_token });
+          setLoginError('');
+          return;
+        }
       }
-      setSession(buildSession(profile, false, data.session.access_token));
-      setDemo(false);
-      setLoginError('');
+      await finishLogin(data.session.access_token, data.session.user.id);
       return;
     }
     // Local dev: check hardcoded + localStorage users
@@ -156,6 +181,22 @@ export function AuthProvider({ children }) {
     } else {
       setLoginError('Email atau password salah.');
     }
+  }, []);
+
+  const verifyMfaCode = useCallback(async (code) => {
+    if (!mfaPending) return;
+    const { data, error } = await supabase.auth.mfa.verify({ factorId: mfaPending.factorId, challengeId: mfaPending.challengeId, code });
+    if (error || !data) {
+      setLoginError('Kode salah atau sudah kedaluwarsa, coba lagi.');
+      return;
+    }
+    await finishLogin(data.access_token, mfaPending.userId);
+  }, [mfaPending, finishLogin]);
+
+  const cancelMfa = useCallback(async () => {
+    await supabase.auth.signOut();
+    setMfaPending(null);
+    setLoginError('');
   }, []);
 
   const startDemo = useCallback(() => {
@@ -173,7 +214,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ session, loading, demo, loginError, login, startDemo, logout, isProduction }}>
+    <AuthContext.Provider value={{ session, loading, demo, loginError, login, startDemo, logout, isProduction, mfaPending, verifyMfaCode, cancelMfa }}>
       {children}
     </AuthContext.Provider>
   );

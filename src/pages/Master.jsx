@@ -11,6 +11,7 @@ import { ENTITY_LABELS, TABLE_COLUMNS, FORMS } from '../utils/constants';
 import { number } from '../utils/formatters';
 import { notify } from '../components/ui/Toast';
 import UserManagement from './UserManagement';
+import SystemLogs from './SystemLogs';
 
 const MASTERS = ['users', 'brands', 'sources', 'vendors', 'customers'];
 
@@ -62,9 +63,11 @@ export function Master() {
     }
   };
 
+  const canViewLogs = session?.role === 'superadmin' || session?.role === 'finance';
   // If no master entities, show brand scope table
   const available = MASTERS.filter((name) => app.state?.entities?.[name]);
-  if (!available.length) {
+  const tabs = canViewLogs ? [...available, 'logs'] : available;
+  if (!tabs.length) {
     return (
       <div className="panel tight">
         <div className="panel-head">
@@ -79,19 +82,21 @@ export function Master() {
     <>
       <div className="master-intro corner-glow"><div><span className="overline">DATA FOUNDATION</span><h3>Data yang terhubung. Kerja yang lebih rapi.</h3><p>Perbarui brand, mitra, dan akses pengguna dari satu tempat.</p></div><span className="master-monogram">R<span>+</span></span></div>
       <div className="tabs master-tabs">
-        {available.map((name) => (
+        {tabs.map((name) => (
           <button
             key={name}
             className={entity === name ? 'active' : ''}
             onClick={() => {setMaster(name);setSearch('');}}
           >
-            {ENTITY_LABELS[name]}
+            {name === 'logs' ? 'Log Sistem' : ENTITY_LABELS[name]}
           </button>
         ))}
       </div>
 
       {entity === 'users' ? (
         <UserManagement />
+      ) : entity === 'logs' ? (
+        <SystemLogs />
       ) : (
         <>
           <div className="panel tight">

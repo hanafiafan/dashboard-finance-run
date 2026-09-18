@@ -2,6 +2,7 @@ import { readAllRows } from './readAllRows';
 import { demoState, demoRows, demoForecastBudget, buildEntities } from '../utils/demoData';
 import { supabase, TABLE_MAP, dbToUi, uiToDb } from './supabaseClient';
 import { humanizeError } from '../utils/errorMessage';
+import { logAudit } from './auditLog';
 import { isToday, isCurrentMonth, isCurrentOmzetMonth, forecastCashPosition, addDays, localDateStr } from '../utils/ews';
 
 // Which DB column each entity's From/To date filter and Kategori filter should
@@ -352,9 +353,12 @@ async function supabaseSaveRecord(entity, record) {
 async function supabaseDeleteRecord(entity, id) {
   const table = TABLE_MAP[entity];
   if (!table) throw new Error('Unknown entity');
+  // Fetch the row before deleting — it's the only "before" snapshot the audit
+  // log can capture, since a hard delete leaves nothing to read afterward.
+  const { data: before } = await supabase.from(table).select('*').eq('id', id).maybeSingle();
   const { error } = await supabase.from(table).delete().eq('id', id);
   if (error) throw new Error(humanizeError(error));
-  return { ok: true };
+  return { ok: true, before };
 }
 
 async function supabaseApproveBudget(id, status, paid, feedback) {
@@ -428,17 +432,23 @@ export async function getRecords(entity, filters = {}, auth) {
 
 export async function saveRecord(entity, record, auth) {
   if (auth?.isDemo) return { ok: true, record, created: !record.ID };
-  return supabaseSaveRecord(entity, record);
+  const result = await supabaseSaveRecord(entity, record);
+  logAudit({ action: result.created ? 'create' : 'update', entity, entityId: record.ID, after: record, auth });
+  return result;
 }
 
 export async function deleteRecord(entity, id, auth) {
   if (auth?.isDemo) return { ok: true };
-  return supabaseDeleteRecord(entity, id);
+  const result = await supabaseDeleteRecord(entity, id);
+  logAudit({ action: 'delete', entity, entityId: id, before: result.before, auth });
+  return { ok: true };
 }
 
 export async function approveBudget(id, status, paid, feedback, auth) {
   if (auth?.isDemo) return { ok: true };
-  return supabaseApproveBudget(id, status, paid, feedback);
+  const result = await supabaseApproveBudget(id, status, paid, feedback);
+  logAudit({ action: status === 'Approved' ? 'approve' : status === 'Rejected' ? 'reject' : 'update', entity: 'budget', entityId: id, after: { status, nominal_dibayar: paid, feedback_finance: feedback }, auth });
+  return result;
 }
 
 export async function createBankTransfer(payload, auth) {

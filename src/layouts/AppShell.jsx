@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useState, useEffect, useRef } from 'react';
 import {
   LayoutDashboard, ChartNoAxesCombined, Table2, BadgeCheck,
-  Settings2, RefreshCw, LogOut, BookOpen, Target
+  Settings2, RefreshCw, LogOut, BookOpen, Target, Bell
 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -18,6 +18,7 @@ import { VIEW_TITLES } from '../utils/constants';
 import { formatDateTime } from '../utils/formatters';
 import FilterBar from '../components/filters/FilterBar';
 import Velaris from '../components/ui/Velaris';
+import AccountSecurity from '../components/ui/AccountSecurity';
 
 const NAV_ITEMS = [
   { view: 'command', icon: LayoutDashboard, label: 'Dashboard' },
@@ -33,11 +34,13 @@ export default function AppShell() {
   const { app, setView, setState } = useApp();
   const { session, demo, logout } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
+  const [securityOpen, setSecurityOpen] = useState(false);
   const [syncError, setSyncError] = useState('');
   const requestId = useRef(0);
 
   const state = app.state;
   const filters = app.filters;
+  const pendingApproval = state?.dashboard?.summary?.pendingApproval || 0;
 
   // Only the latest request may update the dashboard after quick filter changes.
   useEffect(() => {
@@ -95,7 +98,12 @@ export default function AppShell() {
     <div className={`app-shell view-${app.view}`}>
       <header className="workspace-header">
         <div className="workspace-brand"><div className="brand-mark">R</div><strong>RUN<span>finance</span></strong></div>
-        <div className="workspace-user"><span className="user-avatar">{(session?.name || 'U').slice(0, 1)}</span><div><strong>{session?.name || 'User'}</strong><small>{demo ? 'Mode demo · data contoh' : session?.role}</small></div></div>
+        <button className="notif-bell" aria-label="Pengajuan menunggu approval" onClick={() => setView('approval')}>
+          <Bell size={18} />
+          {pendingApproval > 0 && <span className="notif-badge">{pendingApproval > 99 ? '99+' : pendingApproval}</span>}
+        </button>
+        <button type="button" className="workspace-user" onClick={() => !demo && setSecurityOpen(true)} title={demo ? undefined : 'Keamanan akun'}><span className="user-avatar">{(session?.name || 'U').slice(0, 1)}</span><div><strong>{session?.name || 'User'}</strong><small>{demo ? 'Mode demo · data contoh' : session?.role}</small></div></button>
+        {!demo && <AccountSecurity isOpen={securityOpen} onClose={() => setSecurityOpen(false)} />}
       </header>
       <aside className="sidebar">
         <div className="brand-lockup">

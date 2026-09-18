@@ -5,11 +5,13 @@ import './styles/globals.css';
 import './styles/redesign.css';
 import { notify } from './components/ui/Toast';
 import { humanizeError } from './utils/errorMessage';
+import { logError } from './api/auditLog';
 
 // Global error catching — prevents blank screen in production
 window.addEventListener('error', (e) => {
   const root = document.getElementById('app');
   if (root && e.error) {
+    logError({ message: e.error.message, stack: e.error.stack, source: 'window.onerror' });
     root.innerHTML = `
       <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#000000;color:#F9F9F9;font-family:monospace;padding:2rem;">
         <div style="background:#333333;border:1px solid #646464;border-radius:16px;padding:2rem;max-width:600px;">
@@ -28,6 +30,7 @@ window.addEventListener('error', (e) => {
 // cukup toast dengan keterangan yang bisa dibaca user, app tetap jalan.
 window.addEventListener('unhandledrejection', (e) => {
   console.error('Unhandled rejection:', e.reason);
+  logError({ message: e.reason?.message || String(e.reason), stack: e.reason?.stack, source: 'unhandledrejection' });
   notify.error(humanizeError(e.reason));
 });
 

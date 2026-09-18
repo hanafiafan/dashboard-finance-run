@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, Fragment } from 'react';
-import { Pencil, Info, ChevronDown, ChevronRight, Plus } from 'lucide-react';
+import { Pencil, Info, ChevronDown, ChevronRight, Plus, Printer } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { notify } from '../components/ui/Toast';
 import { useAuth } from '../contexts/AuthContext';
@@ -194,13 +194,16 @@ export function ForecastingControlling() {
             <h3>Laporan Anggaran & Realisasi (P&L)</h3>
             <p>{loading ? 'Memuat...' : `${rows.length} baris data tersimpan untuk tahun ${tahun}`}</p>
           </div>
-          {canEdit && (
-            <div className="row-actions">
+          <div className="row-actions">
+            <button className="btn ghost" onClick={() => window.print()}>
+              <Printer size={16} /> Cetak / PDF
+            </button>
+            {canEdit && (
               <button className="btn blue" onClick={openAdd}>
                 <Plus size={16} /> Tambah Data
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
         <div className="data-table-wrap fc-table-wrap">
           <table className="data-table fc-table">
