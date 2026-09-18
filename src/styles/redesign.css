@@ -106,6 +106,10 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 .gauge-wrap{position:relative;z-index:1;margin:8px 0 4px}
 .gauge-card .section-heading,.gauge-card .target-numbers,.gauge-card .text-action{position:relative;z-index:1;width:100%}
 .corner-glow{position:relative;overflow:hidden}
-.corner-glow:before{content:'';position:absolute;width:280px;height:280px;top:-80px;right:-80px;border-radius:50%;background-image:url(/art/flame-wave.jpg);background-size:cover;background-position:60% 40%;-webkit-mask-image:radial-gradient(circle,black 0%,black 40%,transparent 72%);mask-image:radial-gradient(circle,black 0%,black 40%,transparent 72%);opacity:.6;z-index:0;pointer-events:none}
+.corner-glow:before{content:'';position:absolute;width:440px;height:440px;top:-110px;right:-110px;border-radius:50%;background-image:url(/art/flame-spectrum.jpg);background-size:cover;background-position:32% 45%;-webkit-mask-image:radial-gradient(circle,black 0%,black 38%,transparent 75%);mask-image:radial-gradient(circle,black 0%,black 38%,transparent 75%);opacity:.65;z-index:0;pointer-events:none}
 .corner-glow>*{position:relative;z-index:1}
+.boot{background:radial-gradient(ellipse 60% 55% at 50% 35%,var(--flame-2) 0%,transparent 65%),var(--bg-body);position:relative;overflow:hidden}
+.boot-panel{position:relative;z-index:1}
+.boot-panel .brand-mark{box-shadow:0 0 50px rgba(232,80,2,.55),0 12px 40px rgba(0,0,0,.5);animation:boot-pulse 2.2s ease-in-out infinite}
+@keyframes boot-pulse{0%,100%{box-shadow:0 0 50px rgba(232,80,2,.55),0 12px 40px rgba(0,0,0,.5)}50%{box-shadow:0 0 74px rgba(241,96,1,.75),0 12px 40px rgba(0,0,0,.5)}}
 @media(max-width:1400px){.approval-grid{grid-template-columns:1fr}}

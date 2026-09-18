@@ -109,6 +109,12 @@ export default function Velaris({
 }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
+  // Read live each frame via a ref instead of the effect's dependency array —
+  // callers that pass an inline array/object prop (a new reference every
+  // render) would otherwise tear down and rebuild the whole WebGL context on
+  // every parent re-render, which is what made the animation look frozen.
+  const paramsRef = useRef({ bg, colors, speed, grain });
+  paramsRef.current = { bg, colors, speed, grain };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -160,12 +166,13 @@ export default function Velaris({
 
     let raf;
     const render = t => {
+      const p = paramsRef.current;
       gl.uniform2f(locs.res, canvas.width, canvas.height);
-      gl.uniform1f(locs.time, t * 0.001 * speed);
-      gl.uniform1f(locs.grain, grain);
-      gl.uniform3f(locs.bg, ...hexToRgb(bg));
+      gl.uniform1f(locs.time, t * 0.001 * p.speed);
+      gl.uniform1f(locs.grain, p.grain);
+      gl.uniform3f(locs.bg, ...hexToRgb(p.bg));
 
-      const flat = new Float32Array(colors.slice(0, 4).flatMap(hexToRgb));
+      const flat = new Float32Array(p.colors.slice(0, 4).flatMap(hexToRgb));
       gl.uniform3fv(locs.colors, flat);
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -177,7 +184,10 @@ export default function Velaris({
       ro.disconnect();
       cancelAnimationFrame(raf);
     };
-  }, [bg, colors, speed, grain]);
+    // Mount once — bg/colors/speed/grain are read live from paramsRef each
+    // frame instead, so the WebGL context survives prop-identity churn.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div ref={containerRef} style={{ height }} className={`velaris ${className}`}>
