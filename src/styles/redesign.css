@@ -7,7 +7,7 @@
    orange (watch) → firebrick (critical) instead. */
 :root,[data-theme="light"] {
   color-scheme:light;
-  --bg-body:#F9F9F9;--bg-card:#F9F9F9;--bg-card-hover:#F9F9F9;--bg-elevated:#F9F9F9;
+  --bg-body:#F2F2F2;--bg-card:#F9F9F9;--bg-card-hover:#F9F9F9;--bg-elevated:#F9F9F9;
   --bg-hover:rgba(167,167,167,.16);--bg-input:#F9F9F9;--bg-active:rgba(232,80,2,.08);--bg-glass:#F9F9F9ed;
   --text-primary:#000000;--text-secondary:#646464;--text-tertiary:#A7A7A7;
   --border-light:rgba(167,167,167,.7);--border-medium:rgba(100,100,100,.65);--border-glow:rgba(232,80,2,.4);
