@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = 'https://yksfwxqpxcsmhqgrrrfa.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlrc2Z3eHFweGNzbWhxZ3JycmZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3MzgwMDMsImV4cCI6MjA5OTMxNDAwM30.eXhUsOiztVIhiXAPYzz-gLpkbDGb-cQawyy4wsFyNRI';
+// Self-hosted Supabase on our own VPS (Coolify) — replaces Supabase Cloud.
+const SUPABASE_URL = 'https://supabase.run-web.tech';
+const SUPABASE_ANON_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsImlhdCI6MTc4OTcyNDA0MCwiZXhwIjo0OTQ1Mzk3NjQwLCJyb2xlIjoiYW5vbiJ9.xzIA_OrVobprhRfC2qqCC7wAsG6jyeAKxmF4JKFSXBo';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
