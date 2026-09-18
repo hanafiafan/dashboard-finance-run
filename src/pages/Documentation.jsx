@@ -1,7 +1,7 @@
 import {
   BookOpen, ShieldCheck, Landmark, Eye, UserCog, Wallet, ArrowDownCircle, ArrowUpCircle,
   CalendarClock, CalendarX2, BarChart3, Truck, Users, Tag, HandCoins, Briefcase,
-  CheckCircle2, Filter, RefreshCw, Download, SunMoon, MessageCircleWarning,
+  CheckCircle2, Filter, RefreshCw, Download, MessageCircleWarning,
   ClipboardList, AlertTriangle, ShieldAlert, FileSpreadsheet,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -287,7 +287,6 @@ const GENERAL_TIPS = [
   { icon: Filter, text: <><strong>Filter</strong> (Company/Brand/Kategori/Tanggal) di bagian atas berlaku ke semua halaman — kosongkan filter untuk melihat semua data lagi.</> },
   { icon: RefreshCw, text: <><strong>Refresh</strong> di pojok kanan atas / sidebar untuk menarik ulang data terbaru dari database.</> },
   { icon: Download, text: <><strong>CSV</strong> muncul saat kamu sedang membuka tabel data (Operasional/Master Data) — untuk unduh data yang sedang tampil.</> },
-  { icon: SunMoon, text: <><strong>Light/Dark mode</strong> di pojok kanan atas, murni preferensi tampilan.</> },
   { icon: MessageCircleWarning, text: 'Kalau muncul pesan error saat menyimpan data, screenshot pesannya dan kirim ke Finance/Super Admin untuk dicek.' },
 ];
 

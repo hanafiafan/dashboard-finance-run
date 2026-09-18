@@ -1058,7 +1058,7 @@ p, span { color: inherit; }
 }
 .boot-panel .brand-mark { width: 68px; height: 68px; font-size: 1.6rem; box-shadow: 0 10px 40px rgba(100,100,100,0.45); }
 .boot-panel strong { font-size: 1.25rem; color: #F9F9F9; }
-.boot-panel span { font-size: 0.82rem; color: #646464; }
+.boot-panel span { font-size: 0.82rem; color: #A7A7A7; }
 
 /* ============================================================
    D3 CHARTS
