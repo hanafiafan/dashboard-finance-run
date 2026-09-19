@@ -1,4 +1,11 @@
-import { columnType } from './tableSchema.js';
+import { columnType, statusClass } from './tableSchema.js';
+
+const STATUS_COLORS = {
+  ok: { fill: 'FFE6F4EA', text: 'FF1E7B34' },
+  warn: { fill: 'FFFCEEDC', text: 'FFB35C00' },
+  bad: { fill: 'FFFBE7E6', text: 'FFC10801' },
+  info: { fill: 'FFF1F1EF', text: 'FF686F62' },
+};
 
 export function safeCsvValue(value) {
   let text = String(value ?? '');
@@ -23,11 +30,17 @@ export function typedValue(column, value) {
   return typeof value === 'boolean' ? (value ? 'Aktif' : 'Nonaktif') : String(value);
 }
 
-export async function createExportWorkbook({ title, columns, rows, filters = {}, demo = false, createdAt = new Date() }) {
+function sheetName(title) {
+  const cleaned = String(title || 'Data').replace(/[:\\/?*[\]]/g, '').trim();
+  return (cleaned || 'Data').slice(0, 31);
+}
+
+export async function createExportWorkbook({ title, columns, rows, filters = {}, demo = false, createdAt = new Date(), preparedBy = '', preparedRole = '' }) {
   const { default: ExcelJS } = await import('exceljs');
   const book = new ExcelJS.Workbook();
-  book.creator = 'RUN Finance'; book.created = createdAt;
-  const sheet = book.addWorksheet('Data', { views: [{ state: 'frozen', ySplit: 6, showGridLines: false }], pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 } });
+  book.creator = preparedBy || 'RUN Finance'; book.created = createdAt;
+  book.title = `RUN Finance — ${title}`; book.subject = 'Laporan Keuangan'; book.company = 'RUN Finance';
+  const sheet = book.addWorksheet(sheetName(title), { views: [{ state: 'frozen', ySplit: 7, showGridLines: false }], pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 } });
   const width = Math.max(columns.length, 2);
   const mergedLine = (row, text, size, color, background) => {
     sheet.mergeCells(row, 1, row, width);
@@ -42,8 +55,9 @@ export async function createExportWorkbook({ title, columns, rows, filters = {},
   const labels = { company: 'Perusahaan', brandKey: 'Brand', category: 'Kategori', startDate: 'Dari', endDate: 'Sampai', year: 'Tahun', search: 'Pencarian', period: 'Periode' };
   const scope = Object.entries(filters).filter(([,v]) => v !== '' && v != null).map(([k,v]) => `${labels[k] || k}: ${v}`).join(' · ');
   mergedLine(4, scope || 'Cakupan: seluruh data yang tersedia pada tabel ini.', 10, 'FF686F62', 'FFFFFFFF'); sheet.getRow(4).height = 32;
-  sheet.getRow(5).height = 12;
-  const header = sheet.getRow(6); header.values = columns; header.height = 34;
+  mergedLine(5, `Diekspor oleh: ${preparedBy || '—'}${preparedRole ? ` (${preparedRole})` : ''}`, 10, 'FF686F62', 'FFFFFFFF'); sheet.getRow(5).height = 25;
+  sheet.getRow(6).height = 12;
+  const header = sheet.getRow(7); header.values = columns; header.height = 34;
   header.eachCell(cell => {cell.font = { name:'Calibri', size:11, bold:true, color:{argb:'FFFFFFFF'} };cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFDA683F'}};cell.alignment={vertical:'middle',wrapText:true};});
   // Fit each column to its widest actual value (not just the header label) — a
   // narrow-but-long-content column (URLs, long notes) used to wrap into extra
@@ -66,8 +80,9 @@ export async function createExportWorkbook({ title, columns, rows, filters = {},
     if (!str) return 1;
     return str.split('\n').reduce((sum, line) => sum + Math.max(1, Math.ceil(line.length / colWidth)), 0);
   };
+  const DATA_START = 8;
   rows.forEach((record,index) => {
-    const row = sheet.getRow(index + 7); row.values = columns.map(column => typedValue(column,record[column]));
+    const row = sheet.getRow(index + DATA_START); row.values = columns.map(column => typedValue(column,record[column]));
     const maxLines = columns.reduce((max, column, i) => {
       const type = columnType(column);
       if (type === 'money' || type === 'percent' || type === 'date') return max;
@@ -75,7 +90,8 @@ export async function createExportWorkbook({ title, columns, rows, filters = {},
     }, 1);
     row.height = Math.max(20, maxLines * LINE_HEIGHT + 6);
     row.eachCell({includeEmpty:true}, (cell,c) => {
-      const type = columnType(columns[c-1]);
+      const column = columns[c-1];
+      const type = columnType(column);
       cell.font={name:'Calibri',size:11,color:{argb:'FF30392B'}};
       cell.alignment={vertical:'middle',wrapText:true,horizontal:['money','percent'].includes(type)?'right':'left'};
       cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:index % 2 ? 'FFF4F5F0':'FFFFFFFF'}};
@@ -83,14 +99,41 @@ export async function createExportWorkbook({ title, columns, rows, filters = {},
       if(type==='money')cell.numFmt='"Rp" #,##0;[Red]("Rp" #,##0);"Rp" 0';
       if(type==='percent')cell.numFmt='0.0%';
       if(type==='date')cell.numFmt='dd mmm yyyy';
-      if(/URL/i.test(columns[c-1]) && cell.value) {
+      if(/URL/i.test(column) && cell.value) {
         cell.value = { text: String(cell.value), hyperlink: String(cell.value) };
         cell.font = { ...cell.font, color: { argb: 'FF1155CC' }, underline: true };
       }
+      // Colour-code Status-like columns the same way the on-screen table badges
+      // do, so a printed report is scannable at a glance without opening the app.
+      if(/^status$/i.test(column) && cell.value) {
+        const palette = STATUS_COLORS[statusClass(cell.value)];
+        cell.font = { ...cell.font, bold: true, color: { argb: palette.text } };
+        cell.fill = { type:'pattern', pattern:'solid', fgColor: { argb: palette.fill } };
+      }
     });
   });
-  sheet.autoFilter={from:{row:6,column:1},to:{row:Math.max(6,rows.length+6),column:columns.length}};
-  sheet.pageSetup.printTitlesRow='1:6';
+  // Totals row — sums every money column, so a report reader doesn't have to
+  // open the file in a spreadsheet app just to know the grand total.
+  const moneyColumns = columns.filter(column => columnType(column) === 'money');
+  if (moneyColumns.length && rows.length) {
+    const totalsRow = sheet.getRow(rows.length + DATA_START);
+    totalsRow.height = 30;
+    sheet.getCell(totalsRow.number, 1).value = 'TOTAL';
+    columns.forEach((column, i) => {
+      if (columnType(column) !== 'money') return;
+      const cell = sheet.getCell(totalsRow.number, i + 1);
+      cell.value = rows.reduce((sum, record) => sum + (Number(record[column]) || 0), 0);
+      cell.numFmt = '"Rp" #,##0;[Red]("Rp" #,##0);"Rp" 0';
+    });
+    totalsRow.eachCell({ includeEmpty: true }, (cell, c) => {
+      cell.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF30392B' } };
+      cell.alignment = { vertical: 'middle', horizontal: columnType(columns[c-1]) === 'money' ? 'right' : 'left' };
+      cell.border = { top: { style: 'thin', color: { argb: 'FF30392B' } } };
+    });
+  }
+  sheet.autoFilter={from:{row:header.number,column:1},to:{row:Math.max(header.number,rows.length+DATA_START-1),column:columns.length}};
+  sheet.pageSetup.printTitlesRow=`1:${header.number}`;
   sheet.headerFooter.oddFooter='&LRUN Finance&CHalaman &P dari &N&R&D';
   return book;
 }

@@ -6,11 +6,11 @@ import { exportData } from '../../utils/exportData';
 import { notify } from './Toast';
 
 export default function ExportButton({ title, columns, rows, filters, disabled }) {
-  const { demo } = useAuth();
+  const { demo, session } = useAuth();
   const [open,setOpen]=useState(false), [format,setFormat]=useState('xlsx'), [busy,setBusy]=useState(false);
   const handleExport=async () => {
     setBusy(true);
-    try { await exportData({title,columns,rows,filters,demo},format);setOpen(false);notify.success(`${rows.length} baris berhasil diekspor.`); }
+    try { await exportData({title,columns,rows,filters,demo,preparedBy:session?.name || session?.email,preparedRole:session?.role},format);setOpen(false);notify.success(`${rows.length} baris berhasil diekspor.`); }
     catch(error){notify.error(error.message || 'Ekspor gagal. Silakan coba lagi.');}
     finally{setBusy(false);}
   };
