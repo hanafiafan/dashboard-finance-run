@@ -35,12 +35,21 @@ function sheetName(title) {
   return (cleaned || 'Data').slice(0, 31);
 }
 
+// A short, human-readable reference so a printed/saved report can be cited
+// or traced back to when it was generated — standard on any formal document.
+function reportReference(createdAt) {
+  const stamp = createdAt.toISOString().slice(0, 10).replace(/-/g, '');
+  const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `RUN-${stamp}-${suffix}`;
+}
+
 export async function createExportWorkbook({ title, columns, rows, filters = {}, demo = false, createdAt = new Date(), preparedBy = '', preparedRole = '' }) {
   const { default: ExcelJS } = await import('exceljs');
   const book = new ExcelJS.Workbook();
   book.creator = preparedBy || 'RUN Finance'; book.created = createdAt;
-  book.title = `RUN Finance — ${title}`; book.subject = 'Laporan Keuangan'; book.company = 'RUN Finance';
-  const sheet = book.addWorksheet(sheetName(title), { views: [{ state: 'frozen', ySplit: 7, showGridLines: false }], pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 } });
+  const reference = reportReference(createdAt);
+  book.title = `RUN Finance — ${title}`; book.subject = 'Laporan Keuangan'; book.company = 'RUN Finance'; book.description = `Ref: ${reference}`;
+  const sheet = book.addWorksheet(sheetName(title), { views: [{ state: 'frozen', xSplit: 1, ySplit: 7, showGridLines: false }], pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 } });
   const width = Math.max(columns.length, 2);
   const mergedLine = (row, text, size, color, background) => {
     sheet.mergeCells(row, 1, row, width);
@@ -51,11 +60,21 @@ export async function createExportWorkbook({ title, columns, rows, filters = {},
   };
   mergedLine(1, `RUN FINANCE / ${title}`, 18, 'FFFFFFFF', 'FF30392B'); sheet.getRow(1).height = 40;
   mergedLine(2, demo ? 'DATA DEMO — contoh untuk pengujian, bukan transaksi produksi.' : 'Sumber: data aplikasi RUN Finance sesuai cakupan akses pengguna.', 10, 'FF686F62', 'FFF5F5EF'); sheet.getRow(2).height = 25;
-  mergedLine(3, `Diekspor: ${createdAt.toLocaleString('id-ID')}  |  ${rows.length} baris  |  Mata uang: IDR`, 10, 'FF686F62', 'FFFFFFFF'); sheet.getRow(3).height = 25;
+  mergedLine(3, `Diekspor: ${createdAt.toLocaleString('id-ID')}  |  ${rows.length} baris  |  Mata uang: IDR  |  Ref: ${reference}`, 10, 'FF686F62', 'FFFFFFFF'); sheet.getRow(3).height = 25;
   const labels = { company: 'Perusahaan', brandKey: 'Brand', category: 'Kategori', startDate: 'Dari', endDate: 'Sampai', year: 'Tahun', search: 'Pencarian', period: 'Periode' };
   const scope = Object.entries(filters).filter(([,v]) => v !== '' && v != null).map(([k,v]) => `${labels[k] || k}: ${v}`).join(' · ');
   mergedLine(4, scope || 'Cakupan: seluruh data yang tersedia pada tabel ini.', 10, 'FF686F62', 'FFFFFFFF'); sheet.getRow(4).height = 32;
-  mergedLine(5, `Diekspor oleh: ${preparedBy || '—'}${preparedRole ? ` (${preparedRole})` : ''}`, 10, 'FF686F62', 'FFFFFFFF'); sheet.getRow(5).height = 25;
+  mergedLine(5, `Diekspor oleh: ${preparedBy || '—'}${preparedRole ? ` (${preparedRole})` : ''}  ·  Dokumen ini bersifat internal RUN Finance.`, 10, 'FF686F62', 'FFFFFFFF'); sheet.getRow(5).height = 25;
+  // Letterhead frame around the info block, in brand orange, for a proper
+  // document header instead of plain stacked bars.
+  for (let c = 1; c <= width; c++) {
+    sheet.getCell(1, c).border = { ...(sheet.getCell(1,c).border||{}), top: { style: 'medium', color: { argb: 'FFE85002' } } };
+    sheet.getCell(5, c).border = { ...(sheet.getCell(5,c).border||{}), bottom: { style: 'medium', color: { argb: 'FFE85002' } } };
+  }
+  for (let r = 1; r <= 5; r++) {
+    sheet.getCell(r, 1).border = { ...(sheet.getCell(r,1).border||{}), left: { style: 'medium', color: { argb: 'FFE85002' } } };
+    sheet.getCell(r, width).border = { ...(sheet.getCell(r,width).border||{}), right: { style: 'medium', color: { argb: 'FFE85002' } } };
+  }
   sheet.getRow(6).height = 12;
   const header = sheet.getRow(7); header.values = columns; header.height = 34;
   header.eachCell(cell => {cell.font = { name:'Calibri', size:11, bold:true, color:{argb:'FFFFFFFF'} };cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFDA683F'}};cell.alignment={vertical:'middle',wrapText:true};});
@@ -134,7 +153,7 @@ export async function createExportWorkbook({ title, columns, rows, filters = {},
   }
   sheet.autoFilter={from:{row:header.number,column:1},to:{row:Math.max(header.number,rows.length+DATA_START-1),column:columns.length}};
   sheet.pageSetup.printTitlesRow=`1:${header.number}`;
-  sheet.headerFooter.oddFooter='&LRUN Finance&CHalaman &P dari &N&R&D';
+  sheet.headerFooter.oddFooter=`&LRUN Finance — Dokumen internal, ${reference}&CHalaman &P dari &N&R&D`;
   return book;
 }
 function download(blob,filename) {
