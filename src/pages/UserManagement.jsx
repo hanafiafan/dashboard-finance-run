@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Key, Trash2, X, UserPlus } from 'lucide-react';
+import { Key, Trash2, X, UserPlus, Power } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { getStoredUsers, addUser, removeUser, resetUserPassword } from '../contexts/AuthContext';
+import { getStoredUsers, addUser, removeUser, resetUserPassword, setUserActive } from '../contexts/AuthContext';
 import { useApp } from '../contexts/AppContext';
 import { getRecords } from '../api/financeApi';
 import { notify } from '../components/ui/Toast';
@@ -100,6 +100,23 @@ export default function UserManagement() {
     setBusy(false);
   };
 
+  const handleToggleActive = async (u) => {
+    const nextActive = u.active === false;
+    if (!window.confirm(`${nextActive ? 'Aktifkan kembali' : 'Nonaktifkan'} ${u.email}?${nextActive ? '' : ' User tidak akan bisa login sampai diaktifkan lagi.'}`)) return;
+    setBusy(true);
+    setError('');
+    try {
+      if (isDemo) setUserActive(u.email, nextActive);
+      else await callManageUser(session, { action: 'toggle-active', targetEmail: u.email, active: nextActive });
+      await refresh();
+      notify.success(`${u.email} ${nextActive ? 'diaktifkan kembali' : 'dinonaktifkan'}.`);
+    } catch (err) {
+      setError(err.message);
+      notify.error(err.message);
+    }
+    setBusy(false);
+  };
+
   const handleResetPassword = async (e) => {
     e.preventDefault();
     const newPw = new FormData(e.target).get('password').trim();
@@ -139,7 +156,7 @@ export default function UserManagement() {
             <th>Role</th>
             <th>Scope</th>
             <th>Active</th>
-            <th style={{ width: 140 }}>Actions</th>
+            <th style={{ width: 170 }}>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -158,9 +175,12 @@ export default function UserManagement() {
                   ? (u.brand_scope || u.company_scope || <span style={{ color: 'var(--text-tertiary)' }}>Semua Entitas</span>)
                   : <span style={{ color: 'var(--text-tertiary)' }}>—</span>}
               </td>
-              <td style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>{u.active === false ? 'Nonaktif' : 'Aktif'}</td>
+              <td style={{ fontSize: '0.7rem' }}><span className={`status ${u.active === false ? 'bad' : 'ok'}`}>{u.active === false ? 'Nonaktif' : 'Aktif'}</span></td>
               <td>
                 <div style={{ display: 'flex', gap: '0.3rem' }}>
+                  {canManageUsers && (
+                    <button className="btn ghost sm" onClick={() => handleToggleActive(u)} disabled={busy} title={u.active === false ? 'Aktifkan' : 'Nonaktifkan'}><Power size={13} /></button>
+                  )}
                   {canManageUsers && (
                     <button className="btn ghost sm" onClick={() => setResetTarget(u)} disabled={busy} title="Reset password"><Key size={13} /></button>
                   )}

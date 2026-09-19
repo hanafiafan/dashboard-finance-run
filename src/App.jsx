@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AppProvider, useApp } from './contexts/AppContext';
-import { Login } from './pages/Login';
+import { Login, ResetPasswordConfirm } from './pages/Login';
 import AppShell from './layouts/AppShell';
 import { RefreshCw } from 'lucide-react';
 import ErrorBoundary from './components/ui/ErrorBoundary';
@@ -66,7 +66,7 @@ ChartJS.register(
 );
 
 function AppContent() {
-  const { session, loading, demo, login, startDemo, logout } = useAuth();
+  const { session, loading, demo, login, startDemo, logout, passwordRecovery, completePasswordReset } = useAuth();
   const { app, loadDemo, setState } = useApp();
   const [status, setStatus] = useState('init'); // init → login → loading → ready → error
   const [loadError, setLoadError] = useState('');
@@ -103,6 +103,13 @@ function AppContent() {
     loadLiveState();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, loading, demo, loadDemo, setState]);
+
+  // Password-recovery link landing — takes priority over the boot spinner and
+  // the normal login screen, since Supabase already gave this browser a
+  // (recovery-scoped) session for whichever account the link was sent to.
+  if (passwordRecovery) {
+    return <ResetPasswordConfirm onSubmit={completePasswordReset} />;
+  }
 
   // Loading spinner
   if (loading || status === 'init' || status === 'loading') {

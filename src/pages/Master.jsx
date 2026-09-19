@@ -12,6 +12,7 @@ import { number } from '../utils/formatters';
 import { notify } from '../components/ui/Toast';
 import UserManagement from './UserManagement';
 import SystemLogs from './SystemLogs';
+import PeriodLock from './PeriodLock';
 
 const MASTERS = ['users', 'brands', 'sources', 'vendors', 'customers'];
 
@@ -64,9 +65,10 @@ export function Master() {
   };
 
   const canViewLogs = session?.role === 'superadmin' || session?.role === 'finance';
+  const canLockPeriods = session?.role === 'superadmin';
   // If no master entities, show brand scope table
   const available = MASTERS.filter((name) => app.state?.entities?.[name]);
-  const tabs = canViewLogs ? [...available, 'logs'] : available;
+  const tabs = [...available, ...(canViewLogs ? ['logs'] : []), ...(canLockPeriods ? ['periods'] : [])];
   if (!tabs.length) {
     return (
       <div className="panel tight">
@@ -88,7 +90,7 @@ export function Master() {
             className={entity === name ? 'active' : ''}
             onClick={() => {setMaster(name);setSearch('');}}
           >
-            {name === 'logs' ? 'Log Sistem' : ENTITY_LABELS[name]}
+            {name === 'logs' ? 'Log Sistem' : name === 'periods' ? 'Tutup Buku' : ENTITY_LABELS[name]}
           </button>
         ))}
       </div>
@@ -97,6 +99,8 @@ export function Master() {
         <UserManagement />
       ) : entity === 'logs' ? (
         <SystemLogs />
+      ) : entity === 'periods' ? (
+        <PeriodLock />
       ) : (
         <>
           <div className="panel tight">

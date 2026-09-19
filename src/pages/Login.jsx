@@ -3,13 +3,23 @@ import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck, Layers3, KeySq
 import { useAuth } from '../contexts/AuthContext';
 
 export function Login({ onLogin, onDemo }) {
-  const { isProduction, loginError, mfaPending, verifyMfaCode, cancelMfa } = useAuth();
+  const { isProduction, loginError, mfaPending, verifyMfaCode, cancelMfa, requestPasswordReset } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mfaCode, setMfaCode] = useState('');
+  const [forgotMode, setForgotMode] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotSent, setForgotSent] = useState(false);
+  const handleForgotSubmit = async e => {
+    e.preventDefault();
+    if (!forgotEmail.trim()) return;
+    setLoading(true);
+    try { await requestPasswordReset(forgotEmail.trim().toLowerCase()); }
+    finally { setLoading(false); setForgotSent(true); }
+  };
   const handleLogin = async e => {
     e.preventDefault();
     if (!email.trim() || !password) return setError('Lengkapi email dan kata sandi Anda.');
@@ -48,6 +58,34 @@ export function Login({ onLogin, onDemo }) {
     </main>;
   }
 
+  if (forgotMode) {
+    return <main className="auth-page">
+      <section className="auth-art" aria-label="RUN Finance">
+        <img src="/art/finance-sculpture.jpg" alt="" fetchPriority="high" />
+        <a className="auth-brand" href="#login-form"><span className="brand-mark">R</span> RUN <span>finance</span></a>
+        <div className="auth-story"><span className="overline">YOUR FINANCE, IN FOCUS</span><h1>Lebih terarah.<br/>Lebih terkendali.</h1><p>Satu ruang untuk melihat keuangan<br/>dan menggerakkan bisnis Anda.</p></div>
+        <div className="auth-art-footer"><Layers3 size={16}/><span>Multi-company. Multi-brand. Satu pandangan.</span></div>
+      </section>
+      <section className="auth-form-side" id="login-form">
+        <div className="auth-topline"><span>Workspace keuangan</span><span className="auth-version">RUN / 02</span></div>
+        <div className="auth-form-content"><span className="auth-welcome-icon"><Mail size={22}/></span><p className="overline">LUPA KATA SANDI</p><h2>Reset kata sandi Anda.</h2>
+          {forgotSent ? (
+            <p className="auth-subtitle">Jika <strong>{forgotEmail}</strong> terdaftar, tautan reset password sudah dikirim ke email tersebut. Buka tautannya untuk membuat kata sandi baru.</p>
+          ) : (
+            <>
+              <p className="auth-subtitle">Masukkan email kerja Anda, kami kirimkan tautan untuk membuat kata sandi baru.</p>
+              <form onSubmit={handleForgotSubmit} className="auth-form">
+                <div className="auth-field-group"><label htmlFor="forgot-email">Email kerja</label><div className="auth-input"><Mail size={17}/><input id="forgot-email" type="email" placeholder="nama@perusahaan.com" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} required disabled={loading}/></div></div>
+                <button className="btn auth-submit" type="submit" disabled={loading}>{loading ? 'Mengirim...' : 'Kirim tautan reset'}<ArrowRight size={17}/></button>
+              </form>
+            </>
+          )}
+          <button type="button" className="text-action" style={{ marginTop: 16 }} onClick={() => { setForgotMode(false); setForgotSent(false); setForgotEmail(''); }}>Kembali ke login</button>
+        </div><footer className="auth-footer"><ShieldCheck size={15}/><span>Akses mengikuti peran dan cakupan perusahaan Anda.</span></footer>
+      </section>
+    </main>;
+  }
+
   return <main className="auth-page">
     <section className="auth-art" aria-label="RUN Finance">
       <img src="/art/finance-sculpture.jpg" alt="" fetchPriority="high" />
@@ -63,8 +101,49 @@ export function Login({ onLogin, onDemo }) {
           <div className="auth-field-group"><label htmlFor="login-password">Kata sandi</label><div className="auth-input"><LockKeyhole size={17}/><input id="login-password" type={showPw ? 'text' : 'password'} autoComplete="current-password" placeholder="Masukkan kata sandi" value={password} onChange={e => setPassword(e.target.value)} required disabled={loading}/><button type="button" aria-label={showPw ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'} aria-pressed={showPw} onClick={() => setShowPw(!showPw)}>{showPw ? <EyeOff size={17}/> : <Eye size={17}/>}</button></div></div>
           {displayError && <p className="auth-error" role="alert">{displayError}</p>}
           <button className="btn auth-submit" type="submit" disabled={loading}>{loading ? 'Menghubungkan...' : 'Masuk ke dashboard'}<ArrowRight size={17}/></button>
+          {isProduction && <button type="button" className="text-action" onClick={() => setForgotMode(true)}>Lupa kata sandi?</button>}
         </form>
         {!isProduction && <><div className="auth-divider"><span>atau jelajahi terlebih dahulu</span></div><button className="btn auth-demo" onClick={onDemo} disabled={loading}>Buka workspace demo <ArrowRight size={16}/></button><details className="demo-access"><summary>Akun pengujian lokal</summary><p>Data contoh untuk mencoba antarmuka.</p><dl><dt>Admin</dt><dd>admin@runfinance.com / superadmin123</dd><dt>Finance</dt><dd>finance@runfinance.com / finance123</dd><dt>Owner</dt><dd>owner@runfinance.com / owner123</dd><dt>PIC</dt><dd>pic@runfinance.com / pic123</dd></dl></details></>}
+      </div><footer className="auth-footer"><ShieldCheck size={15}/><span>Akses mengikuti peran dan cakupan perusahaan Anda.</span></footer>
+    </section>
+  </main>;
+}
+
+// Landing screen when a Supabase password-recovery link opens the app —
+// shown by App.jsx in place of Login while AuthContext's passwordRecovery
+// flag is set, instead of routing (this SPA has no URL router).
+export function ResetPasswordConfirm({ onSubmit }) {
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+    if (password.length < 6) return setError('Kata sandi minimal 6 karakter.');
+    if (password !== confirm) return setError('Konfirmasi kata sandi tidak cocok.');
+    setError(''); setLoading(true);
+    const { error: err } = await onSubmit(password);
+    if (err) setError(err);
+    setLoading(false);
+  };
+
+  return <main className="auth-page">
+    <section className="auth-art" aria-label="RUN Finance">
+      <img src="/art/finance-sculpture.jpg" alt="" fetchPriority="high" />
+      <a className="auth-brand" href="#reset-form"><span className="brand-mark">R</span> RUN <span>finance</span></a>
+      <div className="auth-story"><span className="overline">YOUR FINANCE, IN FOCUS</span><h1>Lebih terarah.<br/>Lebih terkendali.</h1><p>Satu ruang untuk melihat keuangan<br/>dan menggerakkan bisnis Anda.</p></div>
+      <div className="auth-art-footer"><Layers3 size={16}/><span>Multi-company. Multi-brand. Satu pandangan.</span></div>
+    </section>
+    <section className="auth-form-side" id="reset-form">
+      <div className="auth-topline"><span>Workspace keuangan</span><span className="auth-version">RUN / 02</span></div>
+      <div className="auth-form-content"><span className="auth-welcome-icon"><LockKeyhole size={22}/></span><p className="overline">BUAT KATA SANDI BARU</p><h2>Atur ulang kata sandi Anda.</h2><p className="auth-subtitle">Tautan reset terverifikasi. Masukkan kata sandi baru untuk akun Anda.</p>
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="auth-field-group"><label htmlFor="reset-password">Kata sandi baru</label><div className="auth-input"><LockKeyhole size={17}/><input id="reset-password" type="password" placeholder="Minimal 6 karakter" value={password} onChange={e => setPassword(e.target.value)} required disabled={loading} autoFocus/></div></div>
+          <div className="auth-field-group"><label htmlFor="reset-confirm">Konfirmasi kata sandi</label><div className="auth-input"><LockKeyhole size={17}/><input id="reset-confirm" type="password" placeholder="Ulangi kata sandi baru" value={confirm} onChange={e => setConfirm(e.target.value)} required disabled={loading}/></div></div>
+          {error && <p className="auth-error" role="alert">{error}</p>}
+          <button className="btn auth-submit" type="submit" disabled={loading}>{loading ? 'Menyimpan...' : 'Simpan & masuk'}<ArrowRight size={17}/></button>
+        </form>
       </div><footer className="auth-footer"><ShieldCheck size={15}/><span>Akses mengikuti peran dan cakupan perusahaan Anda.</span></footer>
     </section>
   </main>;

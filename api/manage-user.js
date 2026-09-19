@@ -72,6 +72,22 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
 
+    if (action === 'toggle-active') {
+      const targetEmail = String(body.targetEmail || '').trim().toLowerCase();
+      if (!targetEmail) return res.status(400).json({ ok: false, error: 'Target email wajib diisi.' });
+      const { data: list, error: listErr } = await admin.auth.admin.listUsers();
+      if (listErr) return res.status(500).json({ ok: false, error: listErr.message });
+      const target = list.users.find(u => u.email === targetEmail);
+      if (!target) return res.status(404).json({ ok: false, error: 'User tidak ditemukan.' });
+      if (target.id === callerAuth.user.id) return res.status(400).json({ ok: false, error: 'Tidak bisa menonaktifkan akun sendiri.' });
+      if (await isSuperadminTarget(admin, target.id) && callerProfile.role !== 'superadmin') {
+        return res.status(403).json({ ok: false, error: 'Hanya superadmin yang bisa mengubah status akun superadmin.' });
+      }
+      const { error: updateErr } = await admin.from('profiles').update({ active: !!body.active }).eq('id', target.id);
+      if (updateErr) return res.status(400).json({ ok: false, error: updateErr.message });
+      return res.status(200).json({ ok: true });
+    }
+
     if (action === 'delete') {
       const targetEmail = String(body.targetEmail || '').trim().toLowerCase();
       if (!targetEmail) return res.status(400).json({ ok: false, error: 'Target email wajib diisi.' });

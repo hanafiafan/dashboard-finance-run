@@ -481,6 +481,31 @@ export async function saveBankReconciliation(payload, auth) {
   return { ok: true };
 }
 
+// ── Period lock (month-end close) ──────────────────────────
+
+export async function getPeriodLocks(auth) {
+  if (auth?.isDemo) return { rows: [] };
+  const { data, error } = await supabase.from('fin_period_locks').select('*').order('period_month', { ascending: false });
+  if (error) throw new Error(humanizeError(error));
+  return { rows: data || [] };
+}
+
+export async function lockPeriod(periodMonth, auth) {
+  if (auth?.isDemo) return { ok: true };
+  const { error } = await supabase.from('fin_period_locks').insert({ period_month: periodMonth });
+  if (error) throw new Error(humanizeError(error));
+  logAudit({ action: 'lock', entity: 'period', entityId: periodMonth, auth });
+  return { ok: true };
+}
+
+export async function unlockPeriod(id, periodMonth, auth) {
+  if (auth?.isDemo) return { ok: true };
+  const { error } = await supabase.from('fin_period_locks').delete().eq('id', id);
+  if (error) throw new Error(humanizeError(error));
+  logAudit({ action: 'unlock', entity: 'period', entityId: periodMonth, auth });
+  return { ok: true };
+}
+
 // ── Forecasting & Controlling Budget ───────────────────────
 // Own read/write pair instead of the generic getRecords/saveRecord flow: this
 // entity is a matrix (brand x month x P&L line) with an upsert-by-natural-key

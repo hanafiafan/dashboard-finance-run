@@ -86,6 +86,12 @@ export function removeUser(email) {
   saveStoredUsers(getStoredUsers().filter(u => u.email !== email));
 }
 
+export function setUserActive(email, active) {
+  const users = getStoredUsers();
+  const idx = users.findIndex(u => u.email === email);
+  if (idx >= 0) { users[idx].active = active; saveStoredUsers(users); }
+}
+
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -95,6 +101,11 @@ export function AuthProvider({ children }) {
   // enrolled and needs the second factor before we finish loading the
   // profile/session — see verifyMfaCode() below.
   const [mfaPending, setMfaPending] = useState(null);
+  // Set when the user arrives via a Supabase password-recovery link — Supabase
+  // establishes a real (but recovery-scoped) session for the link's target
+  // account, which we intentionally do NOT treat as a normal login until
+  // completePasswordReset() below confirms a new password.
+  const [passwordRecovery, setPasswordRecovery] = useState(false);
 
   useEffect(() => {
     if (!isProduction) { setLoading(false); return; }
@@ -126,6 +137,9 @@ export function AuthProvider({ children }) {
     const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
       if (event === 'TOKEN_REFRESHED' && newSession) {
         setSession(prev => (prev ? { ...prev, accessToken: newSession.access_token } : prev));
+      }
+      if (event === 'PASSWORD_RECOVERY') {
+        setPasswordRecovery(true);
       }
     });
     return () => sub.subscription.unsubscribe();
@@ -210,6 +224,24 @@ export function AuthProvider({ children }) {
     setLoginError('');
   }, []);
 
+  // Always resolves without revealing whether the email actually has an
+  // account — GoTrue itself behaves this way to avoid email enumeration.
+  const requestPasswordReset = useCallback(async (email) => {
+    if (!isProduction) return;
+    await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+  }, []);
+
+  const completePasswordReset = useCallback(async (newPassword) => {
+    const { data } = await supabase.auth.getSession();
+    const recoverySession = data?.session;
+    if (!recoverySession) return { error: 'Sesi reset kedaluwarsa, minta link reset baru.' };
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) return { error: error.message };
+    setPasswordRecovery(false);
+    await finishLogin(recoverySession.access_token, recoverySession.user.id);
+    return {};
+  }, [finishLogin]);
+
   const startDemo = useCallback(() => {
     if (isProduction) return;
     setSession(buildSession({ email: 'demo@finance.local', name: 'Demo Finance', role: 'finance', canApprove: true, canManageUsers: true }, true));
@@ -225,7 +257,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ session, loading, demo, loginError, login, startDemo, logout, isProduction, mfaPending, verifyMfaCode, cancelMfa }}>
+    <AuthContext.Provider value={{ session, loading, demo, loginError, login, startDemo, logout, isProduction, mfaPending, verifyMfaCode, cancelMfa, passwordRecovery, requestPasswordReset, completePasswordReset }}>
       {children}
     </AuthContext.Provider>
   );
