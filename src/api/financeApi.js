@@ -456,6 +456,31 @@ export async function createBankTransfer(payload, auth) {
   return supabaseCreateBankTransfer(payload);
 }
 
+// ── Bank reconciliation (v1: ending-balance check, not line-item matching) ──
+
+export async function getBankReconciliations(bankId, auth) {
+  if (auth?.isDemo) return { rows: [] };
+  const { data, error } = await supabase.from('fin_bank_reconciliation').select('*').eq('bank_id', bankId).order('period_date', { ascending: false }).limit(24);
+  if (error) throw new Error(humanizeError(error));
+  return { rows: data || [] };
+}
+
+export async function saveBankReconciliation(payload, auth) {
+  if (auth?.isDemo) return { ok: true };
+  const { error } = await supabase.from('fin_bank_reconciliation').insert({
+    bank_id: payload.bankId,
+    brand_key: payload.brandKey,
+    period_date: payload.periodDate,
+    system_balance: payload.systemBalance,
+    statement_balance: payload.statementBalance,
+    note: payload.note || null,
+    reconciled_by: auth?.email || null,
+  });
+  if (error) throw new Error(humanizeError(error));
+  logAudit({ action: 'create', entity: 'bank_reconciliation', entityId: payload.bankId, after: payload, auth });
+  return { ok: true };
+}
+
 // ── Forecasting & Controlling Budget ───────────────────────
 // Own read/write pair instead of the generic getRecords/saveRecord flow: this
 // entity is a matrix (brand x month x P&L line) with an upsert-by-natural-key

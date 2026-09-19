@@ -19,6 +19,7 @@ import { formatDateTime } from '../utils/formatters';
 import FilterBar from '../components/filters/FilterBar';
 import Velaris from '../components/ui/Velaris';
 import AccountSecurity from '../components/ui/AccountSecurity';
+import { useIdleLogout } from '../hooks/useIdleLogout';
 
 const NAV_ITEMS = [
   { view: 'command', icon: LayoutDashboard, label: 'Dashboard' },
@@ -33,6 +34,7 @@ const NAV_ITEMS = [
 export default function AppShell() {
   const { app, setView, setState } = useApp();
   const { session, demo, logout } = useAuth();
+  const { warning: idleWarning, stayLoggedIn } = useIdleLogout(logout, !demo);
   const [refreshing, setRefreshing] = useState(false);
   const [securityOpen, setSecurityOpen] = useState(false);
   const [syncError, setSyncError] = useState('');
@@ -152,6 +154,12 @@ export default function AppShell() {
         <section id="view-content" className="view active" aria-busy={refreshing}><Suspense fallback={<div className="empty">Memuat modul...</div>}>{renderView()}</Suspense></section>
       </main>
       <div id="toast" className="toast" aria-live="polite"></div>
+      {idleWarning && (
+        <div className="idle-warning" role="alertdialog" aria-label="Peringatan sesi akan berakhir">
+          <span>Sesi akan berakhir karena tidak ada aktivitas.</span>
+          <button className="btn primary" onClick={stayLoggedIn}>Tetap masuk</button>
+        </div>
+      )}
     </div>
     </>
   );

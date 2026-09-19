@@ -191,6 +191,11 @@ export const FORMS = {
 // grayscale ramp — cycled for multi-series charts (brand comparisons etc.).
 export const CHART_COLORS = ['#E85002', '#333333', '#C10801', '#A7A7A7', '#F16001', '#646464', '#D9C3AB', '#000000'];
 
+// Must match fin_budget_approval_threshold() in the database (migration
+// 0024) — that function is the real security boundary (RLS), this constant
+// only drives the UI so Finance sees the right button/label before trying.
+export const BUDGET_APPROVAL_THRESHOLD = 10_000_000;
+
 export const VIEWS = ['command', 'analytics', 'operations', 'forecast_controlling', 'approval', 'master', 'documentation'];
 export const VIEW_TITLES = {
   command: 'Command Center',

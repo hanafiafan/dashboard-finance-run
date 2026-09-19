@@ -11,6 +11,7 @@ import { getRecords, saveRecord, deleteRecord, createBankTransfer } from '../api
 import { ENTITY_LABELS, TABLE_COLUMNS, FORMS } from '../utils/constants';
 import { number } from '../utils/formatters';
 import { notify } from '../components/ui/Toast';
+import BankReconciliationPanel from '../components/ui/BankReconciliationPanel';
 
 const ENTITIES = ['budget', 'income', 'forecast', 'forecastOut', 'outcome', 'omzet', 'bank', 'service', 'payables', 'receivables'];
 
@@ -252,6 +253,8 @@ export function Operations() {
           }
         />}
       </div>
+
+      {entity === 'bank' && !recordsLoading && !recordsError && <BankReconciliationPanel banks={filtered} session={session} />}
 
       <Modal
         isOpen={modalOpen}

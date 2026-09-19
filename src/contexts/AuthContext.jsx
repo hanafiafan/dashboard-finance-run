@@ -148,7 +148,18 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (email, password) => {
     if (isProduction) {
+      // Brute-force throttle — fails open (never blocks login) if the RPC
+      // isn't there yet, e.g. migration 0022 not applied.
+      try {
+        const { data: locked } = await supabase.rpc('check_login_locked', { p_email: email });
+        if (locked) {
+          setLoginError('Terlalu banyak percobaan gagal. Coba lagi dalam 15 menit.');
+          return;
+        }
+      } catch { /* RPC missing or unreachable — don't block login on it */ }
+
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      try { await supabase.rpc('record_login_attempt', { p_email: email, p_success: !!(data?.session) }); } catch { /* best-effort */ }
       if (error || !data?.session) {
         setLoginError('Email atau password salah.');
         return;
