@@ -45,12 +45,35 @@ export async function createExportWorkbook({ title, columns, rows, filters = {},
   sheet.getRow(5).height = 12;
   const header = sheet.getRow(6); header.values = columns; header.height = 34;
   header.eachCell(cell => {cell.font = { name:'Calibri', size:11, bold:true, color:{argb:'FFFFFFFF'} };cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFDA683F'}};cell.alignment={vertical:'middle',wrapText:true};});
-  columns.forEach((column,index) => {
+  // Fit each column to its widest actual value (not just the header label) — a
+  // narrow-but-long-content column (URLs, long notes) used to wrap into extra
+  // lines that the old fixed row height below then silently clipped.
+  const MAX_TEXT_WIDTH = 48;
+  const widths = columns.map(column => {
     const type = columnType(column);
-    sheet.getColumn(index + 1).width = type === 'money' ? 23 : type === 'percent' ? 16 : /Keterangan|Catatan|Feedback|Alamat/.test(column) ? 42 : type === 'date' ? 18 : Math.min(30,Math.max(19,column.length + 3));
+    if (type === 'money') return 23;
+    if (type === 'percent') return 16;
+    if (type === 'date') return 18;
+    const longest = rows.reduce((max, record) => Math.max(max, String(record[column] ?? '').length), column.length);
+    return Math.min(MAX_TEXT_WIDTH, Math.max(14, longest + 2));
   });
+  columns.forEach((column,index) => { sheet.getColumn(index + 1).width = widths[index]; });
+  // Row height must grow with however many lines the wrapped text actually
+  // needs — a fixed height clips any line past what that fixed height allows.
+  const LINE_HEIGHT = 14;
+  const lineCount = (text, colWidth) => {
+    const str = String(text ?? '');
+    if (!str) return 1;
+    return str.split('\n').reduce((sum, line) => sum + Math.max(1, Math.ceil(line.length / colWidth)), 0);
+  };
   rows.forEach((record,index) => {
-    const row = sheet.getRow(index + 7); row.values = columns.map(column => typedValue(column,record[column])); row.height=32;
+    const row = sheet.getRow(index + 7); row.values = columns.map(column => typedValue(column,record[column]));
+    const maxLines = columns.reduce((max, column, i) => {
+      const type = columnType(column);
+      if (type === 'money' || type === 'percent' || type === 'date') return max;
+      return Math.max(max, lineCount(record[column], widths[i]));
+    }, 1);
+    row.height = Math.max(20, maxLines * LINE_HEIGHT + 6);
     row.eachCell({includeEmpty:true}, (cell,c) => {
       const type = columnType(columns[c-1]);
       cell.font={name:'Calibri',size:11,color:{argb:'FF30392B'}};
@@ -60,6 +83,10 @@ export async function createExportWorkbook({ title, columns, rows, filters = {},
       if(type==='money')cell.numFmt='"Rp" #,##0;[Red]("Rp" #,##0);"Rp" 0';
       if(type==='percent')cell.numFmt='0.0%';
       if(type==='date')cell.numFmt='dd mmm yyyy';
+      if(/URL/i.test(columns[c-1]) && cell.value) {
+        cell.value = { text: String(cell.value), hyperlink: String(cell.value) };
+        cell.font = { ...cell.font, color: { argb: 'FF1155CC' }, underline: true };
+      }
     });
   });
   sheet.autoFilter={from:{row:6,column:1},to:{row:Math.max(6,rows.length+6),column:columns.length}};
