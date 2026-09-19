@@ -1,20 +1,29 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Check, RotateCcw, X } from 'lucide-react';
 import { DataTable } from '../components/ui/DataTable';
 import { Panel } from '../components/ui/MetricCard';
 import { Doughnut } from 'react-chartjs-2';
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
-import { approveBudget } from '../api/financeApi';
-import { number } from '../utils/formatters';
+import { approveBudget, getAppState } from '../api/financeApi';
+import { number, money } from '../utils/formatters';
 import { notify } from '../components/ui/Toast';
 import { CHART_COLORS, BUDGET_APPROVAL_THRESHOLD } from '../utils/constants';
+import { Modal } from '../components/ui/Modal';
+import { getChartTheme } from '../utils/chartTheme';
 import { forecastCashPosition, projectedCashRecommendation } from '../utils/ews';
 
 export function Approval() {
-  const { app } = useApp();
+  const { app, setState } = useApp();
+  const currentFilters = useRef(app.filters);
+  currentFilters.current = app.filters;
   const { session } = useAuth();
   const [loading, setLoading] = useState({});
+  const [review, setReview] = useState(null);
+  const [paid, setPaid] = useState('');
+  const [feedback, setFeedback] = useState('');
+  const saving = useRef(false);
+  const startReview = (row, status) => { setPaid(''); setFeedback(''); setReview({ row, status }); };
 
   const summary = app.state?.dashboard?.summary || {};
   const forecast = app.state?.dashboard?.forecast || { in: [], out: [] };
@@ -47,19 +56,27 @@ export function Approval() {
     const finalStatus = status === 'Approved' && session?.role === 'finance' && isLargeAmount
       ? 'Pending Final Approval'
       : status;
-    const paid = finalStatus === 'Approved' ? prompt('Nominal dibayar, kosongkan jika belum:') || '' : '';
-    const feedback = prompt('Feedback finance:') || '';
+    if (saving.current) return;
+    if (finalStatus === 'Approved' && paid !== '' && (!Number.isFinite(Number(paid)) || Number(paid) < 0 || Number(paid) > amount)) { notify.error('Nominal dibayar harus antara 0 dan nominal pengajuan.'); return; }
+    if (['Rejected', 'Need Revision'].includes(finalStatus) && !feedback.trim()) { notify.error('Isi alasan keputusan terlebih dahulu.'); return; }
+    saving.current = true;
     setLoading((prev) => ({ ...prev, [id]: true }));
     try {
-      await approveBudget(id, finalStatus, paid, feedback, session);
-      notify.success(finalStatus === 'Pending Final Approval'
-        ? 'Diteruskan ke Super Admin.\nNominal di atas ambang batas butuh persetujuan final Super Admin sebelum berstatus Approved.'
-        : `Pengajuan di-${finalStatus}.\nHalaman akan dimuat ulang agar saldo dan status ikut ter-update.`);
-      setTimeout(() => window.location.reload(), 1200);
+      await approveBudget(id, finalStatus, finalStatus === 'Approved' ? paid : '', feedback.trim(), session);
+      setReview(null);
+      notify.success(session?.isDemo ? 'Simulasi selesai. Data demo tidak diubah.' : finalStatus === 'Pending Final Approval' ? 'Pengajuan diteruskan ke Super Admin.' : 'Keputusan tersimpan.');
+      try {
+        const filters = currentFilters.current;
+        const nextState = await getAppState(filters, session);
+        if (filters === currentFilters.current) setState(nextState);
+      } catch {
+        notify.error('Keputusan tersimpan, tetapi tampilan belum diperbarui. Klik Refresh.');
+      }
     } catch (err) {
       console.error(err);
       notify.error(err.message || 'Gagal memproses approval.');
     }
+    saving.current = false;
     setLoading((prev) => ({ ...prev, [id]: false }));
   };
 
@@ -69,6 +86,7 @@ export function Approval() {
   };
 
   return (
+    <>
     <div className="grid-2 approval-grid">
       <div className="panel tight">
         <div className="panel-head">
@@ -86,7 +104,7 @@ export function Approval() {
                   <>
                     <button
                       className="icon-btn"
-                      onClick={() => handleApprove(row, 'Approved')}
+                      onClick={() => startReview(row, 'Approved')}
                       disabled={loading[row.ID]}
                       title={session?.role === 'finance' && Number(row['Nominal Pengajuan (Rp)'] || 0) > BUDGET_APPROVAL_THRESHOLD ? 'Teruskan ke Super Admin' : 'Approve'}
                     >
@@ -94,7 +112,7 @@ export function Approval() {
                     </button>
                     <button
                       className="icon-btn"
-                      onClick={() => handleApprove(row, 'Need Revision')}
+                      onClick={() => startReview(row, 'Need Revision')}
                       disabled={loading[row.ID]}
                       title="Revisi"
                     >
@@ -102,7 +120,7 @@ export function Approval() {
                     </button>
                     <button
                       className="icon-btn"
-                      onClick={() => handleApprove(row, 'Rejected')}
+                      onClick={() => startReview(row, 'Rejected')}
                       disabled={loading[row.ID]}
                       title="Tolak"
                     >
@@ -115,10 +133,17 @@ export function Approval() {
         />
       </div>
       <Panel title="Prioritas request" note="High, medium, low" glow>
-        <div className="chart-box">
-          <Doughnut data={priorityData} options={{ cutout: '62%', responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: undefined }} />
-        </div>
+          <Doughnut data={priorityData} options={{ cutout: '62%', responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: getChartTheme().labelColor } } }, scales: undefined }} />
       </Panel>
     </div>
+    <Modal isOpen={!!review} onClose={() => { if (!saving.current) setReview(null); }} title={review?.status === 'Approved' ? 'Tinjau persetujuan' : review?.status === 'Rejected' ? 'Tolak pengajuan' : 'Minta revisi'}>
+      {review && <form onSubmit={e => { e.preventDefault(); handleApprove(review.row, review.status); }}>
+        <div className="review-summary"><div><span>Brand</span><strong>{review.row.Brand}</strong></div><div><span>Nominal pengajuan</span><strong>{money.format(Number(review.row['Nominal Pengajuan (Rp)'] || 0))}</strong></div><div style={{ gridColumn: '1 / -1' }}><span>Keterangan</span><strong>{review.row.Keterangan || '—'}</strong></div></div>
+        {review.status === 'Approved' && session?.role === 'finance' && Number(review.row['Nominal Pengajuan (Rp)']) > BUDGET_APPROVAL_THRESHOLD ? <p className="recon-context">Pengajuan ini diteruskan ke Super Admin untuk persetujuan final.</p> : review.status === 'Approved' && <div className="form-group"><label htmlFor="approval-paid">Nominal yang sudah dibayar (opsional)</label><input id="approval-paid" type="number" min="0" max={Number(review.row['Nominal Pengajuan (Rp)'])} step="1" value={paid} onChange={e => setPaid(e.target.value)} disabled={loading[review.row.ID]}/><p className="form-intro">Isi hanya pembayaran yang sudah terjadi. Persetujuan ini tidak menjalankan transfer bank.</p></div>}
+        <div className="form-group"><label htmlFor="approval-feedback">{review.status === 'Approved' ? 'Catatan keputusan' : 'Alasan keputusan (wajib)'}</label><textarea id="approval-feedback" value={feedback} onChange={e => setFeedback(e.target.value)} required={review.status !== 'Approved'} disabled={loading[review.row.ID]}/></div>
+        <div className="modal-actions"><button type="button" className="btn ghost" disabled={loading[review.row.ID]} onClick={() => setReview(null)}>Batal</button><button className="btn primary" type="submit" disabled={loading[review.row.ID]}>{loading[review.row.ID] ? 'Menyimpan…' : session?.isDemo ? 'Simulasikan keputusan' : 'Simpan keputusan'}</button></div>
+      </form>}
+    </Modal>
+    </>
   );
 }

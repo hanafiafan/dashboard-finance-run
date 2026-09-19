@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles/globals.css';
 import './styles/redesign.css';
+import './styles/refinement.css';
 import { notify } from './components/ui/Toast';
 import { humanizeError } from './utils/errorMessage';
 import { logError } from './api/auditLog';

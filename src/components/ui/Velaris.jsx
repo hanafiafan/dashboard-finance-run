@@ -132,8 +132,10 @@ export default function Velaris({
     };
 
     const program = gl.createProgram();
-    gl.attachShader(program, createShader(gl.VERTEX_SHADER, vertexShaderGLSL));
-    gl.attachShader(program, createShader(gl.FRAGMENT_SHADER, fragmentShaderGLSL));
+    const vertex = createShader(gl.VERTEX_SHADER, vertexShaderGLSL);
+    const fragment = createShader(gl.FRAGMENT_SHADER, fragmentShaderGLSL);
+    gl.attachShader(program, vertex);
+    gl.attachShader(program, fragment);
     gl.linkProgram(program);
     gl.useProgram(program);
 
@@ -165,10 +167,11 @@ export default function Velaris({
     resize();
 
     let raf;
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const render = t => {
       const p = paramsRef.current;
       gl.uniform2f(locs.res, canvas.width, canvas.height);
-      gl.uniform1f(locs.time, t * 0.001 * p.speed);
+      gl.uniform1f(locs.time, (motion.matches ? 0 : t * 0.001 * p.speed));
       gl.uniform1f(locs.grain, p.grain);
       gl.uniform3f(locs.bg, ...hexToRgb(p.bg));
 
@@ -176,11 +179,20 @@ export default function Velaris({
       gl.uniform3fv(locs.colors, flat);
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-      raf = requestAnimationFrame(render);
+      if (!document.hidden && !motion.matches) raf = requestAnimationFrame(render);
     };
 
+    const resume = () => { cancelAnimationFrame(raf); if (!document.hidden) raf = requestAnimationFrame(render); };
+    document.addEventListener('visibilitychange', resume);
+    motion.addEventListener('change', resume);
     raf = requestAnimationFrame(render);
     return () => {
+      document.removeEventListener('visibilitychange', resume);
+      motion.removeEventListener('change', resume);
+      gl.deleteBuffer(buffer);
+      gl.deleteProgram(program);
+      gl.deleteShader(vertex);
+      gl.deleteShader(fragment);
       ro.disconnect();
       cancelAnimationFrame(raf);
     };

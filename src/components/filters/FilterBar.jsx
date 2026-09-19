@@ -72,13 +72,13 @@ export default function FilterBar() {
     <section className="filter-band">
       {show('company') && (
         <div className="field">
-          <label htmlFor="companyFilter">Company</label>
+          <label htmlFor="companyFilter">Perusahaan</label>
           <select
             id="companyFilter"
             value={selectedCompany}
             onChange={e => setFilter('company', e.target.value)}
           >
-            <option value="">All Companies ({companies.length - 1})</option>
+            <option value="">Semua perusahaan ({companies.length - 1})</option>
             {companies.filter(Boolean).map(c => (
               <option key={c} value={c}>{c}</option>
             ))}
@@ -93,10 +93,10 @@ export default function FilterBar() {
             id="brandFilter"
             value={selectedBrand}
             onChange={e => setFilter('brandKey', e.target.value)}
-            style={{ minWidth: 150 }}
+            style={{ minWidth: 0 }}
           >
             <option value="">
-              {selectedCompany ? `All ${selectedCompany} brands` : 'All Brands'}
+              {selectedCompany ? `Semua brand ${selectedCompany}` : 'Semua brand'}
             </option>
             {brandOptions.map(b => (
               <option key={b.value} value={b.value}>{b.label}</option>
@@ -113,7 +113,7 @@ export default function FilterBar() {
             value={filters.category || ''}
             onChange={e => setFilter('category', e.target.value)}
           >
-            <option value="">All Categories</option>
+            <option value="">Semua kategori</option>
             {categories.map(c => (
               <option key={c} value={c}>{c}</option>
             ))}
@@ -124,7 +124,7 @@ export default function FilterBar() {
       {show('date') && (
         <>
           <div className="field">
-            <label htmlFor="startDate">From</label>
+            <label htmlFor="startDate">Dari tanggal</label>
             <input
               id="startDate"
               type="date"
@@ -134,7 +134,7 @@ export default function FilterBar() {
           </div>
 
           <div className="field">
-            <label htmlFor="endDate">To</label>
+            <label htmlFor="endDate">Sampai tanggal</label>
             <input
               id="endDate"
               type="date"
@@ -147,7 +147,7 @@ export default function FilterBar() {
 
       {show('year') && (
         <div className="field">
-          <label htmlFor="yearFilter">Year</label>
+          <label htmlFor="yearFilter">Tahun omzet</label>
           <input
             id="yearFilter"
             type="number"
@@ -180,7 +180,7 @@ export default function FilterBar() {
           ))}
           <button type="button" className="filter-pill clear" onClick={clearFilters}>
             <SlidersHorizontal size={12} />
-            Clear ({activePills.length})
+            Reset ({activePills.length})
           </button>
         </>
       )}

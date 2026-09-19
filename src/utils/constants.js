@@ -189,7 +189,7 @@ export const FORMS = {
 
 // Brand palette only — Branding Orange, Firebrick, Red-Orange, Beige, and the
 // grayscale ramp — cycled for multi-series charts (brand comparisons etc.).
-export const CHART_COLORS = ['#E85002', '#333333', '#C10801', '#A7A7A7', '#F16001', '#646464', '#D9C3AB', '#000000'];
+export const CHART_COLORS = ['#E85002', '#D9C3AB', '#D95C50', '#A7A7A7', '#F3995A', '#8E8178', '#B99175', '#C8BDB4'];
 
 // Must match fin_budget_approval_threshold() in the database (migration
 // 0024) — that function is the real security boundary (RLS), this constant

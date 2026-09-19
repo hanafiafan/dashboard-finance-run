@@ -149,6 +149,7 @@ export default function AppShell() {
         </div>
 
         <FilterBar />
+        <div className="workspace-status" role="status"><span className={`data-state ${syncError ? 'failed' : ''}`}><i/>{refreshing ? 'Memperbarui data…' : syncError ? 'Data belum diperbarui' : demo ? 'Demo · data contoh' : 'Data workspace'}</span><span>Terakhir dimuat: {formatDateTime(state?.dashboard?.generatedAt)}</span><span className="workspace-currency">Mata uang · IDR</span></div>
 
         {syncError && <div className="sync-error" role="alert">Pembaruan gagal. Data di bawah adalah data terakhir yang berhasil dimuat dan mungkin belum sesuai filter. {syncError}</div>}
         <section id="view-content" className="view active" aria-busy={refreshing}><Suspense fallback={<div className="empty">Memuat modul...</div>}>{renderView()}</Suspense></section>

@@ -4,7 +4,7 @@ import { Panel } from '../components/ui/MetricCard';
 import { CHART_COLORS as COLORS } from '../utils/constants';
 import { useApp } from '../contexts/AppContext';
 import { getChartTheme } from '../utils/chartTheme';
-import { shortMoney } from '../utils/formatters';
+import { shortMoney, money } from '../utils/formatters';
 
 export function Analytics() {
   const { app } = useApp();
@@ -18,7 +18,7 @@ export function Analytics() {
     labels: (charts.brandPerformance || []).map(x => x.label),
     datasets: [
       { label: 'Cash In', data: (charts.brandPerformance || []).map(x => x.cashIn), backgroundColor: '#22C55E', borderRadius: 4 },
-      { label: 'Cash Out', data: (charts.brandPerformance || []).map(x => x.cashOut), backgroundColor: '#333333', borderRadius: 4 },
+      { label: 'Cash Out', data: (charts.brandPerformance || []).map(x => x.cashOut), backgroundColor: '#F16001', borderRadius: 4 },
       { label: 'Budget', data: (charts.brandPerformance || []).map(x => x.budget), backgroundColor: '#D9C3AB', borderRadius: 4 },
     ],
   };
@@ -31,7 +31,7 @@ export function Analytics() {
   const omzetData = {
     labels: (charts.omzetByMonth || []).map(x => x.label),
     datasets: [
-      { label: 'Target', data: (charts.omzetByMonth || []).map(x => x.target), backgroundColor: 'rgba(51,51,51,0.18)', borderColor: '#333333', borderWidth: 2, borderRadius: 4 },
+      { label: 'Target', data: (charts.omzetByMonth || []).map(x => x.target), backgroundColor: 'rgba(217,195,171,0.18)', borderColor: '#D9C3AB', borderWidth: 2, borderRadius: 4 },
       { label: 'Realisasi', data: (charts.omzetByMonth || []).map(x => x.real), backgroundColor: '#22C55E', borderRadius: 4 },
     ],
   };
@@ -48,8 +48,8 @@ export function Analytics() {
     datasets: [
       { label: 'Forecast In', data: (charts.monthlyCashFlow || []).map(x => x.forecastIn), backgroundColor: 'rgba(34,197,94,0.3)', borderColor: '#22C55E', borderWidth: 1.5, borderRadius: 4 },
       { label: 'Realisasi In', data: (charts.monthlyCashFlow || []).map(x => x.cashIn), backgroundColor: '#22C55E', borderRadius: 4 },
-      { label: 'Forecast Out', data: (charts.monthlyCashFlow || []).map(x => x.forecastOut), backgroundColor: 'rgba(51,51,51,0.3)', borderColor: '#333333', borderWidth: 1.5, borderRadius: 4 },
-      { label: 'Realisasi Out', data: (charts.monthlyCashFlow || []).map(x => x.cashOut), backgroundColor: '#333333', borderRadius: 4 },
+      { label: 'Forecast Out', data: (charts.monthlyCashFlow || []).map(x => x.forecastOut), backgroundColor: 'rgba(241,96,1,0.22)', borderColor: '#F16001', borderWidth: 1.5, borderRadius: 4 },
+      { label: 'Realisasi Out', data: (charts.monthlyCashFlow || []).map(x => x.cashOut), backgroundColor: '#F16001', borderRadius: 4 },
     ],
   };
 
@@ -68,7 +68,7 @@ export function Analytics() {
           <Bar data={omzetData} options={opts} />
         </Panel>
         <Panel title="Prioritas budget" note="Komposisi urgency" glow>
-          <Doughnut data={priorityData} options={{ ...opts, cutout: '62%', scales: undefined }} />
+          <Doughnut data={priorityData} options={{ ...opts, cutout: '62%', scales: undefined, plugins: { ...opts.plugins, tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed} pengajuan` } } } }} />
         </Panel>
       </div>
       <Panel title="Controlling — Forecast vs Aktual" note="Seberapa akurat forecast dibanding realisasi Cash In/Out per bulan" size="tall">
@@ -100,7 +100,7 @@ function QuickTable({ title, rows, columns }) {
 const chartOptions = theme => ({
   responsive: true,
   maintainAspectRatio: false,
-  plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16, color: theme.labelColor } } },
+  plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16, color: theme.labelColor } }, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${money.format(ctx.parsed.y)}` } } },
   scales: {
     y: { beginAtZero: true, grid: { color: theme.gridColor }, ticks: { color: theme.tickColor, callback: (v) => shortMoney(v) } },
     x: { grid: { display: false }, ticks: { color: theme.tickColor } },

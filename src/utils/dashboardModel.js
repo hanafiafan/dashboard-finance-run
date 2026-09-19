@@ -32,3 +32,7 @@ export function recentTransactions(tables = {}) {
     })),
   ].sort((a, b) => String(b.Tanggal || '').localeCompare(String(a.Tanggal || '')));
 }
+
+export function isAwaitingApproval(status) {
+  return status === 'Pending' || status === 'Pending Final Approval';
+}

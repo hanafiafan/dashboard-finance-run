@@ -1,3 +1,4 @@
+import { isAwaitingApproval } from './dashboardModel';
 import { forecastCashPosition, addDays } from './ews';
 
 export function demoApi(action, args, session) {
@@ -206,7 +207,7 @@ export function demoState(filters = {}, session = null) {
     Keterangan: `Kebutuhan ${brand} - Q3 ${new Date().getFullYear()}`,
     'Nominal Pengajuan (Rp)': 5000000 + index * 1250000,
     Prioritas: ['High', 'Medium', 'Low'][index % 3],
-    Status: ['Diajukan', 'Approved', 'Need Revision'][index % 3],
+    Status: ['Pending', 'Approved', 'Pending Final Approval'][index % 3],
     'Tgl Dibutuhkan': addDays(3 + index * 3),
   });
 
@@ -256,7 +257,7 @@ export function demoState(filters = {}, session = null) {
         netCash,
         bankBalance: totalBank,
         budgetRequested: pendingBudget.reduce((s, r) => s + (r['Nominal Pengajuan (Rp)'] || 0), 0),
-        pendingApproval: pendingBudget.filter(r => r.Status !== 'Approved').length,
+        pendingApproval: pendingBudget.filter(r => isAwaitingApproval(r.Status)).length,
         budgetOutstanding: pendingBudget.reduce((s, r) => s + (r['Nominal Pengajuan (Rp)'] || 0), 0),
         payableOutstanding,
         receivableOutstanding,
@@ -285,7 +286,7 @@ export function demoState(filters = {}, session = null) {
       },
       forecast: { in: forecastIn, out: forecastOut },
       tables: {
-        pendingBudget, dueSoon,
+        pendingBudget: pendingBudget.filter(r => isAwaitingApproval(r.Status)), dueSoon,
         recentIncome: DEMO_ROWS.income,
         recentOutcome: DEMO_ROWS.outcome,
         bank: DEMO_BANK_ROWS,

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { finiteAmount, recentTransactions } from '../src/utils/dashboardModel.js';
+import { finiteAmount, recentTransactions, isAwaitingApproval } from '../src/utils/dashboardModel.js';
 
 test('numeric database values retain precision and negative balances', () => {
   assert.equal(finiteAmount('1250000.50'), 1250000.5);
@@ -40,4 +40,9 @@ test('financial reads include later pages instead of silently truncating totals'
 test('a failed subsequent page rejects the whole financial read', async () => {
   await assert.rejects(readAllRows({ range: async from => from === 0
     ? { data: [1, 2] } : { error: { message: 'Connection failed' } } }, 2), /Connection failed/);
+});
+
+test('approval queue includes the second sign-off and excludes finished or returned requests', () => {
+  const statuses = ['Pending', 'Approved', 'Pending Final Approval', 'Paid', 'Rejected', 'Need Revision', null];
+  assert.deepEqual(statuses.filter(isAwaitingApproval), ['Pending', 'Pending Final Approval']);
 });
