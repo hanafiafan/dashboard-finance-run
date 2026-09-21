@@ -12,8 +12,8 @@ export default function HorizontalBar({ data, title, note, color }) {
     datasets: [{
       label: 'Nilai',
       data: data.map(x => x.value),
-      backgroundColor: (color || '#E85002') + 'CC',
-      borderColor: color || '#E85002',
+      backgroundColor: (color || '#1762FF') + 'CC',
+      borderColor: color || '#1762FF',
       borderWidth: 1,
       borderRadius: 4,
     }],

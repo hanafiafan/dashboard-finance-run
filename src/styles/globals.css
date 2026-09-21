@@ -12,28 +12,28 @@
    ============================================================ */
 :root,
 [data-theme="light"] {
-  --brand-teal: #E85002;
-  --brand-teal-light: #F16001;
-  --brand-teal-dark: #C10801;
+  --brand-teal: #1762FF;
+  --brand-teal-light: #BFFF00;
+  --brand-teal-dark: #ED6C79;
   --brand-cyan: #A7A7A7;
   --brand-emerald: #333333;
 
-  --gradient-teal: linear-gradient(135deg, #F16001, #E85002);
-  --gradient-blue: linear-gradient(135deg, #E85002, #C10801);
-  --gradient-coral: linear-gradient(135deg, #F16001, #E85002);
-  --gradient-amber: linear-gradient(135deg, #F16001, #E85002);
+  --gradient-teal: linear-gradient(135deg, #BFFF00, #1762FF);
+  --gradient-blue: linear-gradient(135deg, #1762FF, #ED6C79);
+  --gradient-coral: linear-gradient(135deg, #BFFF00, #1762FF);
+  --gradient-amber: linear-gradient(135deg, #BFFF00, #1762FF);
   --gradient-green: linear-gradient(135deg, #646464, #333333);
   --gradient-violet: linear-gradient(135deg, #646464, #333333);
 
   --bg-body: #F9F9F9;
   --bg-body-pattern: transparent;
-  --bg-body-orb1: rgba(232,80,2,0.03);
+  --bg-body-orb1: rgba(23,98,255,0.03);
   --bg-body-orb2: rgba(100,100,100,0.025);
   --bg-card: #F9F9F9;
   --bg-card-hover: #F9F9F9;
   --bg-elevated: #F9F9F9;
   --bg-hover: rgba(167,167,167,0.16);
-  --bg-active: rgba(232,80,2,0.08);
+  --bg-active: rgba(23,98,255,0.08);
   --bg-input: #F9F9F9;
   --bg-glass: rgba(249,249,249,0.75);
 
@@ -44,21 +44,21 @@
 
   --border-light: rgba(167,167,167,0.35);
   --border-medium: rgba(100,100,100,0.4);
-  --border-glow: rgba(232,80,2,0.2);
+  --border-glow: rgba(23,98,255,0.2);
 
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
   --shadow-md: 0 6px 20px rgba(0,0,0,0.07);
   --shadow-lg: 0 14px 40px rgba(0,0,0,0.09);
   --shadow-xl: 0 22px 56px rgba(0,0,0,0.12);
-  --shadow-glow-teal: 0 0 30px rgba(232,80,2,0.15);
-  --shadow-glow-blue: 0 0 30px rgba(232,80,2,0.15);
+  --shadow-glow-teal: 0 0 30px rgba(23,98,255,0.15);
+  --shadow-glow-blue: 0 0 30px rgba(23,98,255,0.15);
   --shadow-glow-violet: 0 0 30px rgba(51,51,51,0.15);
 
   --sidebar-bg: linear-gradient(180deg, #000000 0%, #333333 100%);
   --sidebar-text: #F9F9F9;
   --sidebar-muted: #A7A7A7;
-  --sidebar-active: rgba(232,80,2,0.2);
-  --sidebar-active-text: #F16001;
+  --sidebar-active: rgba(23,98,255,0.2);
+  --sidebar-active-text: #BFFF00;
   --sidebar-border: rgba(249,249,249,0.08);
   --sidebar-hover: rgba(249,249,249,0.06);
   --sidebar-account-bg: rgba(249,249,249,0.05);
@@ -71,11 +71,11 @@
   --card-violet: linear-gradient(135deg, #F9F9F9, #F9F9F9);
   --card-cyan: linear-gradient(135deg, #F9F9F9, #F9F9F9);
 
-  --blue: #E85002; --blue-bg: rgba(232,80,2,0.1); --blue-light: rgba(232,80,2,0.25);
-  --coral: #E85002; --coral-bg: rgba(232,80,2,0.1); --coral-light: rgba(232,80,2,0.25);
+  --blue: #1762FF; --blue-bg: rgba(23,98,255,0.1); --blue-light: rgba(23,98,255,0.25);
+  --coral: #1762FF; --coral-bg: rgba(23,98,255,0.1); --coral-light: rgba(23,98,255,0.25);
   --green: #333333; --green-bg: rgba(51,51,51,0.08); --green-light: rgba(51,51,51,0.25);
-  --rose: #C10801; --rose-bg: rgba(193,8,1,0.1); --rose-light: rgba(193,8,1,0.25);
-  --amber: #E85002; --amber-bg: rgba(232,80,2,0.1); --amber-light: rgba(232,80,2,0.25);
+  --rose: #ED6C79; --rose-bg: rgba(237,108,121,0.1); --rose-light: rgba(237,108,121,0.25);
+  --amber: #1762FF; --amber-bg: rgba(23,98,255,0.1); --amber-light: rgba(23,98,255,0.25);
   --teal: #333333; --teal-bg: rgba(51,51,51,0.08); --teal-light: rgba(51,51,51,0.25);
   --violet: #646464; --violet-bg: rgba(100,100,100,0.08); --violet-light: rgba(100,100,100,0.25);
   --cyan: #A7A7A7; --cyan-bg: rgba(167,167,167,0.15); --cyan-light: rgba(167,167,167,0.3);
@@ -90,13 +90,13 @@
 [data-theme="dark"] {
   --bg-body: #000000;
   --bg-body-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  --bg-body-orb1: rgba(241,96,1,0.06);
+  --bg-body-orb1: rgba(191,255,0,0.06);
   --bg-body-orb2: rgba(167,167,167,0.05);
   --bg-card: #333333;
   --bg-card-hover: #333333;
   --bg-elevated: #333333;
   --bg-hover: #333333;
-  --bg-active: rgba(241,96,1,0.15);
+  --bg-active: rgba(191,255,0,0.15);
   --bg-input: #333333;
   --bg-glass: rgba(51,51,51,0.85);
 
@@ -107,29 +107,29 @@
 
   --border-light: #333333;
   --border-medium: #333333;
-  --border-glow: rgba(241,96,1,0.3);
+  --border-glow: rgba(191,255,0,0.3);
 
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
   --shadow-md: 0 4px 16px rgba(0,0,0,0.3);
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
   --shadow-xl: 0 16px 48px rgba(0,0,0,0.5);
-  --shadow-glow-teal: 0 0 40px rgba(241,96,1,0.2);
-  --shadow-glow-blue: 0 0 40px rgba(241,96,1,0.2);
+  --shadow-glow-teal: 0 0 40px rgba(191,255,0,0.2);
+  --shadow-glow-blue: 0 0 40px rgba(191,255,0,0.2);
   --shadow-glow-violet: 0 0 40px rgba(167,167,167,0.2);
 
-  --card-teal: linear-gradient(135deg, rgba(241,96,1,0.12), rgba(167,167,167,0.08));
-  --card-blue: linear-gradient(135deg, rgba(241,96,1,0.12), rgba(167,167,167,0.08));
-  --card-rose: linear-gradient(135deg, rgba(193,8,1,0.12), rgba(241,96,1,0.08));
-  --card-amber: linear-gradient(135deg, rgba(241,96,1,0.12), rgba(232,80,2,0.08));
+  --card-teal: linear-gradient(135deg, rgba(191,255,0,0.12), rgba(167,167,167,0.08));
+  --card-blue: linear-gradient(135deg, rgba(191,255,0,0.12), rgba(167,167,167,0.08));
+  --card-rose: linear-gradient(135deg, rgba(237,108,121,0.12), rgba(191,255,0,0.08));
+  --card-amber: linear-gradient(135deg, rgba(191,255,0,0.12), rgba(23,98,255,0.08));
   --card-green: linear-gradient(135deg, rgba(167,167,167,0.12), rgba(100,100,100,0.08));
   --card-violet: linear-gradient(135deg, rgba(167,167,167,0.12), rgba(100,100,100,0.08));
   --card-cyan: linear-gradient(135deg, rgba(167,167,167,0.12), rgba(100,100,100,0.08));
 
-  --blue: #F16001; --blue-bg: rgba(241,96,1,0.15); --blue-light: rgba(241,96,1,0.25);
-  --coral: #F16001; --coral-bg: rgba(241,96,1,0.15); --coral-light: rgba(241,96,1,0.25);
+  --blue: #BFFF00; --blue-bg: rgba(191,255,0,0.15); --blue-light: rgba(191,255,0,0.25);
+  --coral: #BFFF00; --coral-bg: rgba(191,255,0,0.15); --coral-light: rgba(191,255,0,0.25);
   --green: #A7A7A7; --green-bg: rgba(167,167,167,0.15); --green-light: rgba(167,167,167,0.25);
-  --rose: #F16001; --rose-bg: rgba(193,8,1,0.2); --rose-light: rgba(193,8,1,0.3);
-  --amber: #F16001; --amber-bg: rgba(241,96,1,0.15); --amber-light: rgba(241,96,1,0.25);
+  --rose: #BFFF00; --rose-bg: rgba(237,108,121,0.2); --rose-light: rgba(237,108,121,0.3);
+  --amber: #BFFF00; --amber-bg: rgba(191,255,0,0.15); --amber-light: rgba(191,255,0,0.25);
   --teal: #A7A7A7; --teal-bg: rgba(167,167,167,0.15); --teal-light: rgba(167,167,167,0.25);
   --violet: #A7A7A7; --violet-bg: rgba(167,167,167,0.15); --violet-light: rgba(167,167,167,0.25);
   --cyan: #A7A7A7; --cyan-bg: rgba(167,167,167,0.15); --cyan-light: rgba(167,167,167,0.25);
@@ -550,11 +550,11 @@ p, span { color: inherit; }
 .btn.teal { background: var(--gradient-teal); color: white; border: none; box-shadow: 0 2px 10px rgba(100,100,100,0.3); }
 .btn.teal:hover { box-shadow: 0 4px 20px rgba(100,100,100,0.4); }
 
-.btn.amber { background: var(--gradient-amber); color: white; border: none; box-shadow: 0 2px 10px rgba(241,96,1,0.3); }
-.btn.amber:hover { box-shadow: 0 4px 20px rgba(241,96,1,0.4); }
+.btn.amber { background: var(--gradient-amber); color: white; border: none; box-shadow: 0 2px 10px rgba(191,255,0,0.3); }
+.btn.amber:hover { box-shadow: 0 4px 20px rgba(191,255,0,0.4); }
 
-.btn.rose { background: var(--gradient-coral); color: white; border: none; box-shadow: 0 2px 10px rgba(193,8,1,0.3); }
-.btn.rose:hover { box-shadow: 0 4px 20px rgba(193,8,1,0.4); }
+.btn.rose { background: var(--gradient-coral); color: white; border: none; box-shadow: 0 2px 10px rgba(237,108,121,0.3); }
+.btn.rose:hover { box-shadow: 0 4px 20px rgba(237,108,121,0.4); }
 
 /* ============================================================
    TABS

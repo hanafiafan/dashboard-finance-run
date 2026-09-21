@@ -87,7 +87,7 @@ void main() {
 `;
 
 // Brand palette only: Red-Orange / Branding Orange / Firebrick / Black.
-const DEFAULT_COLORS = ['#F16001', '#E85002', '#C10801', '#000000'];
+const DEFAULT_COLORS = ['#1762FF', '#BFFF00', '#DDE3F0', '#000000'];
 
 function hexToRgb(hex) {
   const h = hex.replace('#', '');

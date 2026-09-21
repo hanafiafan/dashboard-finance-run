@@ -15,9 +15,9 @@ const Master = lazy(() => import('../pages/Master').then(m => ({ default: m.Mast
 const ForecastingControlling = lazy(() => import('../pages/ForecastingControlling').then(m => ({ default: m.ForecastingControlling })));
 const Documentation = lazy(() => import('../pages/Documentation').then(m => ({ default: m.Documentation })));
 import { VIEW_TITLES } from '../utils/constants';
-import { formatDateTime } from '../utils/formatters';
+import { formatDateTime, money } from '../utils/formatters';
 import FilterBar from '../components/filters/FilterBar';
-import Velaris from '../components/ui/Velaris';
+import StateScreen from '../components/ui/StateScreen';
 import AccountSecurity from '../components/ui/AccountSecurity';
 import { useIdleLogout } from '../hooks/useIdleLogout';
 
@@ -32,7 +32,7 @@ const NAV_ITEMS = [
 ];
 
 export default function AppShell() {
-  const { app, setView, setState } = useApp();
+  const { app, setView, setState, setEntity } = useApp();
   const { session, demo, logout } = useAuth();
   const { warning: idleWarning, stayLoggedIn } = useIdleLogout(logout, !demo);
   const [refreshing, setRefreshing] = useState(false);
@@ -68,18 +68,7 @@ export default function AppShell() {
     finally { if (id === requestId.current) setRefreshing(false); }
   }, [filters, session, setState]);
 
-  if (!state) {
-    return (
-      <div className="boot">
-        <div className="boot-panel">
-          <div className="brand-mark">RN</div>
-          <strong>Dashboard Finance RUN</strong>
-          <span>Memuat data dashboard...</span>
-          <RefreshCw size={16} className="spin" style={{ marginTop: 8, opacity: 0.5 }} />
-        </div>
-      </div>
-    );
-  }
+  if (!state) return <StateScreen loading title="Menyiapkan workspace." description="Ringkasan keuangan Anda sedang dimuat." />;
 
   const renderView = () => {
     switch (app.view) {
@@ -90,71 +79,41 @@ export default function AppShell() {
       case 'approval': return <Approval />;
       case 'master': return <Master />;
       case 'documentation': return <Documentation />;
-      default: return <CommandCenter />;
+      default: return <StateScreen compact code="404" title="Halaman tidak ditemukan." description="Pilih menu untuk melanjutkan pekerjaan Anda." onRetry={() => setView('command')} />;
     }
   };
 
   return (
     <>
-    <Velaris className="app-bg" height="100vh" bg="#000000" speed={0.5} grain={0.15} />
     <div className={`app-shell view-${app.view}`}>
       <header className="workspace-header">
-        <div className="workspace-brand"><div className="brand-mark">R</div><strong>RUN<span>finance</span></strong></div>
+        <button className="workspace-brand" aria-label="RUN Finance — dashboard" onClick={() => setView('command')}>run<span>finance</span><i/></button>
+        <nav className="workspace-nav" aria-label="Semua menu">{NAV_ITEMS.map(({ view, label }) => <button key={view} aria-label={label} aria-current={app.view === view ? 'page' : undefined} className={app.view === view ? 'active' : ''} onClick={() => setView(view)}>{view === 'forecast_controlling' ? 'Forecast' : view === 'documentation' ? 'Panduan' : view === 'master' ? 'Master data' : label}</button>)}</nav>
+        <div className="workspace-tools">
         <button className="notif-bell" aria-label="Pengajuan menunggu approval" onClick={() => setView('approval')}>
           <Bell size={18} />
           {pendingApproval > 0 && <span className="notif-badge">{pendingApproval > 99 ? '99+' : pendingApproval}</span>}
         </button>
-        <button type="button" className="workspace-user" onClick={() => !demo && setSecurityOpen(true)} title={demo ? undefined : 'Keamanan akun'}><span className="user-avatar">{(session?.name || 'U').slice(0, 1)}</span><div><strong>{session?.name || 'User'}</strong><small>{demo ? 'Mode demo · data contoh' : session?.role}</small></div></button>
+        <button type="button" className="workspace-user" aria-label={demo ? 'Akun demo' : `Keamanan akun ${session?.name || 'pengguna'}`} onClick={() => !demo && setSecurityOpen(true)} title={demo ? undefined : 'Keamanan akun'}><span className="user-avatar">{(session?.name || 'U').slice(0, 1)}</span><div><strong>{session?.name || 'User'}</strong><small>{demo ? 'Mode demo · data contoh' : session?.role}</small></div></button>
+        <button className="icon-btn logout-btn" title="Keluar" aria-label="Keluar" onClick={logout}><LogOut size={17}/></button></div>
         {!demo && <AccountSecurity isOpen={securityOpen} onClose={() => setSecurityOpen(false)} />}
       </header>
-      <aside className="sidebar">
-        <div className="brand-lockup">
-          <div className="brand-mark">RN</div>
-          <div>
-            <h1>Finance RUN</h1>
-            <span>Multi-company OS</span>
-          </div>
-        </div>
-        <div className="account-card">
-          <strong>{session?.name || session?.email || 'User'}</strong>
-          <span className="role-pill"><BadgeCheck size={14} />{session?.role || (demo ? 'demo' : 'guest')}</span>
-        </div>
-        <nav className="nav" aria-label="Semua menu">
-          {NAV_ITEMS.map(({ view, icon: Icon, label }) => (
-            <button key={view} title={label} aria-label={label} aria-current={app.view === view ? 'page' : undefined} className={app.view === view ? 'active' : ''} onClick={() => setView(view)}>
-              <Icon size={18} /><span>{view === 'forecast_controlling' ? 'Forecast' : view === 'documentation' ? 'Panduan' : view === 'master' ? 'Master' : label}</span>
-            </button>
-          ))}
-        </nav>
-        <div className="side-footer">
-          <button className="btn ghost" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw size={16} className={refreshing ? 'spin' : ''} /> Refresh
-          </button>
-          <button className="btn ghost" title="Keluar" aria-label="Keluar" onClick={logout}><LogOut size={16} /></button>
-          <div className="side-note">Updated: {formatDateTime(state?.dashboard?.generatedAt)}</div>
-        </div>
-      </aside>
 
       <main className="main">
         <div className="topbar">
           <div>
-            <p className="eyebrow">WORKSPACE / {VIEW_TITLES[app.view] || 'Dashboard'}</p>
-            <h2 className="page-title">{app.view === 'command' ? `Ringkasan keuangan` : VIEW_TITLES[app.view] || 'Dashboard'}</h2><p className="page-description">{({command:'Satu pandangan untuk saldo, aktivitas, dan kesehatan keuangan Anda.',analytics:'Temukan pola arus kas dan bandingkan kinerja setiap brand.',operations:'Catat transaksi, kelola rekening, dan temukan data dengan cepat.',forecast_controlling:'Rencanakan anggaran dan pantau realisasi dalam satu laporan.',approval:'Tinjau kebutuhan dana dan ambil keputusan dengan konteks yang lengkap.',master:'Kelola data referensi yang digunakan di seluruh workspace.',documentation:'Panduan praktis untuk alur kerja keuangan sehari-hari.'})[app.view]}</p>
+            <p className="eyebrow">{app.view === 'command' ? `Selamat datang, ${(session?.name || 'tim RUN').split(' ')[0]}` : `WORKSPACE / ${VIEW_TITLES[app.view] || 'Dashboard'}`}</p>
+            <h2 className="page-title">{app.view === 'command' ? `Finance dashboard` : VIEW_TITLES[app.view] || 'Dashboard'}</h2><p className="page-description">{({command:'Satu pandangan untuk saldo, aktivitas, dan kesehatan keuangan Anda.',analytics:'Temukan pola arus kas dan bandingkan kinerja setiap brand.',operations:'Catat transaksi, kelola rekening, dan temukan data dengan cepat.',forecast_controlling:'Rencanakan anggaran dan pantau realisasi dalam satu laporan.',approval:'Tinjau kebutuhan dana dan ambil keputusan dengan konteks yang lengkap.',master:'Kelola data referensi yang digunakan di seluruh workspace.',documentation:'Panduan praktis untuk alur kerja keuangan sehari-hari.'})[app.view]}</p>
           </div>
-          <div className="top-actions">
-            <button className="btn blue" onClick={handleRefresh} disabled={refreshing}>
-              <RefreshCw size={16} className={refreshing ? 'spin' : ''} /> Refresh
-            </button>
-          </div>
+          {app.view === 'command' ? <div className="headline-stats">{[{label:'Saldo rekening',value:state.dashboard?.summary?.bankBalance,entity:'bank'},{label:'Pemasukan',value:state.dashboard?.summary?.cashIn,entity:'income'},{label:'Pengeluaran',value:state.dashboard?.summary?.cashOut,entity:'outcome'}].map(item => <button key={item.entity} onClick={() => { setEntity(item.entity); setView('operations'); }}><span>{item.label}<small>IDR</small></span><strong>{money.format(Number(item.value || 0))}</strong></button>)}</div> : null}
         </div>
 
         <FilterBar />
-        <div className="workspace-status" role="status"><span className={`data-state ${syncError ? 'failed' : ''}`}><i/>{refreshing ? 'Memperbarui data…' : syncError ? 'Data belum diperbarui' : demo ? 'Demo · data contoh' : 'Data workspace'}</span><span>Terakhir dimuat: {formatDateTime(state?.dashboard?.generatedAt)}</span><span className="workspace-currency">Mata uang · IDR</span></div>
+        <div className="workspace-status" role="status"><span className={`data-state ${syncError ? 'failed' : ''}`}><i/>{refreshing ? 'Memperbarui data…' : syncError ? 'Data belum diperbarui' : demo ? 'Demo · data contoh' : 'Data workspace'}</span><span>Terakhir dimuat: {formatDateTime(state?.dashboard?.generatedAt)}</span><button className="status-refresh" onClick={handleRefresh} disabled={refreshing}><RefreshCw size={13} className={refreshing ? 'spin' : ''}/> Refresh</button><span className="workspace-currency">Mata uang · IDR</span></div>
 
         {syncError && <div className="sync-error" role="alert">Pembaruan gagal. Data di bawah adalah data terakhir yang berhasil dimuat dan mungkin belum sesuai filter. {syncError}</div>}
         <section id="view-content" className="view active" aria-busy={refreshing}><Suspense fallback={<div className="empty">Memuat modul...</div>}>{renderView()}</Suspense></section>
       </main>
-      <div id="toast" className="toast" aria-live="polite"></div>
       {idleWarning && (
         <div className="idle-warning" role="alertdialog" aria-label="Peringatan sesi akan berakhir">
           <span>Sesi akan berakhir karena tidak ada aktivitas.</span>

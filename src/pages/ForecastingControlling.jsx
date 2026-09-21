@@ -127,7 +127,14 @@ export function ForecastingControlling() {
 
   return (
     <>
-      <div className="panel tight">
+      <div className="print-letterhead">
+        <div className="print-title">RUN FINANCE / Laporan Anggaran & Realisasi (P&L)</div>
+        <div className="print-meta">
+          <span>Cakupan: {filters.brandKey || 'Semua Brand'} · {periodLabel} {tahun}</span>
+          <span>Dicetak: {new Date().toLocaleString('id-ID')}</span>
+        </div>
+      </div>
+      <div className="panel tight fc-filter-panel">
         <div className="panel-head">
           <div>
             <h3>Periode Forecasting & Controlling</h3>
@@ -218,7 +225,7 @@ export function ForecastingControlling() {
                 <th className="fc-num">Sisa Anggaran</th>
                 <th className="fc-num">Capaian</th>
                 <th>Keterangan</th>
-                {canEditNow && <th>Aksi</th>}
+                {canEditNow && <th className="fc-col-actions">Aksi</th>}
               </tr>
             </thead>
             <tbody>
@@ -257,7 +264,7 @@ export function ForecastingControlling() {
                         <td className="fc-num">{capaian === null ? '-' : pct.format(capaian)}</td>
                         <td className="fc-keterangan">{notes.length ? notes.join('; ') : <span className="dim">-</span>}</td>
                         {canEditNow && (
-                          <td>
+                          <td className="fc-col-actions">
                             {!item.computed && (
                               <button className="icon-btn" title="Edit" onClick={() => openEdit(item)}>
                                 <Pencil size={15} />

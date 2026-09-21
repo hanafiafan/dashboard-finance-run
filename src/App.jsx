@@ -3,7 +3,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AppProvider, useApp } from './contexts/AppContext';
 import { Login, ResetPasswordConfirm } from './pages/Login';
 import AppShell from './layouts/AppShell';
-import { RefreshCw } from 'lucide-react';
+import StateScreen from './components/ui/StateScreen';
 import ErrorBoundary from './components/ui/ErrorBoundary';
 import { ToastHost } from './components/ui/Toast';
 import { getAppState } from './api/financeApi';
@@ -112,18 +112,7 @@ function AppContent() {
   }
 
   // Loading spinner
-  if (loading || status === 'init' || status === 'loading') {
-    return (
-      <div className="boot">
-        <div className="boot-panel">
-          <div className="brand-mark">RN</div>
-          <strong>Dashboard Finance RUN</strong>
-          <span>{status === 'loading' ? 'Memuat data dari server...' : 'Menghubungkan dashboard...'}</span>
-          <RefreshCw size={20} className="spin" style={{ marginTop: 8, opacity: 0.5 }} />
-        </div>
-      </div>
-    );
-  }
+  if (loading || status === 'init' || status === 'loading') return <StateScreen loading title="Menyiapkan ruang kerja Anda." description={status === 'loading' ? 'Memuat data keuangan dari server…' : 'Menghubungkan workspace…'} />;
 
   // Login page
   if (status === 'login') {
@@ -131,21 +120,7 @@ function AppContent() {
   }
 
   // Data load failed — never fall back to demo data for a real session.
-  if (status === 'error') {
-    return (
-      <div className="boot">
-        <div className="boot-panel">
-          <div className="brand-mark">RN</div>
-          <strong>Gagal memuat data dashboard</strong>
-          <span>{loadError}</span>
-          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-            <button className="btn blue" onClick={loadLiveState}>Coba Lagi</button>
-            <button className="btn ghost" onClick={logout}>Keluar & Login Ulang</button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (status === 'error') return <StateScreen code="!" title="Koneksi belum berhasil." description="Data belum dapat dimuat. Coba hubungkan kembali untuk melanjutkan pekerjaan Anda." details={loadError} onRetry={loadLiveState} onBack={logout} />;
 
   // Dashboard
   return <AppShell />;
@@ -160,6 +135,7 @@ function AppRoot() {
 }
 
 export default function App() {
+  if (!['/', '/index.html'].includes(window.location.pathname)) return <StateScreen code="404" title="Sepertinya Anda tersesat." description="Halaman ini tidak tersedia. Kembali ke workspace untuk melanjutkan pekerjaan Anda." />;
   return (
     <AuthProvider>
       <AppProvider>

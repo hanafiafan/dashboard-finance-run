@@ -4,7 +4,7 @@ const STATUS_COLORS = {
   ok: { fill: 'FFE6F4EA', text: 'FF1E7B34' },
   warn: { fill: 'FFFCEEDC', text: 'FFB35C00' },
   bad: { fill: 'FFFBE7E6', text: 'FFC10801' },
-  info: { fill: 'FFF1F1EF', text: 'FF686F62' },
+  info: { fill: 'FFF1F1EF', text: 'FF5F6570' },
 };
 
 export function safeCsvValue(value) {
@@ -58,13 +58,13 @@ export async function createExportWorkbook({ title, columns, rows, filters = {},
     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: background } };
     cell.alignment = { vertical: 'middle', wrapText: true };
   };
-  mergedLine(1, `RUN FINANCE / ${title}`, 18, 'FFFFFFFF', 'FF30392B'); sheet.getRow(1).height = 40;
-  mergedLine(2, demo ? 'DATA DEMO — contoh untuk pengujian, bukan transaksi produksi.' : 'Sumber: data aplikasi RUN Finance sesuai cakupan akses pengguna.', 10, 'FF686F62', 'FFF5F5EF'); sheet.getRow(2).height = 25;
-  mergedLine(3, `Diekspor: ${createdAt.toLocaleString('id-ID')}  |  ${rows.length} baris  |  Mata uang: IDR  |  Ref: ${reference}`, 10, 'FF686F62', 'FFFFFFFF'); sheet.getRow(3).height = 25;
+  mergedLine(1, `RUN FINANCE / ${title}`, 18, 'FFFFFFFF', 'FF111318'); sheet.getRow(1).height = 40;
+  mergedLine(2, demo ? 'DATA DEMO — contoh untuk pengujian, bukan transaksi produksi.' : 'Sumber: data aplikasi RUN Finance sesuai cakupan akses pengguna.', 10, 'FF5F6570', 'FFEDF2FF'); sheet.getRow(2).height = 25;
+  mergedLine(3, `Diekspor: ${createdAt.toLocaleString('id-ID')}  |  ${rows.length} baris  |  Mata uang: IDR  |  Ref: ${reference}`, 10, 'FF5F6570', 'FFFFFFFF'); sheet.getRow(3).height = 25;
   const labels = { company: 'Perusahaan', brandKey: 'Brand', category: 'Kategori', startDate: 'Dari', endDate: 'Sampai', year: 'Tahun', search: 'Pencarian', period: 'Periode' };
   const scope = Object.entries(filters).filter(([,v]) => v !== '' && v != null).map(([k,v]) => `${labels[k] || k}: ${v}`).join(' · ');
-  mergedLine(4, scope || 'Cakupan: seluruh data yang tersedia pada tabel ini.', 10, 'FF686F62', 'FFFFFFFF'); sheet.getRow(4).height = 32;
-  mergedLine(5, `Diekspor oleh: ${preparedBy || '—'}${preparedRole ? ` (${preparedRole})` : ''}  ·  Dokumen ini bersifat internal RUN Finance.`, 10, 'FF686F62', 'FFFFFFFF'); sheet.getRow(5).height = 25;
+  mergedLine(4, scope || 'Cakupan: seluruh data yang tersedia pada tabel ini.', 10, 'FF5F6570', 'FFFFFFFF'); sheet.getRow(4).height = 32;
+  mergedLine(5, `Diekspor oleh: ${preparedBy || '—'}${preparedRole ? ` (${preparedRole})` : ''}  ·  Dokumen ini bersifat internal RUN Finance.`, 10, 'FF5F6570', 'FFFFFFFF'); sheet.getRow(5).height = 25;
   // Letterhead frame around the info block, in brand orange, for a proper
   // document header instead of plain stacked bars.
   for (let c = 1; c <= width; c++) {
@@ -77,7 +77,7 @@ export async function createExportWorkbook({ title, columns, rows, filters = {},
   }
   sheet.getRow(6).height = 12;
   const header = sheet.getRow(7); header.values = columns; header.height = 34;
-  header.eachCell(cell => {cell.font = { name:'Calibri', size:11, bold:true, color:{argb:'FFFFFFFF'} };cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFDA683F'}};cell.alignment={vertical:'middle',wrapText:true};});
+  header.eachCell(cell => {cell.font = { name:'Calibri', size:11, bold:true, color:{argb:'FFFFFFFF'} };cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF1762FF'}};cell.alignment={vertical:'middle',wrapText:true};});
   // Fit each column to its widest actual value (not just the header label) — a
   // narrow-but-long-content column (URLs, long notes) used to wrap into extra
   // lines that the old fixed row height below then silently clipped.
@@ -111,10 +111,10 @@ export async function createExportWorkbook({ title, columns, rows, filters = {},
     row.eachCell({includeEmpty:true}, (cell,c) => {
       const column = columns[c-1];
       const type = columnType(column);
-      cell.font={name:'Calibri',size:11,color:{argb:'FF30392B'}};
+      cell.font={name:'Calibri',size:11,color:{argb:'FF111318'}};
       cell.alignment={vertical:'middle',wrapText:true,horizontal:['money','percent'].includes(type)?'right':'left'};
-      cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:index % 2 ? 'FFF4F5F0':'FFFFFFFF'}};
-      cell.border={bottom:{style:'hair',color:{argb:'FFE3E6DE'}}};
+      cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:index % 2 ? 'FFF2F4F8':'FFFFFFFF'}};
+      cell.border={bottom:{style:'hair',color:{argb:'FFDFE3EA'}}};
       if(type==='money')cell.numFmt='"Rp" #,##0;[Red]("Rp" #,##0);"Rp" 0';
       if(type==='percent')cell.numFmt='0.0%';
       if(type==='date')cell.numFmt='dd mmm yyyy';
@@ -146,9 +146,9 @@ export async function createExportWorkbook({ title, columns, rows, filters = {},
     });
     totalsRow.eachCell({ includeEmpty: true }, (cell, c) => {
       cell.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF30392B' } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF111318' } };
       cell.alignment = { vertical: 'middle', horizontal: columnType(columns[c-1]) === 'money' ? 'right' : 'left' };
-      cell.border = { top: { style: 'thin', color: { argb: 'FF30392B' } } };
+      cell.border = { top: { style: 'thin', color: { argb: 'FF111318' } } };
     });
   }
   sheet.autoFilter={from:{row:header.number,column:1},to:{row:Math.max(header.number,rows.length+DATA_START-1),column:columns.length}};

@@ -1,4 +1,4 @@
-export default function TrendSparkline({ data, color = '#E85002', height = 40 }) {
+export default function TrendSparkline({ data, color = '#1762FF', height = 40 }) {
   if (!data || data.length < 2) return null;
 
   const max = Math.max(...data);

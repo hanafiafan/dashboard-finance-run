@@ -6,10 +6,10 @@ export function getChartTheme() {
   return {
     isDark: true,
     gridColor: 'rgba(249,249,249,0.1)',
-    tickColor: '#A7A7A7',
-    labelColor: '#F9F9F9',
+    tickColor: '#AEB2BC',
+    labelColor: '#F4F5F8',
     tooltipBg: 'rgba(0,0,0,0.92)',
-    tooltipTitleColor: '#F9F9F9',
-    tooltipBodyColor: '#A7A7A7',
+    tooltipTitleColor: '#F4F5F8',
+    tooltipBodyColor: '#AEB2BC',
   };
 }

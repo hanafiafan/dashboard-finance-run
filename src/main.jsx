@@ -2,8 +2,7 @@ import React, { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles/globals.css';
-import './styles/redesign.css';
-import './styles/refinement.css';
+import './styles/gogo.css';
 import { notify } from './components/ui/Toast';
 import { humanizeError } from './utils/errorMessage';
 import { logError } from './api/auditLog';
@@ -13,16 +12,9 @@ window.addEventListener('error', (e) => {
   const root = document.getElementById('app');
   if (root && e.error) {
     logError({ message: e.error.message, stack: e.error.stack, source: 'window.onerror' });
-    root.innerHTML = `
-      <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#000000;color:#F9F9F9;font-family:monospace;padding:2rem;">
-        <div style="background:#333333;border:1px solid #646464;border-radius:16px;padding:2rem;max-width:600px;">
-          <h2 style="color:#F16001;margin-bottom:8px;">⚠️ Aplikasi berhenti tak terduga</h2>
-          <p style="color:#A7A7A7;font-size:14px;">Halaman gagal dijalankan. Klik Refresh untuk memuat ulang; kalau tetap muncul, kirim pesan teknis di bawah ini ke tim IT.</p>
-          <p style="color:#F9F9F9;font-size:13px;margin-top:8px;">${e.error.message}</p>
-          <pre style="background:#000000;padding:1rem;border-radius:8px;font-size:11px;color:#F16001;overflow:auto;max-height:150px;margin-top:12px;">${e.error.stack?.slice(0,500) || ''}</pre>
-          <button onclick="location.reload()" style="margin-top:12px;padding:8px 20px;background:#E85002;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;">Refresh</button>
-        </div>
-      </div>`;
+    root.innerHTML = `<main class="state-screen"><a class="state-brand" href="/">run<span>finance</span><i></i></a><div class="state-layout"><div class="state-art" aria-hidden="true"><div class="state-orbit"></div><strong>!</strong><span>KEEP YOUR FINANCES IN FOCUS</span></div><section class="state-content"><span class="overline">RUN FINANCE / PEMULIHAN WORKSPACE</span><h1>Workspace perlu dimuat ulang.</h1><p>Terjadi kendala saat menjalankan aplikasi. Coba muat ulang untuk melanjutkan pekerjaan Anda.</p><details class="state-details"><summary>Detail teknis</summary><pre></pre></details><div class="state-actions"><button class="btn primary" type="button">Muat ulang</button><a class="btn ghost" href="/">Kembali ke dashboard</a></div></section></div></main>`;
+    root.querySelector('pre').textContent = e.error.message || 'Kesalahan tidak diketahui.';
+    root.querySelector('button').addEventListener('click', () => window.location.reload());
   }
 });
 

@@ -69,7 +69,7 @@ export default function FilterBar() {
   if (show('year') && filters.year) activePills.push({ key: 'year', label: `Tahun: ${filters.year}` });
 
   return (
-    <section className="filter-band">
+    <details className="scope-controls"><summary><SlidersHorizontal size={15}/><strong>Filter & periode</strong><span>{activePills.length ? activePills.map(p => p.label).join(' · ') : 'Semua data dalam cakupan akses'}</span><i>Sesuaikan</i></summary><section className="filter-band">
       {show('company') && (
         <div className="field">
           <label htmlFor="companyFilter">Perusahaan</label>
@@ -184,6 +184,6 @@ export default function FilterBar() {
           </button>
         </>
       )}
-    </section>
+    </section></details>
   );
 }

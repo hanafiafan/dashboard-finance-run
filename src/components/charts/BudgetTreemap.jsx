@@ -4,7 +4,7 @@ import { getChartTheme } from '../../utils/chartTheme';
 import { money } from '../../utils/formatters';
 
 // Brand palette only, cycled for however many treemap segments there are.
-const COLORS = ['#E85002', '#333333', '#C10801', '#A7A7A7', '#F16001', '#646464', '#D9C3AB', '#000000'];
+const COLORS = ['#1762FF', '#405A94', '#4A60BC', '#586A88', '#275B50', '#4B5265', '#3F6479', '#3454A2'];
 
 export default function BudgetTreemap({ data, title = 'Budget Allocation', note = 'Treemap by category' }) {
   const sorted = useMemo(() => {

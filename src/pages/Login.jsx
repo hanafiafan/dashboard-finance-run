@@ -39,13 +39,13 @@ export function Login({ onLogin, onDemo }) {
   if (mfaPending) {
     return <main className="auth-page">
       <section className="auth-art" aria-label="RUN Finance">
-        <img src="/art/finance-sculpture.jpg" alt="" fetchPriority="high" />
+        <div className="auth-composition" aria-hidden="true"><div className="auth-orbit"/><div className="auth-lime-tile"/><div className="auth-stripe-tile"/></div>
         <a className="auth-brand" href="#login-form"><span className="brand-mark">R</span> RUN <span>finance</span></a>
-        <div className="auth-story"><span className="overline">YOUR FINANCE, IN FOCUS</span><h1>Lebih terarah.<br/>Lebih terkendali.</h1><p>Satu ruang untuk melihat keuangan<br/>dan menggerakkan bisnis Anda.</p></div>
+        <div className="auth-story"><span className="overline">YOUR FINANCE, IN FOCUS</span><h1>Keuangan jelas.<br/>Bisnis bergerak.</h1><p>Satu ruang untuk melihat keuangan<br/>dan menggerakkan bisnis Anda.</p></div>
         <div className="auth-art-footer"><Layers3 size={16}/><span>Multi-company. Multi-brand. Satu pandangan.</span></div>
       </section>
       <section className="auth-form-side" id="login-form">
-        <div className="auth-topline"><span>Workspace keuangan</span><span className="auth-version">RUN / 02</span></div>
+        <div className="auth-topline"><span>Workspace keuangan</span><span className="auth-version">RUN / WORKSPACE</span></div>
         <div className="auth-form-content"><span className="auth-welcome-icon"><KeySquare size={22}/></span><p className="overline">VERIFIKASI TAMBAHAN</p><h2>Masukkan kode autentikator.</h2><p className="auth-subtitle">Buka aplikasi authenticator Anda (Google Authenticator, Authy, dll) dan masukkan kode 6 digit yang tampil.</p>
           <form onSubmit={handleMfaSubmit} className="auth-form">
             <div className="auth-field-group"><label htmlFor="mfa-code">Kode 6 digit</label><div className="auth-input"><KeySquare size={17}/><input id="mfa-code" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="123456" value={mfaCode} onChange={e => setMfaCode(e.target.value.replace(/\D/g, ''))} required disabled={loading} autoFocus/></div></div>
@@ -61,13 +61,13 @@ export function Login({ onLogin, onDemo }) {
   if (forgotMode) {
     return <main className="auth-page">
       <section className="auth-art" aria-label="RUN Finance">
-        <img src="/art/finance-sculpture.jpg" alt="" fetchPriority="high" />
+        <div className="auth-composition" aria-hidden="true"><div className="auth-orbit"/><div className="auth-lime-tile"/><div className="auth-stripe-tile"/></div>
         <a className="auth-brand" href="#login-form"><span className="brand-mark">R</span> RUN <span>finance</span></a>
-        <div className="auth-story"><span className="overline">YOUR FINANCE, IN FOCUS</span><h1>Lebih terarah.<br/>Lebih terkendali.</h1><p>Satu ruang untuk melihat keuangan<br/>dan menggerakkan bisnis Anda.</p></div>
+        <div className="auth-story"><span className="overline">YOUR FINANCE, IN FOCUS</span><h1>Keuangan jelas.<br/>Bisnis bergerak.</h1><p>Satu ruang untuk melihat keuangan<br/>dan menggerakkan bisnis Anda.</p></div>
         <div className="auth-art-footer"><Layers3 size={16}/><span>Multi-company. Multi-brand. Satu pandangan.</span></div>
       </section>
       <section className="auth-form-side" id="login-form">
-        <div className="auth-topline"><span>Workspace keuangan</span><span className="auth-version">RUN / 02</span></div>
+        <div className="auth-topline"><span>Workspace keuangan</span><span className="auth-version">RUN / WORKSPACE</span></div>
         <div className="auth-form-content"><span className="auth-welcome-icon"><Mail size={22}/></span><p className="overline">LUPA KATA SANDI</p><h2>Reset kata sandi Anda.</h2>
           {forgotSent ? (
             <p className="auth-subtitle">Jika <strong>{forgotEmail}</strong> terdaftar, tautan reset password sudah dikirim ke email tersebut. Buka tautannya untuk membuat kata sandi baru.</p>
@@ -88,13 +88,13 @@ export function Login({ onLogin, onDemo }) {
 
   return <main className="auth-page">
     <section className="auth-art" aria-label="RUN Finance">
-      <img src="/art/finance-sculpture.jpg" alt="" fetchPriority="high" />
+      <div className="auth-composition" aria-hidden="true"><div className="auth-orbit"/><div className="auth-lime-tile"/><div className="auth-stripe-tile"/></div>
       <a className="auth-brand" href="#login-form"><span className="brand-mark">R</span> RUN <span>finance</span></a>
-      <div className="auth-story"><span className="overline">YOUR FINANCE, IN FOCUS</span><h1>Lebih terarah.<br/>Lebih terkendali.</h1><p>Satu ruang untuk melihat keuangan<br/>dan menggerakkan bisnis Anda.</p></div>
+      <div className="auth-story"><span className="overline">YOUR FINANCE, IN FOCUS</span><h1>Keuangan jelas.<br/>Bisnis bergerak.</h1><p>Satu ruang untuk melihat keuangan<br/>dan menggerakkan bisnis Anda.</p></div>
       <div className="auth-art-footer"><Layers3 size={16}/><span>Multi-company. Multi-brand. Satu pandangan.</span></div>
     </section>
     <section className="auth-form-side" id="login-form">
-      <div className="auth-topline"><span>Workspace keuangan</span><span className="auth-version">RUN / 02</span></div>
+      <div className="auth-topline"><span>Workspace keuangan</span><span className="auth-version">RUN / WORKSPACE</span></div>
       <div className="auth-form-content"><span className="auth-welcome-icon"><LockKeyhole size={22}/></span><p className="overline">SELAMAT DATANG KEMBALI</p><h2>Masuk ke workspace.</h2><p className="auth-subtitle">Kelola keuangan dengan pandangan yang lebih jelas.</p>
         <form onSubmit={handleLogin} className="auth-form">
           <div className="auth-field-group"><label htmlFor="login-email">Email kerja</label><div className="auth-input"><Mail size={17}/><input id="login-email" type="email" autoComplete="username" placeholder="nama@perusahaan.com" value={email} onChange={e => setEmail(e.target.value)} required disabled={loading}/></div></div>
@@ -130,13 +130,13 @@ export function ResetPasswordConfirm({ onSubmit }) {
 
   return <main className="auth-page">
     <section className="auth-art" aria-label="RUN Finance">
-      <img src="/art/finance-sculpture.jpg" alt="" fetchPriority="high" />
+      <div className="auth-composition" aria-hidden="true"><div className="auth-orbit"/><div className="auth-lime-tile"/><div className="auth-stripe-tile"/></div>
       <a className="auth-brand" href="#reset-form"><span className="brand-mark">R</span> RUN <span>finance</span></a>
-      <div className="auth-story"><span className="overline">YOUR FINANCE, IN FOCUS</span><h1>Lebih terarah.<br/>Lebih terkendali.</h1><p>Satu ruang untuk melihat keuangan<br/>dan menggerakkan bisnis Anda.</p></div>
+      <div className="auth-story"><span className="overline">YOUR FINANCE, IN FOCUS</span><h1>Keuangan jelas.<br/>Bisnis bergerak.</h1><p>Satu ruang untuk melihat keuangan<br/>dan menggerakkan bisnis Anda.</p></div>
       <div className="auth-art-footer"><Layers3 size={16}/><span>Multi-company. Multi-brand. Satu pandangan.</span></div>
     </section>
     <section className="auth-form-side" id="reset-form">
-      <div className="auth-topline"><span>Workspace keuangan</span><span className="auth-version">RUN / 02</span></div>
+      <div className="auth-topline"><span>Workspace keuangan</span><span className="auth-version">RUN / WORKSPACE</span></div>
       <div className="auth-form-content"><span className="auth-welcome-icon"><LockKeyhole size={22}/></span><p className="overline">BUAT KATA SANDI BARU</p><h2>Atur ulang kata sandi Anda.</h2><p className="auth-subtitle">Tautan reset terverifikasi. Masukkan kata sandi baru untuk akun Anda.</p>
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="auth-field-group"><label htmlFor="reset-password">Kata sandi baru</label><div className="auth-input"><LockKeyhole size={17}/><input id="reset-password" type="password" placeholder="Minimal 6 karakter" value={password} onChange={e => setPassword(e.target.value)} required disabled={loading} autoFocus/></div></div>

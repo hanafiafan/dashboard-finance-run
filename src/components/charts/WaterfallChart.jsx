@@ -39,7 +39,7 @@ export default function WaterfallChart({ data, title, note }) {
         .attr('y', y(value))
         .attr('width', x.bandwidth())
         .attr('height', barHeight)
-        .attr('fill', isIncome ? '#22C55E' : '#C10801')
+        .attr('fill', isIncome ? '#BFFF00' : '#ED6C79')
         .attr('rx', 3)
         .on('mouseenter', (event) => {
           tooltip
