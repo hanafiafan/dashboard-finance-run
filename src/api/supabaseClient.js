@@ -54,7 +54,7 @@ const COL_MAP = {
     brand_key: 'Brand', tanggal: 'Tanggal', keterangan: 'Keterangan',
     kategori: 'Kategori', jumlah: 'Jumlah (Rp)', biaya: 'Biaya (Rp)',
     total_pengeluaran: 'Total Pengeluaran (Rp)', bank_keluar: 'Bank Keluar',
-    bank_id: 'ID Bank Keluar',
+    bank_id: 'ID Bank Keluar', catatan: 'Catatan',
   },
   omzet: {
     brand_key: 'Brand', tahun: 'Tahun', bulan: 'Bulan',
@@ -128,6 +128,7 @@ const FORM_KEY_ALIASES = {
   outcome: {
     'Jumlah': 'jumlah',
     'Biaya': 'biaya',
+    'Catatan': 'catatan',
   },
   income: {
     'Catatan': 'catatan',

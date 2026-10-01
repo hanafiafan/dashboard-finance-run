@@ -24,7 +24,7 @@ export const TABLE_COLUMNS = {
   income: ['Brand', 'Tanggal', 'Keterangan', 'Customer', 'Nominal', 'ID Bank Masuk', 'Bank Masuk', 'Catatan'],
   forecast: ['Brand', 'Estimasi Cair', 'Marketplace', 'Nominal Estimasi', 'Status', 'Catatan'],
   forecastOut: ['Brand', 'Estimasi Keluar', 'Kategori', 'Nominal Estimasi', 'Status', 'Catatan'],
-  outcome: ['Brand', 'Tanggal', 'Keterangan', 'Kategori', 'Jumlah (Rp)', 'Biaya (Rp)', 'Total Pengeluaran (Rp)', 'ID Bank Keluar', 'Bank Keluar'],
+  outcome: ['Brand', 'Tanggal', 'Keterangan', 'Kategori', 'Jumlah (Rp)', 'Biaya (Rp)', 'Total Pengeluaran (Rp)', 'ID Bank Keluar', 'Bank Keluar', 'Catatan'],
   omzet: ['Brand', 'Tahun', 'Bulan', 'Target Omzet', 'Realisasi Omzet', 'Selisih', 'Capaian'],
   bank: ['Brand', 'ID Bank', 'Bank', 'Saldo Awal', 'Pemasukan', 'Pengeluaran', 'Total'],
   service: ['Brand', 'Tanggal', 'Keterangan', 'Vendor', 'Nominal', 'Status', 'Catatan'],
