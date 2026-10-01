@@ -14,7 +14,10 @@ import UserManagement from './UserManagement';
 import SystemLogs from './SystemLogs';
 import PeriodLock from './PeriodLock';
 
-const MASTERS = ['users', 'brands', 'sources', 'vendors', 'customers'];
+// Rekening bank juga merupakan data referensi untuk dropdown Cash In/Cash Out.
+// Tetap tampil di Operasional untuk pemantauan saldo, tetapi pendaftarannya juga
+// tersedia dari Master Data agar alur menambah ID Bank mudah ditemukan.
+const MASTERS = ['users', 'brands', 'bank', 'sources', 'vendors', 'customers'];
 
 export function Master() {
   const { app, setMaster } = useApp();
@@ -90,7 +93,7 @@ export function Master() {
             className={entity === name ? 'active' : ''}
             onClick={() => {setMaster(name);setSearch('');}}
           >
-            {name === 'logs' ? 'Log Sistem' : name === 'periods' ? 'Tutup Buku' : ENTITY_LABELS[name]}
+            {name === 'logs' ? 'Log Sistem' : name === 'periods' ? 'Tutup Buku' : name === 'bank' ? 'Bank / Rekening' : ENTITY_LABELS[name]}
           </button>
         ))}
       </div>
