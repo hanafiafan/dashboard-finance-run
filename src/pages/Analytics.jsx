@@ -53,8 +53,38 @@ export function Analytics() {
     ],
   };
 
+  const cats = [...(charts.outcomeByCategory || [])].sort((a, b) => b.value - a.value);
+  const catTotal = cats.reduce((s, x) => s + x.value, 0);
+  const pct = v => (catTotal ? ((v / catTotal) * 100).toFixed(1) : '0.0') + '%';
+  const catData = {
+    labels: cats.map(x => x.label),
+    datasets: [{ data: cats.map(x => x.value), backgroundColor: COLORS, borderWidth: 0 }],
+  };
+
   return (
     <>
+      <Panel title="Pengeluaran per kategori" note="Nominal dan persentase Cash Out (ikuti filter Brand/Tanggal di atas, transfer antar bank tidak dihitung)" size="tall">
+        {cats.length === 0 ? <p>Belum ada data pengeluaran.</p> : (
+          <div className="grid-2">
+            <div style={{ height: 300 }}>
+              <Doughnut data={catData} options={{ ...opts, cutout: '60%', scales: undefined, plugins: { ...opts.plugins, tooltip: { callbacks: { label: ctx => `${ctx.label}: ${money.format(ctx.parsed)} (${pct(ctx.parsed)})` } } } }} />
+            </div>
+            <table className="table">
+              <thead><tr><th>Kategori</th><th style={{ textAlign: 'right' }}>Nominal</th><th style={{ textAlign: 'right' }}>%</th></tr></thead>
+              <tbody>
+                {cats.map((x, i) => (
+                  <tr key={x.label}>
+                    <td><span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, marginRight: 8, background: COLORS[i % COLORS.length] }} />{x.label}</td>
+                    <td style={{ textAlign: 'right' }}>{money.format(x.value)}</td>
+                    <td style={{ textAlign: 'right' }}>{pct(x.value)}</td>
+                  </tr>
+                ))}
+                <tr><td><b>Total</b></td><td style={{ textAlign: 'right' }}><b>{money.format(catTotal)}</b></td><td style={{ textAlign: 'right' }}><b>100%</b></td></tr>
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Panel>
       <div className="grid-2">
         <Panel title="Performa brand" note="Cash in, cash out, budget" size="tall">
           <Bar data={brandPerfData} options={opts} />
