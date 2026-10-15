@@ -57,7 +57,7 @@ const COL_MAP = {
     bank_id: 'ID Bank Keluar', catatan: 'Catatan',
   },
   omzet: {
-    brand_key: 'Brand', tahun: 'Tahun', bulan: 'Bulan',
+    brand_key: 'Brand', tanggal: 'Tanggal', tahun: 'Tahun', bulan: 'Bulan',
     target_omzet: 'Target Omzet', realisasi_omzet: 'Realisasi Omzet',
     selisih: 'Selisih', capaian: 'Capaian',
   },

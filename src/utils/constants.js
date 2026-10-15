@@ -25,7 +25,7 @@ export const TABLE_COLUMNS = {
   forecast: ['Brand', 'Estimasi Cair', 'Marketplace', 'Nominal Estimasi', 'Status', 'Catatan'],
   forecastOut: ['Brand', 'Estimasi Keluar', 'Kategori', 'Nominal Estimasi', 'Status', 'Catatan'],
   outcome: ['Brand', 'Tanggal', 'Keterangan', 'Kategori', 'Jumlah (Rp)', 'Biaya (Rp)', 'Total Pengeluaran (Rp)', 'ID Bank Keluar', 'Bank Keluar', 'Catatan'],
-  omzet: ['Brand', 'Tahun', 'Bulan', 'Target Omzet', 'Realisasi Omzet', 'Selisih', 'Capaian'],
+  omzet: ['Brand', 'Tanggal', 'Tahun', 'Bulan', 'Target Omzet', 'Realisasi Omzet', 'Selisih', 'Capaian'],
   bank: ['Brand', 'ID Bank', 'Bank', 'Saldo Awal', 'Pemasukan', 'Pengeluaran', 'Total'],
   service: ['Brand', 'Tanggal', 'Keterangan', 'Vendor', 'Nominal', 'Status', 'Catatan'],
   payables: ['Brand', 'Nama Pemasok', 'ID Pemasok', 'Total Hutang', 'Total Dibayar', 'Sisa Hutang', 'Progress %', 'Status', 'Tgl Jatuh Tempo', 'Source'],
@@ -100,6 +100,7 @@ export const FORMS = {
   ],
   omzet: [
     { key: 'Brand', label: 'Brand Key', type: 'brand', required: true },
+    { key: 'Tanggal', label: 'Tanggal', type: 'date' },
     { key: 'Tahun', label: 'Tahun', type: 'number', required: true },
     { key: 'Bulan', label: 'Bulan', type: 'select', optionsKey: 'months', required: true },
     { key: 'Target Omzet', label: 'Target Omzet', type: 'number' },
