@@ -291,6 +291,7 @@ export function ForecastingControlling() {
           <ForecastLineForm
             values={entryModal}
             brands={brands}
+            rows={rows}
             tahun={tahun}
             onCancel={() => setEntryModal(null)}
             onSubmit={handleSave}
@@ -301,13 +302,22 @@ export function ForecastingControlling() {
   );
 }
 
-function ForecastLineForm({ values, brands, tahun, onCancel, onSubmit }) {
+function ForecastLineForm({ values, brands, rows, tahun, onCancel, onSubmit }) {
   const [form, setForm] = useState({
     brandKey: values.brandKey, bulan: values.bulan, lineKey: values.lineKey,
     nilaiAnggaran: values.nilaiAnggaran, nilaiRealisasi: values.nilaiRealisasi, keterangan: values.keterangan,
   });
   const isAdd = values.mode === 'add';
   const canSubmit = !isAdd || !!form.brandKey;
+
+  // Simpan = timpa (satu baris per brand+bulan+baris P&L), bukan menjumlah.
+  // Saat Tambah Data menunjuk baris yang sudah terisi, tampilkan & isi nilai lamanya
+  // supaya jelas bahwa input baru menggantikan, dan bisa diedit dari angka terakhir.
+  const existing = isAdd ? rows.find(r => r.brandKey === form.brandKey && r.bulan === form.bulan && r.lineKey === form.lineKey) : null;
+  useEffect(() => {
+    if (!isAdd) return;
+    setForm(f => ({ ...f, nilaiAnggaran: existing?.nilaiAnggaran || 0, nilaiRealisasi: existing?.nilaiRealisasi || 0, keterangan: existing?.keterangan || '' }));
+  }, [existing, isAdd]);
 
   return (
     <form onSubmit={e => { e.preventDefault(); if (canSubmit) onSubmit(form); }}>
@@ -343,6 +353,7 @@ function ForecastLineForm({ values, brands, tahun, onCancel, onSubmit }) {
         ) : (
           <p className="note" style={{ marginBottom: '0.4rem' }}>{values.brandKey} · {MONTHS[values.bulan - 1]} {tahun}</p>
         )}
+        {existing && <p className="note full-width" style={{ marginBottom: '0.4rem' }}>Sudah terisi (realisasi Rp {existing.nilaiRealisasi.toLocaleString('id-ID')}). Menyimpan akan <strong>menggantikan</strong> nilai ini, bukan menjumlahkan.</p>}
         <div className="form-group">
           <label>Nilai Anggaran (Rp)</label>
           <input type="number" value={form.nilaiAnggaran} onChange={e => setForm({ ...form, nilaiAnggaran: e.target.value })} />
